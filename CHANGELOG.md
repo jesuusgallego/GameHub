@@ -10,6 +10,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   que se elige una contraseña nueva. El correo sale por Brevo; hay que configurar
   `BREVO_API_KEY` y `CORREO_REMITENTE` en el servidor (ver `docs/DESPLIEGUE.md`).
 
+- **Avisos de actualización en la app de escritorio:** al terminar de descargar una versión
+  nueva pregunta si reiniciar ahora o más tarde, y la primera vez que se abre una versión
+  nueva dice "GameHub se ha actualizado a la versión X" con las novedades. La 1.0.0 ya
+  instalada pasa a la 1.1.0 en silencio; la pregunta se verá a partir de la siguiente.
+
 ### Seguridad
 - **Cambiar o recuperar la contraseña cierra las demás sesiones.** Antes, un token ya emitido
   seguía valiendo hasta 7 días aunque se cambiara la contraseña. Ahora cada token lleva una

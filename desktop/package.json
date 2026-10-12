@@ -9,6 +9,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "test": "node --test \"test/*.test.js\"",
     "build:web": "node scripts/build-web.mjs",
     "dist": "node scripts/build-web.mjs && electron-builder --win"
   },
@@ -28,6 +29,7 @@
     },
     "files": [
       "main.js",
+      "actualizaciones.js",
       "app/**/*",
       "build/icon.png"
     ],

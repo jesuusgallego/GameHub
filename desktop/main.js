@@ -5,8 +5,9 @@
 // Este archivo solo abre la ventana, sirve la interfaz y protege la navegación. La
 // app NO lleva backend dentro: llama por internet al servidor cuya dirección se fijó
 // al compilar (VITE_API_URL, ver scripts/build-web.mjs).
-const { app, BrowserWindow, Menu, protocol, net, shell, session, screen } = require('electron')
+const { app, BrowserWindow, Menu, protocol, net, shell, session, screen, dialog } = require('electron')
 const { autoUpdater } = require('electron-updater')
+const actualizaciones = require('./actualizaciones')
 const crypto = require('node:crypto')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -51,6 +52,9 @@ if (!app.requestSingleInstanceLock()) {
 
 // ---- Tamaño y posición de la ventana, recordados entre ejecuciones ---------------
 const ARCHIVO_ESTADO = () => path.join(app.getPath('userData'), 'ventana.json')
+// Versión que se estaba ejecutando la última vez: sirve para saber que la app se ha
+// actualizado y enseñar "se ha actualizado a la versión X" (ver avisarSiSeActualizo)
+const ARCHIVO_VERSION = () => path.join(app.getPath('userData'), 'version.json')
 
 function leerEstadoVentana() {
   const porDefecto = { width: 1280, height: 820 }
@@ -127,6 +131,68 @@ function construirCsp() {
   ].join('; ')
 }
 
+// ---- Avisos de actualización ---------------------------------------------------------
+// Un diálogo del sistema, colgado de la ventana si existe
+function mostrarDialogo(opciones) {
+  return ventana ? dialog.showMessageBox(ventana, opciones) : dialog.showMessageBox(opciones)
+}
+
+// Primera vez que se abre una versión distinta de la anterior: "se ha actualizado a la
+// versión X" con las novedades. La versión se guarda enseguida, así se enseña una sola
+// vez aunque el diálogo se cierre sin leerlo.
+function avisarSiSeActualizo() {
+  let guardada = null
+  try {
+    guardada = JSON.parse(fs.readFileSync(ARCHIVO_VERSION(), 'utf8')).version ?? null
+  } catch {
+    // Sin archivo (instalación nueva o venimos de la 1.0.0, que no lo guardaba)
+  }
+
+  const aviso = actualizaciones.avisoTrasActualizar({
+    versionGuardada: guardada,
+    versionActual: app.getVersion(),
+    hayEstadoPrevio: fs.existsSync(ARCHIVO_ESTADO()),
+  })
+
+  try {
+    fs.writeFileSync(ARCHIVO_VERSION(), JSON.stringify({ version: app.getVersion() }))
+  } catch {
+    // Si no se puede guardar, el aviso se repetiría al abrir; no es grave
+  }
+
+  if (!aviso) return
+
+  const x = actualizaciones.textos(app.getLocale())
+  const lista = actualizaciones.novedades(app.getVersion(), app.getLocale())
+  mostrarDialogo({
+    type: 'info',
+    title: 'GameHub',
+    message: x.actualizada(app.getVersion()),
+    detail: lista.length > 0 ? `${x.novedades}\n\n${lista.map((n) => `• ${n}`).join('\n')}` : undefined,
+    buttons: [x.entendido],
+  }).catch(() => {})
+}
+
+// La actualización ya está descargada (la app sigue abierta): pregunto si reinicia ya.
+// "Más tarde" no hace falta gestionarlo: la librería la instala sola al cerrar la app.
+function avisarDeActualizacionDescargada(info) {
+  const x = actualizaciones.textos(app.getLocale())
+  mostrarDialogo({
+    type: 'info',
+    title: 'GameHub',
+    message: x.descargada(info.version),
+    detail: x.detalleDescargada,
+    buttons: [x.reiniciar, x.masTarde],
+    defaultId: 0,
+    cancelId: 1,
+  })
+    .then(({ response }) => {
+      // (true, true): instala en silencio y vuelve a abrir la app
+      if (response === 0) autoUpdater.quitAndInstall(true, true)
+    })
+    .catch(() => {})
+}
+
 // ---- La ventana ------------------------------------------------------------------
 function crearVentana() {
   const estado = leerEstadoVentana()
@@ -154,6 +220,8 @@ function crearVentana() {
   if (estado.maximizada) ventana.maximize()
   // La enseño cuando ya hay algo que pintar, no en blanco
   ventana.once('ready-to-show', () => { if (!PRUEBA_HUMO) ventana.show() })
+  // Y, ya visible, aviso si la app acaba de actualizarse (solo instalada, no en desarrollo)
+  ventana.once('show', () => { if (app.isPackaged) avisarSiSeActualizo() })
 
   // Cualquier enlace que intente abrir una ventana nueva (los de IGDB, Steam...) va al
   // navegador del usuario, no a una ventana de Electron
@@ -246,8 +314,11 @@ app.whenReady().then(() => {
 
   // Actualizaciones automáticas: mira las Releases de GitHub (ver "publish" en
   // package.json). Si no hay conexión o no hay versión nueva, simplemente no hace nada.
-  if (app.isPackaged) {
-    autoUpdater.checkForUpdatesAndNotify().catch(() => {})
+  // Al terminar de descargar una versión nueva pregunto si reiniciar (en vez del
+  // aviso del sistema de checkForUpdatesAndNotify, que no deja elegir).
+  if (app.isPackaged && !PRUEBA_HUMO) {
+    autoUpdater.on('update-downloaded', avisarDeActualizacionDescargada)
+    autoUpdater.checkForUpdates().catch(() => {})
   }
 })
 

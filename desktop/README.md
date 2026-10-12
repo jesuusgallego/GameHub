@@ -67,7 +67,9 @@ Actions, ver abajo): desde WSL/Linux, `electron-builder` necesita Wine.
 ## Publicar una versión
 
 1. Sube la versión en `desktop/package.json` (y en `frontend/package.json` para que
-   coincida) y apunta los cambios en `CHANGELOG.md`.
+   coincida) y apunta los cambios en `CHANGELOG.md`. Añade también la entrada de la
+   versión en `NOVEDADES` de `desktop/actualizaciones.js`: es la lista que enseña el aviso
+   "GameHub se ha actualizado a la versión X" (si falta, el aviso sale sin lista).
 2. En GitHub, crea la variable de repositorio `GAMEHUB_API_URL` (Settings → Secrets and
    variables → Actions → Variables).
 3. Haz commit y sube la etiqueta:
@@ -80,8 +82,26 @@ Actions, ver abajo): desde WSL/Linux, `electron-builder` necesita Wine.
 4. El flujo [`.github/workflows/release.yml`](../.github/workflows/release.yml) compila el
    instalador en un Windows de GitHub y lo adjunta a la Release `v1.0.0`.
 
+### Cómo se actualiza una app instalada
+
 Las apps ya instaladas buscan sus actualizaciones en esas Releases al arrancar
-(`electron-updater`) y avisan cuando hay una nueva.
+(`electron-updater`). Solo comprueban al arrancar, no mientras están abiertas.
+
+1. Si hay una versión nueva, la **descarga en segundo plano**, sin molestar.
+2. Al terminar, la app **pregunta**: *Reiniciar ahora* (instala en silencio y vuelve a
+   abrirse) o *Más tarde* (se instala sola al cerrar GameHub).
+3. La primera vez que se abre la versión nueva, un aviso dice "GameHub se ha actualizado a
+   la versión X" con las novedades (`desktop/actualizaciones.js`). Solo se enseña una vez.
+
+**Ojo con la primera actualización tras añadir estos avisos:** quien aplica una
+actualización es el código de la versión ya instalada. La 1.0.0 no tiene la pregunta del
+punto 2, así que pasa a la 1.1.0 en silencio (con la notificación del sistema y
+actualizándose al cerrar); el aviso del punto 3 sí lo enseña la 1.1.0. La pregunta del
+punto 2 aparece a partir de la actualización de la 1.1.0 a la siguiente.
+
+El instalador solo lleva los archivos de `build.files` (en `package.json`): si `main.js`
+carga un archivo local nuevo, añádelo ahí. `npm test` lo comprueba, porque la prueba de
+humo corre desde el código fuente y no lo detectaría.
 
 ## Aviso de Windows "editor desconocido"
 

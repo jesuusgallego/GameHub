@@ -49,6 +49,10 @@ jobs:
         run: npm test
         working-directory: frontend
 
+      - name: Pruebas de escritorio
+        run: npm test
+        working-directory: desktop
+
       - name: Compilar la interfaz para escritorio
         run: npm run build:web
         working-directory: desktop
