@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Avatar from './Avatar'
 import { useIdioma } from './IdiomaContext'
 import { useMenuDesplegable } from './useMenuDesplegable'
+import { borrarToken } from './sesion'
 
 // Menú del usuario en la barra: la foto de perfil y, debajo, un desplegable con
 // "Ver perfil" y "Cerrar sesión". (El idioma y el tema claro/oscuro están en el
@@ -46,7 +47,7 @@ function MenuUsuario({ perfil, setToken }) {
   }
 
   function cerrarSesion() {
-    localStorage.removeItem("token")
+    borrarToken()
     setToken("")
   }
 

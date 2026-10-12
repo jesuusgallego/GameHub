@@ -7,9 +7,8 @@ import Mensaje from './Mensaje'
 import RequisitosContrasena from './RequisitosContrasena'
 import { useIdioma } from './IdiomaContext'
 import { useCambioVista } from './useCambioVista'
+import { emailRegex, passwordRegex } from './validacion'
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
 // Ajustes de seguridad de la cuenta: email, contraseña y borrar la cuenta. Los tres
 // piden la contraseña actual, porque son cambios delicados (si alguien dejara la

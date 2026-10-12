@@ -1,6 +1,7 @@
 // Todo el acceso al backend pasa por aquí: la URL base, el token y el manejo de
 // errores. El resto de la app llama a apiFetch en vez de a fetch.
 import { idiomaActual, traducir, traducirErrorApi } from './idioma'
+import { leerToken } from './sesion'
 
 const URL_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
@@ -35,7 +36,7 @@ function cambiarLentas(delta) {
 //    del backend, traducido al idioma de la interfaz) y `status` (código HTTP). Qué hacer con un 401 lo decide quien
 //    llama: en login significa "contraseña incorrecta".
 export async function apiFetch(ruta, { body, headers, avisoLento = true, ...resto } = {}) {
-  const token = localStorage.getItem('token')
+  const token = leerToken()
 
   let marcadaLenta = false
   const temporizador = avisoLento

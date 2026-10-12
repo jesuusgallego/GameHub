@@ -9,9 +9,8 @@ import { useIdioma } from './IdiomaContext'
 import { useCambioVista } from './useCambioVista'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
+import { emailRegex, passwordRegex } from './validacion'
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
 // Lo que espera el backend entre un código y el siguiente (ESPERA_SEGUNDOS en
 // backend/src/services/recuperacion.js). Aquí solo sirve para desactivar el botón

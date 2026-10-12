@@ -332,6 +332,8 @@ export const erroresApi = {
   'igdbId debe ser un número entero positivo': 'igdbId must be a positive integer',
   'Token no proporcionado': 'No token provided',
   'Token inválido o expirado': 'Invalid or expired token',
+  'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número':
+    'The password must have at least 8 characters, an uppercase letter, a lowercase letter and a number',
   'La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número':
     'The new password must have at least 8 characters, an uppercase letter, a lowercase letter and a number',
   'La foto no es válida (JPG, PNG o WebP, tamaño reducido)': 'The photo is not valid (JPG, PNG or WebP, small size)',

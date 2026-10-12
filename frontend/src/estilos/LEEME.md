@@ -23,7 +23,7 @@ a su vez importa el resto de archivos con `@import`.
 | `perfil.css` | Base del perfil, estadísticas, edición de foto/nombre/bio y el cambio animado `.vista` | `EstadisticasPerfil`, `EditarPerfil`, `SelectorArtwork`, `RecortadorFoto` |
 | `respuesta-al-pulsar.css` | Lo pulsable se encoge un poco mientras se mantiene pulsado | varios |
 | `perfil-cabecera-y-pestanas.css` | Banner del perfil con cifras, pestañas con indicador deslizante y paneles | `CabeceraPerfil`, `PestanasPerfil`, `Perfil` |
-| `perfil-seguridad.css` | Tarjetas de ajustes, campo de contraseña con ojo, requisitos y fuerza | `CuentaPerfil`, `CampoContrasena` |
+| `perfil-seguridad.css` | Tarjetas de ajustes, dato de solo lectura (el email), campo de contraseña con ojo, requisitos y fuerza | `CuentaPerfil`, `CampoContrasena`, `RequisitosContrasena` (también en `Recuperar`) |
 | `cuentas-vinculadas.css` | Tarjeta de plataforma (Steam), botón `.btn--steam`, escena animada de conexión | `CuentaSteam`, `ConexionSteam` |
 | `perfil-movil.css` | Perfil en pantallas estrechas | `Perfil` y sus piezas |
 | `progreso-steam.css` | Horas y barra de logros de Steam, y la lista de logros de la ficha | `ProgresoSteam`, `LogrosSteam` |

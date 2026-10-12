@@ -1,10 +1,8 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/db');
 const { emitirToken } = require('../services/sesion');
+const { EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, SALT_ROUNDS } = require('../config/validacion');
 
-const SALT_ROUNDS = 10;
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 // La foto llega como data URL: solo admito imágenes de estos tipos en base64
 const avatarRegex = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/;
 const AVATAR_MAX_CARACTERES = 200000;
@@ -160,7 +158,7 @@ async function updateProfile(req, res) {
 async function updateEmail(req, res) {
   const { email, current_password } = req.body;
 
-  if (typeof email !== 'string' || !emailRegex.test(email)) {
+  if (typeof email !== 'string' || !EMAIL_REGEX.test(email)) {
     return res.status(400).json({ error: 'El email no tiene un formato válido' });
   }
 
@@ -186,10 +184,8 @@ async function updateEmail(req, res) {
 async function updatePassword(req, res) {
   const { current_password, new_password } = req.body;
 
-  if (typeof new_password !== 'string' || !passwordRegex.test(new_password)) {
-    return res.status(400).json({
-      error: 'La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número',
-    });
+  if (typeof new_password !== 'string' || !PASSWORD_REGEX.test(new_password)) {
+    return res.status(400).json({ error: MENSAJE_PASSWORD_DEBIL });
   }
 
   try {

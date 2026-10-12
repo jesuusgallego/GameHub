@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import Menu from './Menu'
 import { apiFetch } from './api'
+import { borrarToken } from './sesion'
 
 // Estructura común de las páginas con sesión: barra arriba y contenido centrado.
 // <Outlet /> es donde React Router pinta la página hija (Biblioteca, Buscar o
@@ -28,7 +29,7 @@ function Layout({ setToken }) {
         // Token caducado o cuenta borrada: cierro sesión. Cualquier otro fallo no
         // es grave aquí: la barra se queda sin avatar y ya se verá en la página.
         if (err.status === 401) {
-          localStorage.removeItem("token")
+          borrarToken()
           setToken("")
         }
       })

@@ -8,6 +8,7 @@ import Layout from './Layout'
 import RutaProtegida from './RutaProtegida'
 import Registro from './Registro'
 import Recuperar from './Recuperar'
+import { leerToken } from './sesion'
 
 // La versión web usa direcciones normales (/biblioteca). La de escritorio carga la
 // interfaz desde un archivo, y ahí una dirección como /biblioteca no existe: al recargar
@@ -16,7 +17,7 @@ import Recuperar from './Recuperar'
 const Router = import.meta.env.VITE_DESKTOP ? HashRouter : BrowserRouter
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("token") || "")
+  const [token, setToken] = useState(leerToken())
 
   return (
     <Router>

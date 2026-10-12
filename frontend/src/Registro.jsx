@@ -6,6 +6,7 @@ import MenuAjustes from './MenuAjustes'
 import { useIdioma } from './IdiomaContext'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
+import { emailRegex, passwordRegex } from './validacion'
 
 function Registro() {
   const { t } = useIdioma()
@@ -15,9 +16,6 @@ function Registro() {
   const [error, setError] = useState("")
   const [enviando, setEnviando] = useState(false)
   const navigate = useNavigate()
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 
   function handleRegistro(e) {
     e.preventDefault()

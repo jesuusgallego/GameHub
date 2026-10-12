@@ -180,11 +180,14 @@ cd frontend && npm install
 ```bash
 cd frontend
 npm run lint     # revisa el código con ESLint
-npm test         # pruebas de búsqueda, filtros y orden
+npm test         # búsqueda, filtros y orden, géneros de IGDB y reglas de validación
 npm run build    # comprueba que compila para producción
 
 cd ../backend
-npm test         # pruebas de la lectura de logros de Steam (Steam simulado)
+npm test         # logros de Steam (simulado), recuperación de contraseña, sesiones y registro
+
+cd ../desktop
+npm test         # avisos de actualización y archivos que lleva el instalador
 ```
 
 ## Problemas frecuentes

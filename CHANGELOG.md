@@ -9,13 +9,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   al correo un código de 6 dígitos (caduca a los 15 minutos, 5 intentos, un solo uso) con el
   que se elige una contraseña nueva. El correo sale por Brevo; hay que configurar
   `BREVO_API_KEY` y `CORREO_REMITENTE` en el servidor (ver `docs/DESPLIEGUE.md`).
-
 - **Avisos de actualización en la app de escritorio:** al terminar de descargar una versión
   nueva pregunta si reiniciar ahora o más tarde, y la primera vez que se abre una versión
   nueva dice "GameHub se ha actualizado a la versión X" con las novedades. La 1.0.0 ya
   instalada pasa a la 1.1.0 en silencio; la pregunta se verá a partir de la siguiente.
 
 ### Seguridad
+- **El registro valida en el servidor** el formato del email, la fuerza de la contraseña y la
+  longitud del nombre de usuario. Antes solo lo comprobaba el formulario, y quien llamara a
+  la API directamente podía crear una cuenta con cualquier contraseña.
 - **Cambiar o recuperar la contraseña cierra las demás sesiones.** Antes, un token ya emitido
   seguía valiendo hasta 7 días aunque se cambiara la contraseña. Ahora cada token lleva una
   versión (`users.token_version`) que el servidor comprueba en cada petición. Al cambiarla
@@ -26,6 +28,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ### Cambiado
 - **Géneros y modos de juego en español:** el filtro, la ficha y el buscador los muestran
   traducidos ("Role-playing (RPG)" → "Rol (RPG)"). Las compañías se quedan como las da IGDB.
+- **Tarjeta de email del perfil:** el email se ve como dato y el campo del email nuevo y la
+  contraseña actual solo aparecen al pulsar "Cambiar email" (con Cancelar y Guardar). La
+  contraseña de confirmación ya no se autocompleta, ni en el email ni al borrar la cuenta.
+
+### Interno
+- Las reglas de validación (email y contraseña) y el acceso al token de sesión viven cada una
+  en un solo módulo (`config/validacion.js`, `validacion.js` y `sesion.js`), en vez de
+  repetirse en varios archivos. Pruebas nuevas de validación, y una que comprueba que las
+  reglas del formulario y las del servidor coinciden.
 
 ## [1.0.0] - 2026-10-10
 

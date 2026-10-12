@@ -9,6 +9,7 @@ import { useIdioma } from './IdiomaContext'
 import { apiFetch } from './api'
 import Cargando from './Cargando'
 import JugandoAhora from './JugandoAhora'
+import { borrarToken } from './sesion'
 
 // Muestro los juegos que el usuario ha guardado (GET /games).
 function Biblioteca({ setToken }) {
@@ -44,7 +45,7 @@ function Biblioteca({ setToken }) {
 
         if (err.status === 401) {
           // Token caducado o inválido: cierro sesión y RutaProtegida me redirige al login
-          localStorage.removeItem("token")
+          borrarToken()
           setToken("")
           return
         }
@@ -100,7 +101,7 @@ function Biblioteca({ setToken }) {
   }
 
   function cerrarSesion() {
-    localStorage.removeItem("token")
+    borrarToken()
     setToken("")
   }
 

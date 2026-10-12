@@ -82,4 +82,4 @@ async function enviarCodigoRecuperacion({ para, username, codigo, minutos, idiom
   await enviarCorreo({ para, asunto: x.asunto, texto, html });
 }
 
-module.exports = { enviarCorreo, enviarCodigoRecuperacion, ErrorCorreo };
+module.exports = { enviarCodigoRecuperacion, ErrorCorreo };

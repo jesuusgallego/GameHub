@@ -22,19 +22,22 @@ biblioteca-videojuegos/
 │   │   ├── app.js               # Arranque, seguridad (helmet, CORS, límites) y rutas
 │   │   ├── routes/              # Qué URL llama a qué controlador
 │   │   ├── controllers/         # Lógica de cada ruta: auth, games, profile, accounts
-│   │   ├── middleware/          # Sesión (JWT) y límites de intentos
-│   │   ├── services/            # IGDB, Steam, traducción y sincronización automática
+│   │   ├── middleware/          # Sesión (JWT, con versión por usuario) y límites de intentos
+│   │   ├── services/            # IGDB, Steam, traducción, correo, recuperación de contraseña, sesión y sincronización automática
 │   │   ├── models/sql/schema.sql  # Esquema de la BD (idempotente: se aplica al arrancar)
-│   │   └── config/db.js
+│   │   └── config/              # db.js (conexión) y validacion.js (reglas de email y contraseña)
 │   ├── test/                    # Pruebas (npm test)
 │   ├── .env.example             # Plantilla de variables de entorno
 │   └── Dockerfile
 ├── frontend/                # Interfaz React, para web y escritorio (ver frontend/README.md)
-│   ├── src/                     # Componentes .jsx
+│   ├── src/                     # Componentes .jsx, y sesion.js / validacion.js / terminosIgdb.js
 │   │   ├── estilos/             # CSS por zonas (ver estilos/LEEME.md)
 │   │   └── textos/              # Traducciones es/en
 │   └── test/                    # Pruebas (npm test)
 ├── desktop/                 # App de escritorio con Electron (ver desktop/README.md)
+│   ├── main.js                  # Ventana, interfaz, seguridad y actualizaciones
+│   ├── actualizaciones.js       # Textos y reglas de los avisos de actualización
+│   └── test/                    # Pruebas (npm test)
 ├── docs/
 │   ├── DESARROLLO.md            # Cómo retomar el trabajo cada día
 │   └── DESPLIEGUE.md            # Cómo poner el servidor en internet
@@ -127,7 +130,7 @@ docker compose up -d --build
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/health` | No | Comprueba servidor y conexión a la base de datos |
-| POST | `/auth/register` | No | Crea un usuario |
+| POST | `/auth/register` | No | Crea un usuario (`username` de hasta 50 caracteres, `email` con formato válido y `password` de 8+ con mayúscula, minúscula y número; 400 si no, 409 si ya existe) |
 | POST | `/auth/login` | No | Inicia sesión y devuelve un token JWT |
 | POST | `/auth/forgot-password` | No | Envía al email un código de 6 dígitos para restablecer la contraseña (`email`, y `idioma` opcional: `es` o `en`). Responde siempre `{ ok: true }`, exista o no la cuenta, para no revelar qué emails están registrados. Un código por minuto como máximo y cinco peticiones por hora y IP |
 | POST | `/auth/reset-password` | No | Cambia la contraseña con el código recibido (`email`, `code`, `new_password`). El código caduca a los 15 minutos, se invalida a los 5 intentos fallidos y solo sirve una vez. 400 con "El código no es válido o ha caducado" para cualquier fallo del código |
@@ -156,17 +159,24 @@ docker compose up -d --build
 
 **Backend:** `npm run dev`, `npm start`, `npm test`
 **Frontend:** `npm run dev`, `npm run build`, `npm run preview`, `npm run lint`, `npm test`
-**Escritorio** (`desktop/`): `npm start`, `npm run build:web`, `npm run dist` (ver [`desktop/README.md`](desktop/README.md))
+**Escritorio** (`desktop/`): `npm start`, `npm run build:web`, `npm run dist`, `npm test` (ver [`desktop/README.md`](desktop/README.md))
 
 Las pruebas (`npm test`) usan el ejecutor de pruebas que trae Node (`node --test`), sin
-dependencias extra. Cubren la lógica pura: búsqueda, filtros y orden de la biblioteca, y la
-lectura de logros de Steam con Steam simulado.
+dependencias extra. Cubren la lógica que no necesita navegador ni servidor:
+
+- **Backend:** lectura de logros de Steam (con Steam simulado), recuperación de contraseña
+  (código y correo), validación de sesiones y validación del registro.
+- **Frontend:** búsqueda, filtros y orden de la biblioteca, traducción de géneros y modos
+  de IGDB, y reglas de validación (comprueba que coinciden con las del backend).
+- **Escritorio:** avisos de actualización y que el instalador incluya los archivos que carga
+  `main.js`.
 
 ## Notas
 
 - Todas las llamadas al backend pasan por `frontend/src/api.js` (`apiFetch`). La URL base es `http://localhost:4000` por defecto; para otro host define `VITE_API_URL` en `frontend/.env`.
 - La columna `user_games.igdb_id` guarda el ID del juego en **IGDB**.
-- El token JWT se guarda en `localStorage`.
+- El token JWT se guarda en `localStorage`, siempre a través de `frontend/src/sesion.js`. Lleva la versión de sesión del usuario (`users.token_version`): cambiar o recuperar la contraseña la sube y cierra el resto de sesiones.
+- Las reglas de email y contraseña están en `backend/src/config/validacion.js` y `frontend/src/validacion.js`; deben coincidir (una prueba lo comprueba).
 - **Tarjetas de la biblioteca:** no llevan botones de Editar y Quitar. Salen con el **clic derecho** sobre la tarjeta (`MenuContextual.jsx`; con el teclado, la tecla de menú contextual o Mayús + F10 sobre el título; Mayús + clic derecho deja el menú del navegador) y dentro de la **ficha** que abre un clic normal (recuadro "En tu biblioteca"). Lo comparten la tarjeta, "Jugando ahora" y la ficha con `useAccionesJuego` y `VentanasJuego`. Cambiar el estado sigue estando en el chip de la tarjeta.
 - La foto de perfil se guarda como texto (data URL en base64) en `users.avatar`; el navegador la recorta en cuadrado y la reduce a 256 px antes de enviarla. Puede ser una foto subida o una ilustración de IGDB de un juego de tu biblioteca: en el segundo caso el navegador descarga la ilustración (IGDB permite leer sus imágenes desde otras webs), te deja ajustar el encuadre y guarda el recorte, igual que una foto subida; el backend no guarda ninguna URL de IGDB como avatar.
 - **Filtrar, buscar y ordenar la biblioteca:** el estado, el género, la compañía (desarrolladoras y publishers juntas) y la plataforma se combinan entre sí. El buscador mira a la vez el nombre, las compañías, los géneros y la plataforma, sin distinguir mayúsculas ni acentos, y con varias palabras exige que cada una aparezca en algún sitio del juego ("nintendo zelda"). Se ordena por fecha de adición, nombre, tiempo jugado, logros completados, tu nota, la nota de IGDB o lanzamiento, en los dos sentidos (`frontend/src/ordenFiltros.js`); género y compañía no son criterios de orden (un juego puede tener varios), para eso están el filtro y la búsqueda. Todo se hace en el navegador sobre la lista que ya llega. El género, las empresas, la fecha y la nota de IGDB se guardan en `user_games` (`genres`, `developers`, `publishers`, `release_date`, `igdb_rating`, `metadata_at`): `GET /games` rellena en una sola consulta a IGDB los juegos que aún no los tienen y los refresca pasado un mes; si IGDB falla, la lista sale igual y se reintenta en la siguiente visita. Los géneros y los modos de juego se guardan tal como los da IGDB (en inglés, son la clave del filtro) y se traducen solo al mostrarlos, con las tablas de `frontend/src/terminosIgdb.js` (el buscador entiende los dos idiomas: "rol" y "rpg" encuentran lo mismo). Las empresas y las plataformas son nombres propios y no se traducen; un género nuevo que IGDB añada se ve en inglés hasta que se añada a la tabla.

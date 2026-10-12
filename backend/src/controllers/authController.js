@@ -6,17 +6,30 @@ const {
 } = require('../services/recuperacion');
 const { enviarCodigoRecuperacion } = require('../services/correoService');
 const { emitirToken } = require('../services/sesion');
+const {
+  EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, MENSAJE_PASSWORD_REGISTRO, USERNAME_MAX, SALT_ROUNDS,
+} = require('../config/validacion');
 
-const SALT_ROUNDS = 10;
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
 // POST /auth/register
 async function register(req, res) {
   const { username, email, password } = req.body;
 
-  if (!username || !email || !password) {
+  // Tienen que ser texto: un objeto o un número haría fallar la consulta con un 500
+  if ([username, email, password].some((v) => typeof v !== 'string' || v.trim() === '')) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
+  }
+
+  // Lo mismo que valida el formulario, pero el formulario no es una garantía: la API
+  // también la puede llamar quien no pase por él
+  if (username.length > USERNAME_MAX) {
+    return res.status(400).json({ error: `El nombre de usuario no puede pasar de ${USERNAME_MAX} caracteres` });
+  }
+  if (!EMAIL_REGEX.test(email)) {
+    return res.status(400).json({ error: 'El email no tiene un formato válido' });
+  }
+  if (!PASSWORD_REGEX.test(password)) {
+    return res.status(400).json({ error: MENSAJE_PASSWORD_REGISTRO });
   }
 
   try {
@@ -94,7 +107,7 @@ async function login(req, res) {
 async function forgotPassword(req, res) {
   const { email, idioma } = req.body;
 
-  if (typeof email !== 'string' || !emailRegex.test(email)) {
+  if (typeof email !== 'string' || !EMAIL_REGEX.test(email)) {
     return res.status(400).json({ error: 'El email no tiene un formato válido' });
   }
 
@@ -146,10 +159,8 @@ async function resetPassword(req, res) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
 
-  if (!passwordRegex.test(new_password)) {
-    return res.status(400).json({
-      error: 'La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número',
-    });
+  if (!PASSWORD_REGEX.test(new_password)) {
+    return res.status(400).json({ error: MENSAJE_PASSWORD_DEBIL });
   }
 
   // Un solo mensaje para todo lo que puede ir mal (no hay código, caducó, se agotaron

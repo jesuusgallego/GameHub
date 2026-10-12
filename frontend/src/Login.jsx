@@ -6,6 +6,8 @@ import MenuAjustes from './MenuAjustes'
 import { useIdioma } from './IdiomaContext'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
+import { escribirToken } from './sesion'
+import { emailRegex } from './validacion'
 
 function Login({ setToken }) {
   const { t } = useIdioma()
@@ -16,8 +18,6 @@ function Login({ setToken }) {
   const navigate = useNavigate()
   // Recuperar llega aquí con state.passwordRestablecida al cambiar la contraseña
   const { state } = useLocation()
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   function handleLogin(e) {
     e.preventDefault()
@@ -37,7 +37,7 @@ function Login({ setToken }) {
     apiFetch('/auth/login', { method: 'POST', body: { email, password } })
       .then(data => {
         setToken(data.token)
-        localStorage.setItem("token", data.token)
+        escribirToken(data.token)
         navigate('/biblioteca')
       })
       .catch(err => setError(err.message))

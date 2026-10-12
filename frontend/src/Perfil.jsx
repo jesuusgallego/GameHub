@@ -11,6 +11,7 @@ import CuentasVinculadas from './CuentasVinculadas'
 import Mensaje from './Mensaje'
 import { useCambioVista } from './useCambioVista'
 import { useIdioma } from './IdiomaContext'
+import { borrarToken, escribirToken } from './sesion'
 
 const PESTANAS = ['resumen', 'editar', 'cuentas', 'seguridad']
 
@@ -54,7 +55,7 @@ function Perfil({ setToken }) {
   // useCallback para que sea la misma función en cada render: CuentasVinculadas
   // la usa en un useEffect y, si cambiara, volvería a pedir sus datos cada vez
   const cerrarSesion = useCallback(() => {
-    localStorage.removeItem("token")
+    borrarToken()
     setToken("")
   }, [setToken])
 
@@ -62,7 +63,7 @@ function Perfil({ setToken }) {
   // token nuevo para esta: lo guardo y sigo dentro. apiFetch lee el token de
   // localStorage en cada petición, así que basta con cambiarlo ahí (y en el estado de App).
   const guardarToken = useCallback((token) => {
-    localStorage.setItem("token", token)
+    escribirToken(token)
     setToken(token)
   }, [setToken])
 
@@ -77,7 +78,7 @@ function Perfil({ setToken }) {
         if (cancelado) return
 
         if (err.status === 401) {
-          localStorage.removeItem("token")
+          borrarToken()
           setToken("")
           return
         }

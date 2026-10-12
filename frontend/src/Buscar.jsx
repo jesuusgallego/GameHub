@@ -5,6 +5,7 @@ import { apiFetch } from './api'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
 import { useIdioma } from './IdiomaContext'
+import { borrarToken } from './sesion'
 
 const RETARDO_BUSQUEDA_MS = 400
 
@@ -39,7 +40,7 @@ function Buscar({ setToken }) {
       })
       .catch((err) => {
         if (err.status === 401) {
-          localStorage.removeItem("token")
+          borrarToken()
           setToken("")
         }
       })
@@ -69,7 +70,7 @@ function Buscar({ setToken }) {
 
         if (err.status === 401) {
           // Token caducado o inválido: cierro sesión y RutaProtegida me redirige al login
-          localStorage.removeItem("token")
+          borrarToken()
           setToken("")
           return
         }
@@ -98,7 +99,7 @@ function Buscar({ setToken }) {
       setGuardados((prev) => new Map(prev).set(juego.igdb_id, data.game))
     } catch (err) {
       if (err.status === 401) {
-        localStorage.removeItem("token")
+        borrarToken()
         setToken("")
       }
       throw err
