@@ -87,11 +87,15 @@ function FormularioEmail({ perfil, onGuardado, cerrarSesion }) {
         <span>{t('cuenta.email')}</span>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
       </label>
+      {/* "new-password" y no "current-password": aquí la contraseña solo confirma que
+          eres tú, y con "current-password" el navegador la rellenaba solo (puntos ya
+          escritos, sin que el usuario hiciera nada) y el cambio se hacía sin ver que
+          se pedía. Así hay que escribirla a propósito. */}
       <CampoContrasena
         etiqueta={t('cuenta.passwordActual')}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        autoComplete="current-password"
+        autoComplete="new-password"
       />
 
       <Mensaje texto={error} />
@@ -233,11 +237,15 @@ function ZonaPeligro({ cerrarSesion }) {
         ayuda={t('cuenta.borrarAviso')}
       />
 
+      {/* "new-password" y no "current-password": aquí la contraseña solo confirma que
+          eres tú, y con "current-password" el navegador la rellenaba solo (puntos ya
+          escritos, sin que el usuario hiciera nada) y el cambio se hacía sin ver que
+          se pedía. Así hay que escribirla a propósito. */}
       <CampoContrasena
         etiqueta={t('cuenta.passwordActual')}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        autoComplete="current-password"
+        autoComplete="new-password"
       />
 
       <Mensaje texto={error} />
