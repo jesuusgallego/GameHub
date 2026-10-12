@@ -29,8 +29,16 @@ const limitadorLogin = limitador({ ventanaMinutos: 15, maximo: 10, skipSuccessfu
 // Registro: 10 cuentas nuevas por hora y por IP
 const limitadorRegistro = limitador({ ventanaMinutos: 60, maximo: 10 });
 
+// Recuperación de contraseña. Pedir códigos: 5 por hora y por IP (cada uno envía un
+// correo, y Brevo gratis da 300 al día para todos). Probar códigos: 10 cada 15 minutos;
+// además, cada código se invalida solo a los 5 intentos fallidos (ver authController).
+const limitadorPedirCodigo = limitador({ ventanaMinutos: 60, maximo: 5 });
+const limitadorUsarCodigo = limitador({ ventanaMinutos: 15, maximo: 10 });
+
 // Tope general para todo lo demás. Es alto a propósito (un uso normal ni se acerca);
 // solo corta a quien automatiza peticiones sin parar.
 const limitadorGeneral = limitador({ ventanaMinutos: 15, maximo: 1000 });
 
-module.exports = { limitadorLogin, limitadorRegistro, limitadorGeneral };
+module.exports = {
+  limitadorLogin, limitadorRegistro, limitadorPedirCodigo, limitadorUsarCodigo, limitadorGeneral,
+};

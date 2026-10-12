@@ -78,6 +78,36 @@ Mira **Logs** en Render:
 |----------|----------|
 | `AZURE_TRANSLATOR_KEY` y `AZURE_TRANSLATOR_REGION` | Traducir las descripciones al español (plan gratuito F0: 2 millones de caracteres al mes). Sin ellas, salen en inglés. **No las pongas vacías ni inventadas.** |
 | `STEAM_SYNC_MINUTOS` | Cada cuántos minutos se sincroniza Steam solo (60 por defecto) |
+| `BREVO_API_KEY`, `CORREO_REMITENTE` y `CORREO_NOMBRE` | Enviar el código de recuperación de contraseña por correo (ver abajo). Sin ellas, **"¿Has olvidado tu contraseña?" no envía nada** y el motivo queda en los Logs |
+
+### Correo para recuperar la contraseña (Brevo)
+
+La recuperación envía un código de 6 dígitos por correo. Se usa **Brevo** (plan gratuito:
+300 correos al día, sin tarjeta) por su API HTTP, porque Render bloquea los puertos SMTP en
+el plan gratuito (Gmail por SMTP no funcionaría) y Resend, sin dominio propio, solo envía a
+tu propio correo.
+
+1. Crea una cuenta en <https://www.brevo.com> (plan *Free*). Puede que tarden un rato en
+   validarla antes de dejarte enviar.
+2. Añade y verifica un **remitente**: en el panel, *Senders, domains & dedicated IPs →
+   Senders → Add a sender* (el nombre del menú puede cambiar). Pon tu correo; te enviarán un
+   enlace para confirmarlo.
+3. Crea una **clave de API**: *SMTP & API → API keys → Generate a new API key*.
+4. En Render → *Environment*, añade:
+
+   | Variable | Valor |
+   |----------|-------|
+   | `BREVO_API_KEY` | La clave del paso 3 |
+   | `CORREO_REMITENTE` | El correo verificado en el paso 2 |
+   | `CORREO_NOMBRE` | Opcional: el nombre que verá quien lo reciba (por defecto, GameHub) |
+
+5. Guarda (Render reinicia el servicio) y prueba con una cuenta tuya. Mira también la
+   carpeta de spam: un remitente de Gmail/Outlook sin dominio propio autenticado puede caer
+   ahí. Si Brevo rechaza el envío, el motivo sale en los Logs
+   (`No se pudo enviar el correo de recuperación: Brevo rechazó el correo (...)`).
+
+En local, sin `BREVO_API_KEY`, el correo no se envía: se escribe entero (con el código) en la
+consola del backend.
 
 ## 3. Apuntar la app al servidor
 
@@ -94,7 +124,8 @@ instalador.
 ## Qué protege ya el backend
 
 - **Límite de intentos:** 10 inicios de sesión fallidos cada 15 minutos por IP, 10 registros
-  por hora y 1000 peticiones cada 15 minutos en total. Responde `429`.
+  por hora, 5 códigos de recuperación pedidos por hora, 10 códigos probados cada 15 minutos y
+  1000 peticiones cada 15 minutos en total. Responde `429`.
 - **Cabeceras de seguridad** (`helmet`) y **CORS** restringido a `CORS_ORIGINS`.
 - **Contraseñas** con bcrypt y sesiones con JWT de 7 días.
 - **Arranque seguro:** sin `JWT_SECRET` (o demasiado corto en producción) no arranca.
@@ -112,8 +143,9 @@ instalador.
   bibliotecas grandes hay que subir `STEAM_SYNC_MINUTOS`.
 - **IGDB:** 4 peticiones por segundo en total. La app cachea las fichas una hora y guarda
   género y compañías en la BD, así que el uso normal queda muy por debajo.
-- **No hay recuperación de contraseña:** quien la olvide, pierde la cuenta (no hay envío
-  de correos). Está anotado como limitación de la 1.0.
+- **Correo:** Brevo gratis da 300 correos al día para toda la app; cada código enviado
+  gasta uno. Cambiar la contraseña con un código no cierra las sesiones ya abiertas (los
+  tokens duran 7 días): si alguien tenía acceso, seguirá dentro hasta que caduquen.
 - **Copias de seguridad:** Neon guarda un historial corto para restaurar. Para una copia
   tuya: `pg_dump "$DATABASE_URL" > copia.sql`.
 - **Una sola instancia:** la sincronización de Steam y la caché de IGDB viven en la memoria

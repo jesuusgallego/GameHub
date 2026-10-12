@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { apiFetch } from './api'
 import Marca from './Marca'
 import MenuAjustes from './MenuAjustes'
@@ -14,6 +14,8 @@ function Login({ setToken }) {
   const [error, setError] = useState("")
   const [enviando, setEnviando] = useState(false)
   const navigate = useNavigate()
+  // Recuperar llega aquí con state.passwordRestablecida al cambiar la contraseña
+  const { state } = useLocation()
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -74,7 +76,10 @@ function Login({ setToken }) {
             />
           </label>
 
+          <Link to="/recuperar" className="auth__olvido">{t('auth.login.olvidaste')}</Link>
+
           <Mensaje texto={error} />
+          <Mensaje tipo="ok" texto={state?.passwordRestablecida && !error ? t('auth.login.passwordRestablecida') : ""} />
 
           <button type="submit" className="btn btn--primario btn--block" disabled={enviando}>
             {enviando ? <><Cargando tamano="pequeno" /> {t('auth.login.entrando')}</> : t('auth.login.titulo')}

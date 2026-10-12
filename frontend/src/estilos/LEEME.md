@@ -16,7 +16,7 @@ a su vez importa el resto de archivos con `@import`.
 | `tarjetas.css` | Rejilla de juegos, tarjetas, su animación de entrada, chips de estado, insignia de Steam, icono de plataforma | `GameCard`, `JuegoGuardado`, `InsigniaSteam`, `IconoPlataforma` |
 | `formularios.css` | `.formulario` y `.campo` | formularios |
 | `desplegable.css` | Desplegable propio (el del estado y filtros) | `Desplegable` |
-| `login.css` | Inicio de sesión y registro | `Login`, `Registro` |
+| `login.css` | Inicio de sesión, registro y recuperar contraseña | `Login`, `Registro`, `Recuperar` |
 | `biblioteca.css` | Mi biblioteca: fila "Jugando ahora", filtros laterales y barra de orden, portadas pulsables | `Biblioteca`, `JugandoAhora`, `FiltrosBiblioteca`, `OrdenBiblioteca` |
 | `ventanas.css` | Ventanas modales: ficha del juego, visor de capturas, edición, confirmación | `DetalleJuego`, `VisorCapturas`, `EditarJuego`, `DialogoConfirmar` |
 | `menus.css` | Avatar, menú de usuario, menú de ajustes (idioma y tema) y menú contextual de las tarjetas | `Avatar`, `MenuUsuario`, `MenuAjustes`, `MenuContextual` |

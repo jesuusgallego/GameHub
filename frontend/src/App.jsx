@@ -7,6 +7,7 @@ import Perfil from './Perfil'
 import Layout from './Layout'
 import RutaProtegida from './RutaProtegida'
 import Registro from './Registro'
+import Recuperar from './Recuperar'
 
 // La versión web usa direcciones normales (/biblioteca). La de escritorio carga la
 // interfaz desde un archivo, y ahí una dirección como /biblioteca no existe: al recargar
@@ -23,6 +24,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/recuperar" element={<Recuperar />} />
         {/* Esta ruta no tiene path: la uso para proteger a sus hijas y envolverlas con la barra */}
         <Route
           element={

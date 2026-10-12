@@ -39,4 +39,5 @@ services:
         sync: false
       # Opcionales y NO están aquí a propósito: una clave vacía o inventada haría que la app
       # intentase usar Azure y fallase. Si tienes una, añade AZURE_TRANSLATOR_KEY y
-      # AZURE_TRANSLATOR_REGION a mano en Render > Environment.
+      # AZURE_TRANSLATOR_REGION a mano en Render > Environment. Lo mismo con el correo de
+      # recuperación de contraseña: BREVO_API_KEY y CORREO_REMITENTE (docs/DESPLIEGUE.md).

@@ -47,3 +47,34 @@
   text-align: center;
   color: var(--texto-suave);
 }
+
+/* ---- Recuperar contraseña ------------------------------------------------- */
+.auth__olvido {
+  align-self: flex-end;
+  font-size: 0.85rem;
+  margin-top: -0.25rem;
+}
+
+.auth__ayuda {
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+  overflow-wrap: anywhere; /* un email largo no debe desbordar la tarjeta */
+}
+
+/* El código: cifras grandes y separadas, para leerlas y compararlas con el correo */
+.campo-codigo {
+  font-size: 1.5rem;
+  letter-spacing: 0.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.auth__secundarias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.auth__secundarias .btn {
+  flex: 1 1 10rem;
+}

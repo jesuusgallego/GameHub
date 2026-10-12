@@ -120,3 +120,18 @@ ALTER TABLE user_games ADD COLUMN IF NOT EXISTS publishers TEXT[] NOT NULL DEFAU
 ALTER TABLE user_games ADD COLUMN IF NOT EXISTS release_date DATE;
 ALTER TABLE user_games ADD COLUMN IF NOT EXISTS igdb_rating INTEGER;
 ALTER TABLE user_games ADD COLUMN IF NOT EXISTS metadata_at TIMESTAMPTZ;
+
+-- Códigos para recuperar la contraseña. Un usuario tiene como mucho uno vigente (la
+-- clave primaria es user_id): pedir otro código sustituye al anterior.
+--  - code_hash: huella del código de 6 dígitos, nunca el código (si alguien leyera la
+--    tabla, no podría usarlo)
+--  - expires_at: cuándo caduca (15 minutos después de pedirlo)
+--  - attempts: cuántas veces se ha probado un código; al llegar al máximo el código
+--    deja de valer, así no se pueden adivinar los 1.000.000 de combinaciones
+CREATE TABLE IF NOT EXISTS password_resets (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    code_hash CHAR(64) NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

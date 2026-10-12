@@ -129,6 +129,8 @@ docker compose up -d --build
 | GET | `/health` | No | Comprueba servidor y conexión a la base de datos |
 | POST | `/auth/register` | No | Crea un usuario |
 | POST | `/auth/login` | No | Inicia sesión y devuelve un token JWT |
+| POST | `/auth/forgot-password` | No | Envía al email un código de 6 dígitos para restablecer la contraseña (`email`, y `idioma` opcional: `es` o `en`). Responde siempre `{ ok: true }`, exista o no la cuenta, para no revelar qué emails están registrados. Un código por minuto como máximo y cinco peticiones por hora y IP |
+| POST | `/auth/reset-password` | No | Cambia la contraseña con el código recibido (`email`, `code`, `new_password`). El código caduca a los 15 minutos, se invalida a los 5 intentos fallidos y solo sirve una vez. 400 con "El código no es válido o ha caducado" para cualquier fallo del código |
 | GET | `/games/search?q=<nombre>` | Bearer token | Busca juegos por nombre en IGDB |
 | GET | `/games/details/:igdbId?lang=es` | Bearer token | Ficha completa de un juego desde IGDB: descripción (con `lang=es` se traduce al español con Azure Translator o, si no está disponible, con LibreTranslate, y se guarda en la tabla `translations`; si no responde ninguno, sale en inglés y `summary_lang` vale `en`), fecha de lanzamiento, desarrolladora, publishers, géneros, plataformas, nota, capturas (caché de 1 hora en memoria) |
 | GET | `/games/artworks` | Bearer token | Ilustraciones oficiales (artworks) de IGDB de los juegos de tu biblioteca, agrupadas por juego (máx. 12 por juego, caché de 1 hora en memoria). Sirven para elegir la foto de perfil |

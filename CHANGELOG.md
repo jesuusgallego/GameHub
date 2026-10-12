@@ -2,6 +2,14 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Añadido
+- **Recuperación de contraseña:** "¿Has olvidado tu contraseña?" en el inicio de sesión envía
+  al correo un código de 6 dígitos (caduca a los 15 minutos, 5 intentos, un solo uso) con el
+  que se elige una contraseña nueva. El correo sale por Brevo; hay que configurar
+  `BREVO_API_KEY` y `CORREO_REMITENTE` en el servidor (ver `docs/DESPLIEGUE.md`).
+
 ## [1.0.0] - 2026-10-10
 
 Primera versión pública, con la app de escritorio.
