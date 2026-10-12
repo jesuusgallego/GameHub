@@ -149,18 +149,20 @@ function FormularioEmail({ perfil, onGuardado, cerrarSesion }) {
           </form>
         ) : (
           <div className="formulario">
-            <div className="dato-fijo">
-              <span className="dato-fijo__etiqueta">{t('cuenta.email')}</span>
-              <p className="dato-fijo__valor">{perfil.email}</p>
-            </div>
+            {/* El botón va a la derecha del email, en la misma fila (en pantallas
+                estrechas baja debajo) */}
+            <div className="dato-fila">
+              <div className="dato-fijo">
+                <span className="dato-fijo__etiqueta">{t('cuenta.email')}</span>
+                <p className="dato-fijo__valor">{perfil.email}</p>
+              </div>
 
-            <Mensaje tipo="ok" texto={guardado ? t('cuenta.emailActualizado') : ""} />
-
-            <div className="formulario__acciones">
               <button type="button" className="btn btn--secundario" onClick={abrir}>
                 {t('cuenta.cambiarEmail')}
               </button>
             </div>
+
+            <Mensaje tipo="ok" texto={guardado ? t('cuenta.emailActualizado') : ""} />
           </div>
         )}
       </div>

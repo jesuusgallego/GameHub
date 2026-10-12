@@ -48,10 +48,25 @@
 /* Un dato que solo se lee (el email actual): la etiqueta con el mismo aspecto que la
    de .campo, pero el valor va como texto plano, SIN la caja de un campo, para que no
    parezca editable */
+/* Fila con un dato a la izquierda y su botón a la derecha. Si no caben, el botón baja. */
+.dato-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.dato-fila > .btn {
+  flex: none;
+}
+
 .dato-fijo {
   display: flex;
+  flex: 1 1 12rem; /* ocupa lo que sobra y deja que el botón quede a la derecha */
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 0;
 }
 
 .dato-fijo__etiqueta {
