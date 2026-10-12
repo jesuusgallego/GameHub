@@ -9,7 +9,7 @@ import { TODOS } from './ordenFiltros'
 // filtros elegidos y avisa de los cambios.
 //  - juegos: TODA la biblioteca (los contadores son del total, no de lo visible)
 //  - filtros: { estado, genero, compania, plataforma }; cada uno vale TODOS o un valor
-//  - opciones: { genero, compania, plataforma } con [{ valor, cuenta }] (ordenFiltros.js)
+//  - opciones: { genero, compania, plataforma } con [{ valor, etiqueta, cuenta }] (ordenFiltros.js)
 //  - onCambiar(clave, valor) y onLimpiar()
 //  - hayFiltros: si hay alguno activo (habilita "Limpiar filtros")
 function FiltrosBiblioteca({ juegos, filtros, opciones, onCambiar, onLimpiar, hayFiltros }) {
@@ -60,7 +60,7 @@ function FiltrosBiblioteca({ juegos, filtros, opciones, onCambiar, onLimpiar, ha
           { valor: TODOS, etiqueta: todos },
           ...opciones[clave].map((o) => ({
             valor: o.valor,
-            etiqueta: `${o.valor} (${o.cuenta})`,
+            etiqueta: `${o.etiqueta} (${o.cuenta})`,
             icono: conIcono ? <IconoPlataforma nombre={o.valor} tamano={16} decorativo /> : undefined,
           })),
         ]

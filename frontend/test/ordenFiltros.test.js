@@ -5,6 +5,9 @@ import assert from 'node:assert'
 import {
   CRITERIOS, TODOS, companiasDe, filtrar, filtrosVigentes, opcionesDeFiltros, ordenar,
 } from '../src/ordenFiltros.js'
+import { GENEROS, MODOS, nombreGenero, nombreModo, nombresDeGenero } from '../src/terminosIgdb.js'
+import es from '../src/textos/es.js'
+import en from '../src/textos/en.js'
 
 const juego = (name, extra = {}) => ({
   name, status: 'pendiente', platform: 'PC (Microsoft Windows)', created_at: '2026-01-01T00:00:00Z',
@@ -55,6 +58,60 @@ test('opcionesDeFiltros cuenta cada valor una vez por juego y ordena', () => {
     ['Adventure', 2], ['Role-playing (RPG)', 2], ['Shooter', 1],
   ])
   assert.ok(o.compania.some((x) => x.valor === 'Nintendo' && x.cuenta === 2))
+})
+
+test('los géneros se enseñan traducidos pero el valor sigue siendo el de IGDB', () => {
+  const es = opcionesDeFiltros(JUEGOS, 'es-ES').genero
+  assert.deepStrictEqual(es.map((x) => [x.etiqueta, x.valor]), [
+    ['Aventura', 'Adventure'], ['Rol (RPG)', 'Role-playing (RPG)'], ['Shooter', 'Shooter'],
+  ])
+  const en = opcionesDeFiltros(JUEGOS, 'en-GB').genero
+  assert.deepStrictEqual(en.map((x) => x.etiqueta), ['Adventure', 'Role-playing (RPG)', 'Shooter'])
+})
+
+test('se ordena por lo que se ve: en español, "Estrategia" va antes que "Rol"', () => {
+  const juegos = [
+    juego('A', { genres: ['Role-playing (RPG)'] }),
+    juego('B', { genres: ['Strategy'] }),
+    juego('C', { genres: ['Adventure'] }),
+  ]
+  assert.deepStrictEqual(
+    opcionesDeFiltros(juegos, 'es-ES').genero.map((x) => x.etiqueta),
+    ['Aventura', 'Estrategia', 'Rol (RPG)'],
+  )
+  // y las compañías y plataformas no se tocan
+  assert.deepStrictEqual(opcionesDeFiltros(JUEGOS, 'es-ES').plataforma.map((x) => x.etiqueta),
+    opcionesDeFiltros(JUEGOS, 'es-ES').plataforma.map((x) => x.valor))
+})
+
+test('filtrar por género usa el valor de IGDB', () => {
+  const r = buscar('', { ...SIN_FILTROS, genero: 'Role-playing (RPG)' })
+  assert.deepStrictEqual(r, ['Pokémon Rojo', 'Elden Ring'])
+})
+
+test('el buscador encuentra el género en español y en inglés', () => {
+  assert.deepStrictEqual(buscar('rol'), ['Pokémon Rojo', 'Elden Ring'])
+  assert.deepStrictEqual(buscar('aventura'), ['The Legend of Zelda', 'Red Dead Redemption 2'])
+  assert.deepStrictEqual(buscar('adventure'), ['The Legend of Zelda', 'Red Dead Redemption 2'])
+  assert.deepStrictEqual(buscar('rol nintendo'), ['Pokémon Rojo'])
+})
+
+test('un género o modo que IGDB añada y no conocemos se enseña tal cual', () => {
+  assert.strictEqual(nombreGenero('Brand New Genre', 'es'), 'Brand New Genre')
+  assert.strictEqual(nombreModo('Brand New Mode', 'es'), 'Brand New Mode')
+  assert.strictEqual(nombreGenero('Fighting', 'xx'), 'Fighting', 'idioma desconocido: el original')
+  assert.deepStrictEqual(nombresDeGenero('Brand New Genre'), ['Brand New Genre'])
+  assert.deepStrictEqual(nombresDeGenero('Fighting'), ['Lucha', 'Fighting'])
+})
+
+test('todo género y modo tiene su texto en español y en inglés', () => {
+  // Si falta una clave en un idioma, la ficha enseñaría el nombre en inglés sin avisar
+  for (const [tabla, prefijo] of [[GENEROS, 'genero'], [MODOS, 'modo']]) {
+    for (const [nombreIgdb, id] of Object.entries(tabla)) {
+      assert.ok(es[`${prefijo}.${id}`], `falta ${prefijo}.${id} en es.js`)
+      assert.strictEqual(en[`${prefijo}.${id}`], nombreIgdb, `${prefijo}.${id} en en.js debe ser el nombre de IGDB`)
+    }
+  }
 })
 
 test('filtrosVigentes vuelve a "todos" si el valor elegido ya no existe', () => {

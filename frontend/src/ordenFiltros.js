@@ -1,6 +1,7 @@
 // Orden y filtros de Mi biblioteca. Son funciones puras: reciben la lista de juegos
 // y devuelven otra, sin tocar el estado de React, así Biblioteca.jsx solo decide
 // QUÉ aplicar y aquí está CÓMO.
+import { nombreGenero, nombresDeGenero } from './terminosIgdb.js'
 
 // Criterios de ordenación. "tipo" decide cómo se redactan los dos sentidos
 // ("A → Z", "Menor a mayor"...) y "porDefecto" el sentido con el que empieza cada
@@ -74,10 +75,16 @@ const EXTRACTORES = {
 export const TODOS = 'todos'
 
 // Los valores que existen en la biblioteca para cada filtro, con cuántos juegos tiene
-// cada uno: { genero: [{ valor, cuenta }, ...], compania: [...], plataforma: [...] }.
-// Ordenados alfabéticamente. Un juego con varios géneros cuenta en cada uno.
+// cada uno: { genero: [{ valor, etiqueta, cuenta }, ...], compania: [...], plataforma: [...] }.
+//  - valor: el dato tal como está guardado (con él se filtra)
+//  - etiqueta: lo que se enseña. Solo el género se traduce ("Role-playing (RPG)" →
+//    "Rol (RPG)"); el resto es igual que `valor`.
+// Ordenados alfabéticamente por la etiqueta, que es lo que ve quien los lee. Un juego
+// con varios géneros cuenta en cada uno.
 export function opcionesDeFiltros(juegos, locale) {
   const resultado = {}
+  // El idioma son las dos primeras letras del locale ('es-ES' → 'es')
+  const idioma = locale.slice(0, 2)
 
   for (const [clave, extraer] of Object.entries(EXTRACTORES)) {
     const cuentas = new Map()
@@ -88,8 +95,12 @@ export function opcionesDeFiltros(juegos, locale) {
       }
     }
     resultado[clave] = [...cuentas]
-      .map(([valor, cuenta]) => ({ valor, cuenta }))
-      .sort((a, b) => a.valor.localeCompare(b.valor, locale, { sensitivity: 'base' }))
+      .map(([valor, cuenta]) => ({
+        valor,
+        etiqueta: clave === 'genero' ? nombreGenero(valor, idioma) : valor,
+        cuenta,
+      }))
+      .sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, locale, { sensitivity: 'base' }))
   }
 
   return resultado
@@ -112,10 +123,12 @@ function normalizar(texto) {
 }
 
 // Todo lo que el buscador mira de un juego, en un solo texto: nombre, compañías,
-// géneros y plataforma.
+// géneros y plataforma. Los géneros van en todos los idiomas: buscar "rol" encuentra lo
+// mismo que "rpg", y da igual en qué idioma esté la interfaz.
 function textoBuscable(juego) {
+  const generos = (juego.genres ?? []).flatMap(nombresDeGenero)
   return normalizar(
-    [juego.name, ...companiasDe(juego), ...(juego.genres ?? []), juego.platform ?? ''].join(' | ')
+    [juego.name, ...companiasDe(juego), ...generos, juego.platform ?? ''].join(' | ')
   )
 }
 

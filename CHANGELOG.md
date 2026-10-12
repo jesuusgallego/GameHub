@@ -10,6 +10,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   que se elige una contraseña nueva. El correo sale por Brevo; hay que configurar
   `BREVO_API_KEY` y `CORREO_REMITENTE` en el servidor (ver `docs/DESPLIEGUE.md`).
 
+### Cambiado
+- **Géneros y modos de juego en español:** el filtro, la ficha y el buscador los muestran
+  traducidos ("Role-playing (RPG)" → "Rol (RPG)"). Las compañías se quedan como las da IGDB.
+
 ## [1.0.0] - 2026-10-10
 
 Primera versión pública, con la app de escritorio.

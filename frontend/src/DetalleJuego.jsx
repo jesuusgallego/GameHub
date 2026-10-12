@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { apiFetch } from './api'
 import { useIdioma } from './IdiomaContext'
+import { nombreGenero, nombreModo } from './terminosIgdb'
 import BotonAnadir from './BotonAnadir'
 import VisorCapturas from './VisorCapturas'
 import Cargando from './Cargando'
@@ -139,7 +140,7 @@ function DetalleJuego({ juego, guardado, onAnadir, onActualizar, onBorrar, onCer
           {datos?.genres.length > 0 && (
             <ul className="detalle__etiquetas" aria-label={t('detalle.generos')}>
               {datos.genres.map((genero) => (
-                <li key={genero} className="detalle__etiqueta">{genero}</li>
+                <li key={genero} className="detalle__etiqueta">{nombreGenero(genero, idioma)}</li>
               ))}
             </ul>
           )}
@@ -178,7 +179,7 @@ function DetalleJuego({ juego, guardado, onAnadir, onActualizar, onBorrar, onCer
             />
             <Dato etiqueta={t('detalle.desarrolladora')} valores={datos.developers} />
             <Dato etiqueta={t('detalle.publisher')} valores={datos.publishers} />
-            <Dato etiqueta={t('detalle.modos')} valores={datos.game_modes} />
+            <Dato etiqueta={t('detalle.modos')} valores={datos.game_modes.map((modo) => nombreModo(modo, idioma))} />
             <Dato etiqueta={t('detalle.plataformas')} valores={datos.platforms} ancho />
           </dl>
         )}
