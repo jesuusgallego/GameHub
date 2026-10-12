@@ -6,6 +6,7 @@ import DialogoConfirmar from './DialogoConfirmar'
 import Mensaje from './Mensaje'
 import RequisitosContrasena from './RequisitosContrasena'
 import { useIdioma } from './IdiomaContext'
+import { useCambioVista } from './useCambioVista'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
@@ -40,18 +41,42 @@ function CabeceraAjuste({ icono, titulo, ayuda }) {
   )
 }
 
+// El email se ve siempre, como un dato. Los campos para cambiarlo (el email nuevo y la
+// contraseña actual) solo aparecen al pulsar "Cambiar email": así no hay un campo de
+// contraseña suelto que confunda, y el cambio es una acción que se decide.
+// El paso entre las dos vistas es animado (useCambioVista).
 function FormularioEmail({ perfil, onGuardado, cerrarSesion }) {
   const { t } = useIdioma()
+  const { saliendo, cambiar } = useCambioVista()
+  const [editando, setEditando] = useState(false)
   const [email, setEmail] = useState(perfil.email)
   const [password, setPassword] = useState("")
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState("")
   const [guardado, setGuardado] = useState(false)
 
+  // Abro la edición con el email actual y todo en limpio
+  function abrir() {
+    setError("")
+    setGuardado(false)
+    cambiar(() => {
+      setEmail(perfil.email)
+      setPassword("")
+      setEditando(true)
+    })
+  }
+
+  function cancelar() {
+    setError("")
+    cambiar(() => {
+      setPassword("")
+      setEditando(false)
+    })
+  }
+
   async function handleEmail(e) {
     e.preventDefault()
     setError("")
-    setGuardado(false)
 
     if (!emailRegex.test(email)) {
       setError(t('validacion.emailInvalido'))
@@ -67,6 +92,7 @@ function FormularioEmail({ perfil, onGuardado, cerrarSesion }) {
       onGuardado(data.user)
       setPassword("")
       setGuardado(true)
+      cambiar(() => setEditando(false))
     } catch (err) {
       if (err.status === 401) return cerrarSesion()
       setError(err.message)
@@ -76,37 +102,69 @@ function FormularioEmail({ perfil, onGuardado, cerrarSesion }) {
   }
 
   return (
-    <form className="formulario ajuste" onSubmit={handleEmail}>
+    <section className="formulario ajuste">
       <CabeceraAjuste
         icono={<><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>}
         titulo={t('cuenta.emailTitulo')}
         ayuda={t('cuenta.emailAyuda')}
       />
 
-      <label className="campo">
-        <span>{t('cuenta.email')}</span>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
-      </label>
-      {/* "new-password" y no "current-password": aquí la contraseña solo confirma que
-          eres tú, y con "current-password" el navegador la rellenaba solo (puntos ya
-          escritos, sin que el usuario hiciera nada) y el cambio se hacía sin ver que
-          se pedía. Así hay que escribirla a propósito. */}
-      <CampoContrasena
-        etiqueta={t('cuenta.passwordActual')}
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        autoComplete="new-password"
-      />
+      {/* key: al cambiar de vista la nueva entra con su animación */}
+      <div key={editando ? "editar" : "ver"} className={saliendo ? "vista vista--saliendo" : "vista"}>
+        {editando ? (
+          <form className="formulario" onSubmit={handleEmail}>
+            <p className="ajuste__ayuda">{t('cuenta.emailConfirmar')}</p>
 
-      <Mensaje texto={error} />
-      <Mensaje tipo="ok" texto={guardado ? t('cuenta.emailActualizado') : ""} />
+            <label className="campo">
+              <span>{t('cuenta.emailNuevo')}</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                autoFocus
+                required
+              />
+            </label>
+            {/* "new-password" y no "current-password": aquí la contraseña solo confirma
+                que eres tú, y con "current-password" el navegador la rellenaba solo y
+                el cambio se hacía sin que se viera que se pedía. */}
+            <CampoContrasena
+              etiqueta={t('cuenta.passwordActual')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+            />
 
-      <div className="formulario__acciones">
-        <button type="submit" className="btn btn--secundario" disabled={ocupado || email === perfil.email}>
-          {ocupado ? <><Cargando tamano="pequeno" /> {t('comun.guardando')}</> : t('cuenta.cambiarEmail')}
-        </button>
+            <Mensaje texto={error} />
+
+            <div className="formulario__acciones">
+              <button type="button" className="btn btn--secundario" onClick={cancelar} disabled={ocupado}>
+                {t('comun.cancelar')}
+              </button>
+              <button type="submit" className="btn btn--primario" disabled={ocupado || email === perfil.email}>
+                {ocupado ? <><Cargando tamano="pequeno" /> {t('comun.guardando')}</> : t('cuenta.guardarEmail')}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="formulario">
+            <div className="dato-fijo">
+              <span className="dato-fijo__etiqueta">{t('cuenta.email')}</span>
+              <p className="dato-fijo__valor">{perfil.email}</p>
+            </div>
+
+            <Mensaje tipo="ok" texto={guardado ? t('cuenta.emailActualizado') : ""} />
+
+            <div className="formulario__acciones">
+              <button type="button" className="btn btn--secundario" onClick={abrir}>
+                {t('cuenta.cambiarEmail')}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-    </form>
+    </section>
   )
 }
 

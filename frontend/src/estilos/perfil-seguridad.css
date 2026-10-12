@@ -45,6 +45,30 @@
   color: var(--texto-suave);
 }
 
+/* Un dato que solo se lee (el email actual): la etiqueta con el mismo aspecto que la
+   de .campo, pero el valor va como texto plano, SIN la caja de un campo, para que no
+   parezca editable */
+.dato-fijo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.dato-fijo__etiqueta {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.dato-fijo__valor {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--texto-h);
+  overflow-wrap: anywhere; /* un email largo no debe desbordar la tarjeta */
+}
+
 .ajuste--peligro {
   background: color-mix(in srgb, var(--peligro) 5%, var(--superficie-2));
   border-color: color-mix(in srgb, var(--peligro) 30%, var(--borde));
