@@ -10,6 +10,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   que se elige una contraseña nueva. El correo sale por Brevo; hay que configurar
   `BREVO_API_KEY` y `CORREO_REMITENTE` en el servidor (ver `docs/DESPLIEGUE.md`).
 
+### Seguridad
+- **Cambiar o recuperar la contraseña cierra las demás sesiones.** Antes, un token ya emitido
+  seguía valiendo hasta 7 días aunque se cambiara la contraseña. Ahora cada token lleva una
+  versión (`users.token_version`) que el servidor comprueba en cada petición. Al cambiarla
+  desde el perfil, la sesión actual recibe un token nuevo y sigue dentro; al recuperarla por
+  correo, se cierran todas. Los tokens anteriores a este cambio siguen valiendo hasta el
+  primer cambio de contraseña.
+
 ### Cambiado
 - **Géneros y modos de juego en español:** el filtro, la ficha y el buscador los muestran
   traducidos ("Role-playing (RPG)" → "Rol (RPG)"). Las compañías se quedan como las da IGDB.

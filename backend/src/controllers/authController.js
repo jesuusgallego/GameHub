@@ -1,11 +1,11 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const {
   MINUTOS_VALIDEZ, MAX_INTENTOS, ESPERA_SEGUNDOS,
   generarCodigo, huellaDelCodigo, codigoCorrecto,
 } = require('../services/recuperacion');
 const { enviarCodigoRecuperacion } = require('../services/correoService');
+const { emitirToken } = require('../services/sesion');
 
 const SALT_ROUNDS = 10;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -57,7 +57,7 @@ async function login(req, res) {
 
   try {
     const result = await pool.query(
-      'SELECT id, username, email, password_hash FROM users WHERE email = $1',
+      'SELECT id, username, email, password_hash, token_version FROM users WHERE email = $1',
       [email]
     );
 
@@ -74,12 +74,7 @@ async function login(req, res) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    // El token lleva el id y el nombre del usuario y caduca a los 7 días
-    const token = jwt.sign(
-      { userId: user.id, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = emitirToken(user);
 
     res.json({
       token,
@@ -184,11 +179,13 @@ async function resetPassword(req, res) {
     }
 
     // Cambio la contraseña y borro el código en una sola sentencia (atómica): un
-    // código sirve una única vez.
+    // código sirve una única vez. Subo también token_version: quien recupera la
+    // contraseña suele hacerlo porque alguien más pudo tenerla, así que se cierran
+    // TODAS las sesiones abiertas (la persona vuelve a entrar con la nueva).
     const passwordHash = await bcrypt.hash(new_password, SALT_ROUNDS);
     await pool.query(
       `WITH usado AS (DELETE FROM password_resets WHERE user_id = $1)
-       UPDATE users SET password_hash = $2 WHERE id = $1`,
+       UPDATE users SET password_hash = $2, token_version = token_version + 1 WHERE id = $1`,
       [fila.user_id, passwordHash]
     );
 

@@ -58,6 +58,14 @@ function Perfil({ setToken }) {
     setToken("")
   }, [setToken])
 
+  // Al cambiar la contraseña el servidor cierra todas las sesiones abiertas y manda un
+  // token nuevo para esta: lo guardo y sigo dentro. apiFetch lee el token de
+  // localStorage en cada petición, así que basta con cambiarlo ahí (y en el estado de App).
+  const guardarToken = useCallback((token) => {
+    localStorage.setItem("token", token)
+    setToken(token)
+  }, [setToken])
+
   useEffect(() => {
     let cancelado = false
 
@@ -112,7 +120,7 @@ function Perfil({ setToken }) {
       id: 'seguridad',
       etiqueta: t('perfil.seguridad'),
       ayuda: t('perfil.seguridadAyuda'),
-      contenido: <CuentaPerfil perfil={perfil} onGuardado={setPerfil} cerrarSesion={cerrarSesion} />,
+      contenido: <CuentaPerfil perfil={perfil} onGuardado={setPerfil} cerrarSesion={cerrarSesion} guardarToken={guardarToken} />,
     },
   ]
 

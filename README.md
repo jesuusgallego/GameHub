@@ -142,7 +142,7 @@ docker compose up -d --build
 | GET | `/profile/stats` | Bearer token | Estadísticas de tu biblioteca (juegos por estado, nota media) y tus 5 juegos mejor valorados |
 | PATCH | `/profile` | Bearer token | Cambia `username`, `bio` y/o `avatar` (data URL JPG/PNG/WebP; `null` borra bio o foto). 409 si el usuario ya existe |
 | PATCH | `/profile/email` | Bearer token | Cambia el email (`email` + `current_password`). 403 si la contraseña es incorrecta |
-| PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`) |
+| PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`). Cierra todas las demás sesiones abiertas y devuelve un `token` nuevo para la actual |
 | DELETE | `/profile` | Bearer token | Borra tu cuenta y toda tu biblioteca (`password`) |
 | GET | `/accounts` | Bearer token | Cuentas vinculadas del usuario y `steam_disponible` (si el servidor tiene `STEAM_API_KEY`) |
 | PUT | `/accounts/steam` | Bearer token | Vincula una cuenta de Steam. `perfil` puede ser la URL del perfil, el nombre personalizado o el SteamID de 17 dígitos. No se elige nada más: la sincronización siempre añade los juegos que te faltan. 409 si ya hay una vinculada |

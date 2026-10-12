@@ -135,3 +135,10 @@ CREATE TABLE IF NOT EXISTS password_resets (
     attempts INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Versión de la sesión del usuario. Cada token lleva la versión que tenía su dueño al
+-- iniciar sesión; al cambiar o recuperar la contraseña se suma 1 aquí, y así todos los
+-- tokens emitidos antes dejan de valer (aunque no hayan caducado). Los tokens antiguos
+-- sin versión cuentan como 0, que es el valor de partida: siguen valiendo hasta el
+-- primer cambio de contraseña.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;

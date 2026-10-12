@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/db');
+const { emitirToken } = require('../services/sesion');
 
 const SALT_ROUNDS = 10;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -194,10 +195,18 @@ async function updatePassword(req, res) {
   try {
     if (!(await contrasenaCorrecta(req.user.id, current_password, res))) return;
 
+    // Subo token_version: las demás sesiones abiertas (otro ordenador, otro navegador)
+    // dejan de valer. La de quien lo está haciendo recibe un token nuevo para no
+    // echarla a ella también.
     const passwordHash = await bcrypt.hash(new_password, SALT_ROUNDS);
-    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, req.user.id]);
+    const result = await pool.query(
+      `UPDATE users SET password_hash = $1, token_version = token_version + 1
+        WHERE id = $2
+        RETURNING id, username, token_version`,
+      [passwordHash, req.user.id]
+    );
 
-    res.json({ message: 'Contraseña actualizada' });
+    res.json({ message: 'Contraseña actualizada', token: emitirToken(result.rows[0]) });
   } catch (err) {
     console.error('Error en updatePassword:', err);
     res.status(500).json({ error: 'Error interno del servidor' });

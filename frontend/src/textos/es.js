@@ -247,7 +247,7 @@ export default {
   'cuenta.passwordNoCoinciden': 'Las contraseñas nuevas no coinciden',
   'cuenta.passwordNueva': 'Nueva contraseña',
   'cuenta.passwordRepite': 'Repite la nueva contraseña',
-  'cuenta.passwordActualizada': 'Contraseña actualizada',
+  'cuenta.passwordActualizada': 'Contraseña actualizada. Se han cerrado tus otras sesiones.',
   'cuenta.cambiarPassword': 'Cambiar contraseña',
   'cuenta.borrarTitulo': 'Borrar cuenta',
   'cuenta.borrarAviso': 'Se eliminarán tu cuenta y toda tu biblioteca. No se puede deshacer.',

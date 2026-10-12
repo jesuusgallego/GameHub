@@ -127,7 +127,9 @@ instalador.
   por hora, 5 códigos de recuperación pedidos por hora, 10 códigos probados cada 15 minutos y
   1000 peticiones cada 15 minutos en total. Responde `429`.
 - **Cabeceras de seguridad** (`helmet`) y **CORS** restringido a `CORS_ORIGINS`.
-- **Contraseñas** con bcrypt y sesiones con JWT de 7 días.
+- **Contraseñas** con bcrypt y sesiones con JWT de 7 días. Cambiar o recuperar la contraseña
+  cierra todas las sesiones abiertas (`users.token_version`): el middleware comprueba la
+  versión del token en cada petición.
 - **Arranque seguro:** sin `JWT_SECRET` (o demasiado corto en producción) no arranca.
 - **Proceso sin privilegios** dentro del contenedor (usuario `node`).
 
@@ -144,8 +146,7 @@ instalador.
 - **IGDB:** 4 peticiones por segundo en total. La app cachea las fichas una hora y guarda
   género y compañías en la BD, así que el uso normal queda muy por debajo.
 - **Correo:** Brevo gratis da 300 correos al día para toda la app; cada código enviado
-  gasta uno. Cambiar la contraseña con un código no cierra las sesiones ya abiertas (los
-  tokens duran 7 días): si alguien tenía acceso, seguirá dentro hasta que caduquen.
+  gasta uno.
 - **Copias de seguridad:** Neon guarda un historial corto para restaurar. Para una copia
   tuya: `pg_dump "$DATABASE_URL" > copia.sql`.
 - **Una sola instancia:** la sincronización de Steam y la caché de IGDB viven en la memoria

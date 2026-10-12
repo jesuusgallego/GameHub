@@ -13,11 +13,11 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
 // Ajustes de seguridad de la cuenta: email, contraseña y borrar la cuenta. Los tres
 // piden la contraseña actual, porque son cambios delicados (si alguien dejara la
 // sesión abierta en un ordenador, no podría robarte la cuenta con solo esto).
-function CuentaPerfil({ perfil, onGuardado, cerrarSesion }) {
+function CuentaPerfil({ perfil, onGuardado, cerrarSesion, guardarToken }) {
   return (
     <div className="ajustes">
       <FormularioEmail perfil={perfil} onGuardado={onGuardado} cerrarSesion={cerrarSesion} />
-      <FormularioContrasena cerrarSesion={cerrarSesion} />
+      <FormularioContrasena cerrarSesion={cerrarSesion} guardarToken={guardarToken} />
       <ZonaPeligro cerrarSesion={cerrarSesion} />
     </div>
   )
@@ -106,7 +106,7 @@ function FormularioEmail({ perfil, onGuardado, cerrarSesion }) {
   )
 }
 
-function FormularioContrasena({ cerrarSesion }) {
+function FormularioContrasena({ cerrarSesion, guardarToken }) {
   const { t } = useIdioma()
   const [actual, setActual] = useState("")
   const [nueva, setNueva] = useState("")
@@ -132,10 +132,12 @@ function FormularioContrasena({ cerrarSesion }) {
 
     setOcupado(true)
     try {
-      await apiFetch('/profile/password', {
+      const data = await apiFetch('/profile/password', {
         method: 'PATCH',
         body: { current_password: actual, new_password: nueva },
       })
+      // El token anterior ya no vale (se cerraron todas las sesiones): sigo con el nuevo
+      if (data.token) guardarToken(data.token)
       setActual("")
       setNueva("")
       setRepetida("")

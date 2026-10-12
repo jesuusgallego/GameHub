@@ -246,7 +246,7 @@ export default {
   'cuenta.passwordNoCoinciden': 'The new passwords do not match',
   'cuenta.passwordNueva': 'New password',
   'cuenta.passwordRepite': 'Repeat the new password',
-  'cuenta.passwordActualizada': 'Password updated',
+  'cuenta.passwordActualizada': 'Password updated. Your other sessions have been closed.',
   'cuenta.cambiarPassword': 'Change password',
   'cuenta.borrarTitulo': 'Delete account',
   'cuenta.borrarAviso': 'Your account and your whole library will be deleted. This cannot be undone.',
