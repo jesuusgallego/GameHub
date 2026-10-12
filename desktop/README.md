@@ -61,7 +61,7 @@ GAMEHUB_API_URL=https://api.tu-servidor.com npm run dist
 
 (Antes hay que haber hecho `npm install` en `frontend/` y en `desktop/`, como arriba.)
 
-Deja `desktop/release/GameHub Setup 1.0.0.exe`. **Compílalo en Windows** (o en GitHub
+Deja `desktop/release/GameHub Setup 1.1.0.exe`. **Compílalo en Windows** (o en GitHub
 Actions, ver abajo): desde WSL/Linux, `electron-builder` necesita Wine.
 
 ## Publicar una versión
@@ -75,12 +75,12 @@ Actions, ver abajo): desde WSL/Linux, `electron-builder` necesita Wine.
 3. Haz commit y sube la etiqueta:
 
    ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
+   git tag v1.1.0
+   git push origin v1.1.0
    ```
 
 4. El flujo [`.github/workflows/release.yml`](../.github/workflows/release.yml) compila el
-   instalador en un Windows de GitHub y lo adjunta a la Release `v1.0.0`.
+   instalador en un Windows de GitHub y lo adjunta a la Release `v1.1.0`.
 
 ### Cómo se actualiza una app instalada
 
