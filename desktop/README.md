@@ -66,21 +66,31 @@ Actions, ver abajo): desde WSL/Linux, `electron-builder` necesita Wine.
 
 ## Publicar una versión
 
-1. Sube la versión en `desktop/package.json` (y en `frontend/package.json` para que
-   coincida) y apunta los cambios en `CHANGELOG.md`. Añade también la entrada de la
-   versión en `NOVEDADES` de `desktop/actualizaciones.js`: es la lista que enseña el aviso
-   "GameHub se ha actualizado a la versión X" (si falta, el aviso sale sin lista).
-2. En GitHub, crea la variable de repositorio `GAMEHUB_API_URL` (Settings → Secrets and
-   variables → Actions → Variables).
-3. Haz commit y sube la etiqueta:
+El procedimiento completo, paso a paso, está en la
+[guía de desarrollo](../docs/DESARROLLO.md#11-publicar-una-versión). En resumen:
+
+1. **Escribe la sección `## [X.Y.Z]` del `CHANGELOG.md`.** De ahí sale la **nota de la
+   Release** (la que se ve en la página de GitHub, con el bloque de instalación): no se
+   escribe a mano. La sección `### Interno` no sale en la nota.
+2. Sube la versión en `desktop/package.json` y en `frontend/package.json`.
+3. Añade la entrada de la versión en `NOVEDADES` de `desktop/actualizaciones.js`: es la lista
+   que enseña el aviso "GameHub se ha actualizado a la versión X" (si falta, el aviso sale sin
+   lista).
+4. En GitHub, ten creada la variable de repositorio `GAMEHUB_API_URL` (Settings → Secrets and
+   variables → Actions → Variables); si no existe, se usa la URL de producción.
+5. Haz commit y sube la etiqueta:
 
    ```bash
-   git tag v1.1.0
-   git push origin v1.1.0
+   git tag -a v1.2.0 -m "GameHub 1.2.0"
+   git push origin v1.2.0
    ```
 
-4. El flujo [`.github/workflows/release.yml`](../.github/workflows/release.yml) compila el
-   instalador en un Windows de GitHub y lo adjunta a la Release `v1.1.0`.
+6. El flujo [`.github/workflows/release.yml`](../.github/workflows/release.yml) construye la
+   nota (y comprueba que el CHANGELOG y los `package.json` coinciden con la etiqueta; si no,
+   se para antes de compilar), pasa las pruebas, hace la prueba de humo, compila el instalador
+   en un Windows de GitHub y lo adjunta a la Release **con su nota**.
+
+Para ver la nota antes de publicar: `node desktop/scripts/notas-release.js 1.2.0 /tmp/nota.md`.
 
 ### Cómo se actualiza una app instalada
 

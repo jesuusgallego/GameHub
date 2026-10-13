@@ -10,3 +10,6 @@ dist/
 # Sistema / editor
 .DS_Store
 *.log
+
+# Nota de la Release que genera el flujo de publicación
+notas-release.md

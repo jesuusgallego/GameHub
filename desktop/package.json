@@ -46,7 +46,7 @@
       {
         "provider": "github",
         "owner": "jesuusgallego",
-        "repo": "biblioteca-videojuegos",
+        "repo": "GameHub",
         "releaseType": "release"
       }
     ]

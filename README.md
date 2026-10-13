@@ -1,189 +1,152 @@
 # GameHub
 
-Aplicación para llevar tu biblioteca personal de videojuegos: búsqueda en IGDB, estado, nota y reseña de cada juego, y vinculación con Steam para traer tus juegos, horas y logros. Hay versión web y versión de escritorio (Windows).
+**Tu biblioteca personal de videojuegos.** Busca cualquier juego, guarda lo que juegas, lo que
+has terminado y lo que tienes pendiente, ponle nota y reseña, y vincula tu cuenta de Steam
+para traer tus juegos, tus horas y tus logros.
 
-## Stack
+**[⬇ Descargar para Windows](https://github.com/jesuusgallego/GameHub/releases/latest)** ·
+[Novedades de cada versión](CHANGELOG.md) · [Guía de desarrollo](docs/DESARROLLO.md)
 
-| Capa | Tecnologías |
-|------|-------------|
-| Interfaz | React 19, React Router 7, Vite 8 |
-| Escritorio | Electron, electron-builder, electron-updater |
-| Backend | Node.js 22, Express 5, JWT, bcrypt, pg, axios, helmet, express-rate-limit |
-| Base de datos | PostgreSQL 16 |
-| Servicios externos | IGDB (datos de juegos), Steam Web API (horas y logros), Azure Translator o LibreTranslate (traducción) |
-| Despliegue | Render (backend) + Neon (PostgreSQL), instalador de Windows generado con GitHub Actions. Docker Compose para desarrollo |
+## Qué puedes hacer
 
-## Estructura
+- **Buscar juegos** en la base de datos de [IGDB](https://www.igdb.com) y guardarlos en tu
+  biblioteca.
+- **Organizarlos:** estado (jugando, completado, abandonado, pendiente), tu nota del 1 al 10,
+  una reseña y la plataforma en la que lo juegas.
+- **Ver la ficha completa** de cada juego: portada, descripción en español, géneros,
+  desarrolladora, fecha de lanzamiento, nota de IGDB y capturas.
+- **Encontrar lo que buscas** en tu biblioteca: busca por nombre, compañía, género o
+  plataforma, filtra por varios criterios a la vez y ordena por fecha, nombre, horas jugadas,
+  logros, tu nota o la de IGDB.
+- **Vincular Steam:** importa todos tus juegos, con las horas jugadas, la barra de progreso de
+  logros y la lista de logros de cada juego. Se mantiene al día sola.
+- **Tu perfil:** foto (subida o una ilustración de uno de tus juegos), descripción y
+  estadísticas de tu biblioteca.
+- **A tu manera:** interfaz en español e inglés y tema claro u oscuro.
+- **Cuenta segura:** si olvidas la contraseña, te enviamos un código por correo.
 
-```
-biblioteca-videojuegos/
-├── backend/                 # API: Express + PostgreSQL
-│   ├── src/
-│   │   ├── app.js               # Arranque, seguridad (helmet, CORS, límites) y rutas
-│   │   ├── routes/              # Qué URL llama a qué controlador
-│   │   ├── controllers/         # Lógica de cada ruta: auth, games, profile, accounts
-│   │   ├── middleware/          # Sesión (JWT, con versión por usuario) y límites de intentos
-│   │   ├── services/            # IGDB, Steam, traducción, correo, recuperación de contraseña, sesión y sincronización automática
-│   │   ├── models/sql/schema.sql  # Esquema de la BD (idempotente: se aplica al arrancar)
-│   │   └── config/              # db.js (conexión) y validacion.js (reglas de email y contraseña)
-│   ├── test/                    # Pruebas (npm test)
-│   ├── .env.example             # Plantilla de variables de entorno
-│   └── Dockerfile
-├── frontend/                # Interfaz React, para web y escritorio (ver frontend/README.md)
-│   ├── src/                     # Componentes .jsx, y sesion.js / validacion.js / terminosIgdb.js
-│   │   ├── estilos/             # CSS por zonas (ver estilos/LEEME.md)
-│   │   └── textos/              # Traducciones es/en
-│   └── test/                    # Pruebas (npm test)
-├── desktop/                 # App de escritorio con Electron (ver desktop/README.md)
-│   ├── main.js                  # Ventana, interfaz, seguridad y actualizaciones
-│   ├── actualizaciones.js       # Textos y reglas de los avisos de actualización
-│   └── test/                    # Pruebas (npm test)
-├── docs/
-│   ├── DESARROLLO.md            # Cómo retomar el trabajo cada día
-│   └── DESPLIEGUE.md            # Cómo poner el servidor en internet
-├── .github/workflows/       # Compila y publica el instalador de Windows
-├── docker-compose.yml       # PostgreSQL, traductor local y backend + frontend en Docker
-├── render.yaml              # Plano para desplegar el backend en Render
-├── CHANGELOG.md             # Qué cambia en cada versión
-└── LICENSE                  # MIT
-```
+## Instalación (Windows)
 
-## Requisitos
+1. Entra en la [última versión](https://github.com/jesuusgallego/GameHub/releases/latest) y
+   descarga **GameHub-Setup-x.y.z.exe** (en *Assets*).
+2. Ejecútalo. Windows mostrará *"Windows protegió su PC"* porque el instalador no está firmado
+   (un certificado de firma cuesta dinero): pulsa **Más información → Ejecutar de todos modos**.
+3. Abre GameHub y **crea tu cuenta**.
 
-- Node.js 22 y npm
-- Docker y Docker Compose
-- Credenciales de la API de Twitch/IGDB (`TWITCH_CLIENT_ID` y `TWITCH_CLIENT_SECRET`)
-- Opcional: una clave de Azure AI Translator (`AZURE_TRANSLATOR_KEY` y `AZURE_TRANSLATOR_REGION`) para mejorar la traducción de las descripciones
-- Opcional: una [clave de la API web de Steam](https://steamcommunity.com/dev/apikey) (`STEAM_API_KEY`, gratuita) para vincular cuentas de Steam y traer horas jugadas y logros
+**Se actualiza sola.** Cuando haya una versión nueva, la app la descarga en segundo plano y te
+pregunta si quieres reiniciar para instalarla; si dices *Más tarde*, se instala al cerrarla.
 
-## Puesta en marcha
+> **La primera petición puede tardar hasta un minuto.** El servidor que usa GameHub es
+> gratuito y se "duerme" tras un rato sin uso. La app te lo avisa en pantalla; después va con
+> normalidad. Necesitas conexión a internet.
 
-> ¿Ya lo tienes instalado y solo quieres retomar el trabajo? Ve a la [guía de desarrollo diario](docs/DESARROLLO.md). Lo de abajo es la **primera instalación**.
+## Cómo se usa
 
-### 1. Base de datos
+1. **Crea una cuenta** con un nombre de usuario, tu email y una contraseña (8 caracteres o
+   más, con mayúscula, minúscula y número).
+2. **Busca un juego** en *Buscar* y añádelo a tu biblioteca.
+3. **Gestiona tu biblioteca** en *Mi biblioteca*: cambia el estado desde la etiqueta de cada
+   tarjeta; con el **clic derecho** sobre una tarjeta puedes editarla o quitarla, y con un clic
+   normal se abre la ficha del juego.
+4. **Vincula Steam** en *Perfil → Cuentas vinculadas*: pega la URL de tu perfil de Steam (tiene
+   que tener los "Detalles del juego" en público). Tus juegos entran como **Pendiente**, porque
+   Steam no sabe si te has pasado un juego; el estado lo cambias tú.
+5. **Ajusta tu cuenta** en *Perfil*: foto, descripción, email, contraseña o borrar la cuenta.
+   El idioma y el tema están en el menú de tres líneas de la esquina.
+6. **¿Olvidaste la contraseña?** Pulsa *¿Has olvidado tu contraseña?* en el inicio de sesión,
+   escribe tu email, y te llegará un código de 6 dígitos (caduca a los 15 minutos).
 
-```bash
-docker compose up -d postgres traductor
-```
+## Cómo funciona por dentro
 
-Levanta PostgreSQL en `localhost:5432` con usuario `biblioteca_user`, contraseña `biblioteca_pass` y base de datos `biblioteca_db` (datos persistidos en el volumen `pgdata`), y el traductor en `localhost:5000`.
+GameHub no es un programa aislado: la app que instalas es solo la parte que ves, y habla por
+internet con un servidor propio, que a su vez consulta otros servicios.
 
-Las descripciones de los juegos, que IGDB solo da en inglés, se traducen al español con **dos traductores**:
-
-1. **[Azure AI Translator](https://azure.microsoft.com/products/ai-services/ai-translator)** (opcional, mejor calidad): si defines `AZURE_TRANSLATOR_KEY` en `backend/.env`, se usa primero. Su plan gratuito (F0) da 2 millones de caracteres al mes. La app se pone un tope propio de **1,9 millones al mes** (`AZURE_TRANSLATOR_LIMITE_MENSUAL`): cuenta en la base de datos (tabla `translation_usage`) los caracteres que envía y, al llegar al tope, deja de usar Azure hasta el mes siguiente, para no depender de lo que haga Microsoft al pasarse del límite.
-2. **[LibreTranslate](https://github.com/LibreTranslate/LibreTranslate)** (el contenedor `traductor`): corre en local, sin cuenta ni claves. Es la reserva cuando no hay clave de Azure, se alcanza el tope o Azure falla. La primera vez descarga los modelos de traducción (tarda unos minutos; se guardan en el volumen `lt_models`) y ocupa cerca de 1 GB de RAM.
-
-Si no hay ninguno de los dos, las descripciones salen en inglés. Cada traducción se guarda en la base de datos (tabla `translations`), así que no se repite ni vuelve a gastar caracteres; si una estaba hecha con LibreTranslate y luego pones la clave de Azure, se rehace con Azure una vez. Para ver cuánto llevas gastado este mes:
-
-```bash
-docker exec biblioteca_db psql -U biblioteca_user -d biblioteca_db -c "SELECT * FROM translation_usage;"
+```mermaid
+flowchart LR
+    A["App de escritorio<br/>(Electron + React)"] -->|HTTPS| B["Servidor GameHub<br/>(Node.js + Express)<br/>en Render"]
+    B --> C[("Base de datos<br/>PostgreSQL en Neon")]
+    B --> D["IGDB<br/>datos de juegos"]
+    B --> E["Steam Web API<br/>horas y logros"]
+    B --> F["Azure Translator<br/>traducciones"]
+    B --> G["Brevo<br/>correos"]
 ```
 
-### 2. Backend
+### Las tecnologías
 
-Copia la plantilla y rellena lo que necesites:
+| Pieza | Tecnología | Para qué se usa en GameHub |
+|-------|------------|----------------------------|
+| La interfaz | **React 19** y **React Router** | Pantallas, menús, formularios y la navegación entre ellas |
+| Compilación de la interfaz | **Vite** | Empaqueta la interfaz para que cargue rápido |
+| La app de escritorio | **Electron** | Mete la interfaz en una ventana de Windows, la actualiza sola y la aísla del sistema por seguridad |
+| El servidor | **Node.js** y **Express** | Recibe las peticiones de la app, aplica las reglas (quién eres, qué puedes hacer) y habla con la base de datos y los servicios externos |
+| La base de datos | **PostgreSQL** | Guarda usuarios, bibliotecas, cuentas vinculadas y las traducciones ya hechas |
+| Alojamiento | **Render** (servidor) y **Neon** (base de datos) | Mantienen GameHub en internet, ambos con plan gratuito |
+| Datos de los juegos | **IGDB** (de Twitch) | Nombres, portadas, descripciones, capturas, géneros y notas |
+| Tu cuenta de Steam | **Steam Web API** | Tus juegos, horas jugadas y logros |
+| Traducción | **Azure AI Translator** | Traduce las descripciones, que IGDB solo da en inglés |
+| Correo | **Brevo** | Envía el código para recuperar la contraseña |
+| Instalador y versiones | **GitHub Actions** y **GitHub Releases** | Construyen el instalador y lo publican; las apps instaladas buscan ahí las actualizaciones |
 
-```bash
-cp backend/.env.example backend/.env
-```
+### Qué pasa cuando…
 
-Lo imprescindible es `JWT_SECRET` (una cadena larga y aleatoria) y `TWITCH_CLIENT_ID` /
-`TWITCH_CLIENT_SECRET`; el `DATABASE_URL` de la plantilla ya apunta al contenedor de
-`docker compose`. Steam y Azure son opcionales. Cada variable está explicada en
-[`backend/.env.example`](backend/.env.example).
+- **Inicias sesión.** El servidor comprueba tu contraseña y te entrega una "credencial" (un
+  token JWT) que la app guarda y envía en cada petición. Caduca a los 7 días y se invalida
+  si cambias la contraseña.
+- **Buscas o abres un juego.** La app se lo pide a *tu* servidor, y este a IGDB. Las claves de
+  IGDB, Steam y Azure viven solo en el servidor: **nunca van dentro de la app que instalas**.
+- **Ves una descripción en español.** El servidor la traduce con Azure y guarda el resultado,
+  así que cada texto se traduce una sola vez para todos.
+- **Vinculas Steam.** Solo se guarda tu SteamID (un dato público), nunca tu contraseña de
+  Steam. El servidor trae tus juegos, horas y logros, y los actualiza solo cada cierto tiempo.
+  Al desvincular, tu biblioteca queda exactamente como antes de vincular.
+- **Recuperas la contraseña.** El servidor genera un código de 6 dígitos de un solo uso, que
+  caduca a los 15 minutos y se anula tras 5 intentos fallidos, y lo envía por correo.
+- **Sale una versión nueva.** Al abrir la app, comprueba si hay una Release más reciente en
+  GitHub; si la hay, la descarga y la instala.
 
-```bash
-cd backend
-npm install
-npm run dev     # con nodemon; usa `npm start` para producción
-```
+### Seguridad y privacidad
 
-Disponible en http://localhost:4000.
+Lo que guarda GameHub de ti:
 
-### 3. Frontend
+- Tu nombre de usuario y tu email.
+- Tu contraseña **solo como huella irreversible** (bcrypt): ni siquiera el servidor puede leerla.
+- Tu biblioteca: los juegos, su estado, tu nota y tu reseña.
+- Opcional: tu foto, tu descripción y tu SteamID.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+Lo que **no** guarda: tu contraseña de Steam, ni ningún dato de pago.
 
-Disponible en http://localhost:5173 (puerto por defecto de Vite).
+Cómo se protege: las contraseñas se guardan con bcrypt; el servidor limita los intentos de
+inicio de sesión y de recuperación para frenar los ataques de fuerza bruta; cambiar la
+contraseña cierra el resto de sesiones abiertas; y la interfaz de la app corre aislada, sin
+acceso al sistema.
 
-## Ejecutar todo con Docker
+## Preguntas frecuentes
 
-Alternativa a la puesta en marcha manual: un solo comando levanta base de datos, backend y frontend. Solo necesitas `backend/.env` (el `DATABASE_URL` se sobrescribe dentro de Docker).
+**¿Por qué Windows dice "editor desconocido"?** Porque el instalador no está firmado con un
+certificado de pago. No indica un problema con el archivo: el instalador lo construye GitHub
+Actions a partir del código público de este repositorio.
 
-```bash
-docker compose up -d --build
-```
+**¿Por qué a veces tarda tanto en abrir?** El servidor gratuito se duerme tras unos 15 minutos
+sin uso y tarda hasta un minuto en despertar. Pasa solo con la primera petición.
 
-- Frontend: http://localhost:5173 (nginx)
-- Backend: http://localhost:4000
-- Traductor (LibreTranslate): http://localhost:5000
-- Las tablas las crea el propio backend al arrancar (ejecuta `schema.sql`, que es idempotente), así que también se actualiza solo una base de datos antigua.
-- Para pararlo: `docker compose down` (añade `-v` solo si quieres borrar los datos).
-- Si cambias `VITE_API_URL`, reconstruye el frontend: la URL se incrusta al compilar (`docker compose build --build-arg VITE_API_URL=... frontend`).
+**¿Puedo vincular PlayStation, Xbox o Epic?** No: Steam es la única plataforma que ofrece una
+API oficial para leer la biblioteca de un jugador.
 
-## API
+**¿Por qué mis juegos de Steam entran como "Pendiente"?** Steam no guarda si te has pasado un
+juego, y estimarlo daría resultados engañosos. El estado lo eliges tú.
 
-| Método | Ruta | Auth | Descripción |
-|--------|------|------|-------------|
-| GET | `/health` | No | Comprueba servidor y conexión a la base de datos |
-| POST | `/auth/register` | No | Crea un usuario (`username` de hasta 50 caracteres, `email` con formato válido y `password` de 8+ con mayúscula, minúscula y número; 400 si no, 409 si ya existe) |
-| POST | `/auth/login` | No | Inicia sesión y devuelve un token JWT |
-| POST | `/auth/forgot-password` | No | Envía al email un código de 6 dígitos para restablecer la contraseña (`email`, y `idioma` opcional: `es` o `en`). Responde siempre `{ ok: true }`, exista o no la cuenta, para no revelar qué emails están registrados. Un código por minuto como máximo y cinco peticiones por hora y IP |
-| POST | `/auth/reset-password` | No | Cambia la contraseña con el código recibido (`email`, `code`, `new_password`). El código caduca a los 15 minutos, se invalida a los 5 intentos fallidos y solo sirve una vez. 400 con "El código no es válido o ha caducado" para cualquier fallo del código |
-| GET | `/games/search?q=<nombre>` | Bearer token | Busca juegos por nombre en IGDB |
-| GET | `/games/details/:igdbId?lang=es` | Bearer token | Ficha completa de un juego desde IGDB: descripción (con `lang=es` se traduce al español con Azure Translator o, si no está disponible, con LibreTranslate, y se guarda en la tabla `translations`; si no responde ninguno, sale en inglés y `summary_lang` vale `en`), fecha de lanzamiento, desarrolladora, publishers, géneros, plataformas, nota, capturas (caché de 1 hora en memoria) |
-| GET | `/games/artworks` | Bearer token | Ilustraciones oficiales (artworks) de IGDB de los juegos de tu biblioteca, agrupadas por juego (máx. 12 por juego, caché de 1 hora en memoria). Sirven para elegir la foto de perfil |
-| POST | `/games` | Bearer token | Añade un juego a tu biblioteca (`igdb_id` y `name` obligatorios; 409 si ya lo tienes) |
-| GET | `/games` | Bearer token | Lista los juegos de tu biblioteca |
-| PATCH | `/games/:id` | Bearer token | Actualiza `status`, `rating`, `review` o `platform`. Los campos omitidos no cambian; enviar `null` borra `rating`, `review` o `platform` |
-| DELETE | `/games/:id` | Bearer token | Elimina un juego de tu biblioteca |
-| GET | `/profile` | Bearer token | Tus datos: usuario, email, bio, foto y fecha de alta |
-| GET | `/profile/stats` | Bearer token | Estadísticas de tu biblioteca (juegos por estado, nota media) y tus 5 juegos mejor valorados |
-| PATCH | `/profile` | Bearer token | Cambia `username`, `bio` y/o `avatar` (data URL JPG/PNG/WebP; `null` borra bio o foto). 409 si el usuario ya existe |
-| PATCH | `/profile/email` | Bearer token | Cambia el email (`email` + `current_password`). 403 si la contraseña es incorrecta |
-| PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`). Cierra todas las demás sesiones abiertas y devuelve un `token` nuevo para la actual |
-| DELETE | `/profile` | Bearer token | Borra tu cuenta y toda tu biblioteca (`password`) |
-| GET | `/accounts` | Bearer token | Cuentas vinculadas del usuario y `steam_disponible` (si el servidor tiene `STEAM_API_KEY`) |
-| PUT | `/accounts/steam` | Bearer token | Vincula una cuenta de Steam. `perfil` puede ser la URL del perfil, el nombre personalizado o el SteamID de 17 dígitos. No se elige nada más: la sincronización siempre añade los juegos que te faltan. 409 si ya hay una vinculada |
-| POST | `/accounts/steam/sync` | Bearer token | Trae de Steam las horas y los logros de los juegos que ya tienes y añade los que te faltan (siempre). 422 si el perfil es privado; 409 si ya hay una sincronización en curso. No hace falta llamarlo a mano: el servidor lo hace solo cada `STEAM_SYNC_MINUTOS` y el frontend al abrir el perfil si los datos tienen más de 10 minutos |
-| GET | `/accounts/steam/games/:id/achievements?lang=es` | Bearer token | Lista de logros de un juego de tu biblioteca (`:id` es el de `user_games`): nombre, descripción, icono, si lo tienes y cuándo. Se pide a Steam en el momento, sin guardarla. 404 si el juego no es de Steam |
-| DELETE | `/accounts/steam` | Bearer token | Desvincula Steam y deja la biblioteca como antes de vincular: borra los juegos que añadió la importación (`user_games.imported_from = 'steam'`) y quita el progreso de Steam de los demás. Devuelve cuántos eliminó |
+**¿Cómo borro mi cuenta?** *Perfil → Seguridad → Eliminar cuenta*. Se borra todo, incluida tu
+biblioteca, y no se puede deshacer.
 
-`status` admite `jugando`, `completado`, `abandonado` y `pendiente`; `rating` va de 1 a 10.
+**¿Funciona sin internet?** No: la biblioteca vive en el servidor.
 
-## Scripts
+**¿Y en macOS o Linux?** De momento solo hay instalador para Windows.
 
-**Backend:** `npm run dev`, `npm start`, `npm test`
-**Frontend:** `npm run dev`, `npm run build`, `npm run preview`, `npm run lint`, `npm test`
-**Escritorio** (`desktop/`): `npm start`, `npm run build:web`, `npm run dist`, `npm test` (ver [`desktop/README.md`](desktop/README.md))
+## ¿Quieres tocar el código?
 
-Las pruebas (`npm test`) usan el ejecutor de pruebas que trae Node (`node --test`), sin
-dependencias extra. Cubren la lógica que no necesita navegador ni servidor:
-
-- **Backend:** lectura de logros de Steam (con Steam simulado), recuperación de contraseña
-  (código y correo), validación de sesiones y validación del registro.
-- **Frontend:** búsqueda, filtros y orden de la biblioteca, traducción de géneros y modos
-  de IGDB, y reglas de validación (comprueba que coinciden con las del backend).
-- **Escritorio:** avisos de actualización y que el instalador incluya los archivos que carga
-  `main.js`.
-
-## Notas
-
-- Todas las llamadas al backend pasan por `frontend/src/api.js` (`apiFetch`). La URL base es `http://localhost:4000` por defecto; para otro host define `VITE_API_URL` en `frontend/.env`.
-- La columna `user_games.igdb_id` guarda el ID del juego en **IGDB**.
-- El token JWT se guarda en `localStorage`, siempre a través de `frontend/src/sesion.js`. Lleva la versión de sesión del usuario (`users.token_version`): cambiar o recuperar la contraseña la sube y cierra el resto de sesiones.
-- Las reglas de email y contraseña están en `backend/src/config/validacion.js` y `frontend/src/validacion.js`; deben coincidir (una prueba lo comprueba).
-- **Tarjetas de la biblioteca:** no llevan botones de Editar y Quitar. Salen con el **clic derecho** sobre la tarjeta (`MenuContextual.jsx`; con el teclado, la tecla de menú contextual o Mayús + F10 sobre el título; Mayús + clic derecho deja el menú del navegador) y dentro de la **ficha** que abre un clic normal (recuadro "En tu biblioteca"). Lo comparten la tarjeta, "Jugando ahora" y la ficha con `useAccionesJuego` y `VentanasJuego`. Cambiar el estado sigue estando en el chip de la tarjeta.
-- La foto de perfil se guarda como texto (data URL en base64) en `users.avatar`; el navegador la recorta en cuadrado y la reduce a 256 px antes de enviarla. Puede ser una foto subida o una ilustración de IGDB de un juego de tu biblioteca: en el segundo caso el navegador descarga la ilustración (IGDB permite leer sus imágenes desde otras webs), te deja ajustar el encuadre y guarda el recorte, igual que una foto subida; el backend no guarda ninguna URL de IGDB como avatar.
-- **Filtrar, buscar y ordenar la biblioteca:** el estado, el género, la compañía (desarrolladoras y publishers juntas) y la plataforma se combinan entre sí. El buscador mira a la vez el nombre, las compañías, los géneros y la plataforma, sin distinguir mayúsculas ni acentos, y con varias palabras exige que cada una aparezca en algún sitio del juego ("nintendo zelda"). Se ordena por fecha de adición, nombre, tiempo jugado, logros completados, tu nota, la nota de IGDB o lanzamiento, en los dos sentidos (`frontend/src/ordenFiltros.js`); género y compañía no son criterios de orden (un juego puede tener varios), para eso están el filtro y la búsqueda. Todo se hace en el navegador sobre la lista que ya llega. El género, las empresas, la fecha y la nota de IGDB se guardan en `user_games` (`genres`, `developers`, `publishers`, `release_date`, `igdb_rating`, `metadata_at`): `GET /games` rellena en una sola consulta a IGDB los juegos que aún no los tienen y los refresca pasado un mes; si IGDB falla, la lista sale igual y se reintenta en la siguiente visita. Los géneros y los modos de juego se guardan tal como los da IGDB (en inglés, son la clave del filtro) y se traducen solo al mostrarlos, con las tablas de `frontend/src/terminosIgdb.js` (el buscador entiende los dos idiomas: "rol" y "rpg" encuentran lo mismo). Las empresas y las plataformas son nombres propios y no se traducen; un género nuevo que IGDB añada se ve en inglés hasta que se añada a la tabla.
-- **Steam:** es la única plataforma con una API oficial para leer la biblioteca de un jugador, por eso es la única que se puede vincular. Hace falta que el perfil tenga los "Detalles del juego" en público. No se guarda ninguna contraseña: solo el SteamID (dato público) en `linked_accounts`; las consultas las hace el backend con su propia `STEAM_API_KEY`. Steam identifica los juegos con su `appid` y la biblioteca usa ids de IGDB, así que al sincronizar se emparejan con el campo `external_games` de IGDB (los que no tienen equivalente no se pueden importar). El progreso se guarda en `user_games` (`steam_appid`, `playtime_minutes`, `achievements_unlocked`, `achievements_total`). La importación de juegos nuevos es siempre (ya no es opcional: antes se elegía al vincular con `linked_accounts.import_games`, una columna que `schema.sql` elimina) y los juegos que trae entran como **Pendiente**: Steam no guarda si te has pasado un juego, así que el estado lo cambia el usuario a mano, como en el resto de la biblioteca. **La sincronización es automática:** `services/sincronizacionAutomatica.js` revisa cada pocos minutos las cuentas que llevan más de `STEAM_SYNC_MINUTOS` (60 por defecto) sin sincronizarse y las sincroniza de una en una; además, el frontend la lanza al abrir el perfil si hace más de 10 minutos (o nunca se hizo). Cada sincronización gasta una consulta a Steam por juego jugado y la clave tiene un tope de 100.000 al día, así que no conviene bajar mucho el intervalo. Quedan marcados con `user_games.imported_from = 'steam'`, para poder borrarlos al desvincular sin tocar los que añadiste tú.
-- **Perfil (`/perfil`):** un banner con el avatar, la bio y tres cifras (juegos, nota media y % completados) sobre un fondo fijo con los colores de la marca (una aurora violeta, azul y cian con una rejilla tenue, solo CSS), y debajo cuatro pestañas: Estadísticas, Editar perfil, Cuentas vinculadas y Seguridad. La pestaña va en la URL (`/perfil?tab=cuentas`), se maneja con las flechas del teclado y los cuatro paneles siguen montados al cambiar, así que lo que escribes en "Editar perfil" no se pierde. Todos los campos de contraseña (`CampoContrasena.jsx`) tienen un ojo para verla, y la nueva muestra sus requisitos en vivo. Al vincular Steam, `ConexionSteam.jsx` anima la conexión y avisa con `animationend` (no con temporizadores) cuando termina.
-- Las credenciales de `docker-compose.yml` son solo para desarrollo; cámbialas en cualquier otro entorno.
-- `backend/.env` contiene secretos y git lo ignora: nunca lo subas ni lo pegues en un chat.
+Todo lo técnico (cómo montar el entorno, la estructura del proyecto, la API, las pruebas, cómo
+publicar una versión) está en la **[guía de desarrollo](docs/DESARROLLO.md)**. Para poner tu
+propio servidor en internet, mira [`docs/DESPLIEGUE.md`](docs/DESPLIEGUE.md).
 
 ## Licencia y créditos
 

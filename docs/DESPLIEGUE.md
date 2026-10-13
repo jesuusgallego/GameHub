@@ -44,7 +44,7 @@ No hay que crear tablas: el backend ejecuta `schema.sql` solo al arrancar.
 ## 2. El servidor en Render
 
 1. Entra en [render.com](https://render.com) con tu cuenta de GitHub y dale acceso al
-   repositorio `biblioteca-videojuegos`.
+   repositorio `GameHub`.
 2. **New → Blueprint** y elige el repositorio. Render lee [`render.yaml`](../render.yaml) y
    propone el servicio `gamehub-api`.
 3. Te pide los valores de las variables que no están en el repositorio:

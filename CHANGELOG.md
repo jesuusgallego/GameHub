@@ -6,11 +6,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [1.1.0] - 2026-10-12
 
+Recuperación de contraseña, sesiones más seguras y mejoras en el perfil y en las actualizaciones.
+
 ### Añadido
 - **Recuperación de contraseña:** "¿Has olvidado tu contraseña?" en el inicio de sesión envía
   al correo un código de 6 dígitos (caduca a los 15 minutos, 5 intentos, un solo uso) con el
-  que se elige una contraseña nueva. El correo sale por Brevo; hay que configurar
-  `BREVO_API_KEY` y `CORREO_REMITENTE` en el servidor (ver `docs/DESPLIEGUE.md`).
+  que se elige una contraseña nueva.
 - **Avisos de actualización en la app de escritorio:** al terminar de descargar una versión
   nueva pregunta si reiniciar ahora o más tarde, y la primera vez que se abre una versión
   nueva dice "GameHub se ha actualizado a la versión X" con las novedades. La 1.0.0 ya
@@ -35,10 +36,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   contraseña de confirmación ya no se autocompleta, ni en el email ni al borrar la cuenta.
 
 ### Interno
+- La recuperación de contraseña envía el correo por Brevo: el servidor necesita
+  `BREVO_API_KEY` y `CORREO_REMITENTE` (ver `docs/DESPLIEGUE.md`). Sin ellas el botón no envía
+  nada.
 - Las reglas de validación (email y contraseña) y el acceso al token de sesión viven cada una
   en un solo módulo (`config/validacion.js`, `validacion.js` y `sesion.js`), en vez de
   repetirse en varios archivos. Pruebas nuevas de validación, y una que comprueba que las
   reglas del formulario y las del servidor coinciden.
+
+### Limitaciones conocidas
+- El instalador sigue sin firmar: Windows SmartScreen avisará de "editor desconocido".
+- Al actualizar desde la 1.0.0 la app no pregunta si reiniciar: se instala al cerrarla. La
+  pregunta aparece a partir de esta versión.
+- Los nombres de las compañías se muestran como los da IGDB (en inglés).
 
 ## [1.0.0] - 2026-10-10
 

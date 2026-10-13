@@ -29,4 +29,6 @@ Necesita el backend en marcha: la URL se toma de `VITE_API_URL` (por defecto
 | `src/Recuperar.jsx` | Recuperar la contraseña en dos pasos: pedir el código y elegir la nueva |
 | `test/` | Pruebas (`node --test`) |
 
-La documentación general del proyecto está en el [README de la raíz](../README.md).
+La documentación del proyecto: el [README de la raíz](../README.md) (qué es y cómo funciona, para
+quien lo usa) y la [guía de desarrollo](../docs/DESARROLLO.md) (cómo montarlo, la API, las pruebas
+y cómo publicar una versión).
