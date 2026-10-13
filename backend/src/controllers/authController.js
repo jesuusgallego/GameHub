@@ -7,7 +7,8 @@ const {
 const { enviarCodigoRecuperacion } = require('../services/correoService');
 const { emitirToken } = require('../services/sesion');
 const {
-  EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, MENSAJE_PASSWORD_REGISTRO, USERNAME_MAX, SALT_ROUNDS,
+  EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, MENSAJE_PASSWORD_REGISTRO,
+  USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
 } = require('../config/validacion');
 
 
@@ -22,8 +23,10 @@ async function register(req, res) {
 
   // Lo mismo que valida el formulario, pero el formulario no es una garantía: la API
   // también la puede llamar quien no pase por él
-  if (username.length > USERNAME_MAX) {
-    return res.status(400).json({ error: `El nombre de usuario no puede pasar de ${USERNAME_MAX} caracteres` });
+  // Sin recortar ni pasar a mayúsculas: el servidor no "arregla" el nombre, lo rechaza.
+  // El formulario ya lo deja listo mientras se escribe.
+  if (!USERNAME_REGEX.test(username)) {
+    return res.status(400).json({ error: MENSAJE_USERNAME });
   }
   if (!EMAIL_REGEX.test(email)) {
     return res.status(400).json({ error: 'El email no tiene un formato válido' });
@@ -55,23 +58,37 @@ async function register(req, res) {
 
     res.status(201).json({ user: result.rows[0] });
   } catch (err) {
+    // Dos registros a la vez con el mismo nombre pasan la comprobación de arriba y
+    // chocan aquí con el UNIQUE de la base de datos
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'El email o username ya está en uso' });
+    }
     console.error('Error en register:', err);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
 
-// POST /auth/login
+// POST /auth/login — con el email o con el nombre de usuario
+// El campo se llama `identifier`. Acepto también `email`, como se llamaba antes: las
+// apps de escritorio ya instaladas lo siguen mandando así.
 async function login(req, res) {
-  const { email, password } = req.body;
+  const { password } = req.body;
+  const identifier = req.body.identifier ?? req.body.email;
 
-  if (!email || !password) {
+  // Tienen que ser texto: un objeto haría fallar la consulta con un 500
+  if (typeof identifier !== 'string' || identifier.trim() === '' || typeof password !== 'string' || password === '') {
     return res.status(400).json({ error: 'Faltan campos obligatorios' });
   }
 
   try {
+    // Un nombre de usuario nunca lleva "@" y un email siempre (ver USERNAME_REGEX), así
+    // que no hace falta saber de cuál se trata: busco por los dos y solo puede coincidir
+    // uno. El nombre se pasa a mayúsculas para que "ana" entre como ANA.
+    const texto = identifier.trim();
     const result = await pool.query(
-      'SELECT id, username, email, password_hash, token_version FROM users WHERE email = $1',
-      [email]
+      `SELECT id, username, email, password_hash, token_version
+         FROM users WHERE email = $1 OR username = $2`,
+      [texto, texto.toUpperCase()]
     );
 
     const user = result.rows[0];

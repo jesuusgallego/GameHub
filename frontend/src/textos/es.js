@@ -18,6 +18,8 @@ export default {
   'validacion.emailInvalido': 'El email no tiene un formato válido',
   'validacion.passwordRequisitos': 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número',
   'validacion.usernameObligatorio': 'El nombre de usuario es obligatorio',
+  'validacion.usernameInvalido': 'El nombre de usuario debe tener de 3 a 20 caracteres: solo letras MAYÚSCULAS, números y guion bajo',
+  'validacion.usernameAyuda': 'De 3 a 20 caracteres: letras (se escriben en MAYÚSCULAS), números y guion bajo (_). Sin espacios ni símbolos.',
 
   // ---- Estados de un juego ----
   'estado.jugando': 'Jugando',
@@ -42,6 +44,8 @@ export default {
   'auth.email': 'Email',
   'auth.password': 'Contraseña',
   'auth.login.titulo': 'Iniciar sesión',
+  'auth.login.identificador': 'Email o nombre de usuario',
+  'auth.login.identificadorVacio': 'Escribe tu email o tu nombre de usuario',
   'auth.login.passwordVacia': 'Introduce tu contraseña',
   'auth.login.entrando': 'Entrando...',
   'auth.login.sinCuenta': '¿No tienes cuenta?',
@@ -259,7 +263,7 @@ export default {
   'cuenta.borrarConfirmarTitulo': '¿Borrar tu cuenta?',
   'cuenta.borrarConfirmarMensaje': 'Perderás tu perfil y todos los juegos de tu biblioteca. Esta acción no se puede deshacer.',
   'cuenta.borrarConfirmar': 'Borrar para siempre',
-  'cuenta.emailAyuda': 'Es el que usas para iniciar sesión.',
+  'cuenta.emailAyuda': 'Puedes usarlo para iniciar sesión y recuperar la contraseña.',
   'cuenta.passwordAyuda': 'Elige una contraseña que no uses en ningún otro sitio.',
   'password.mostrar': 'Mostrar contraseña',
   'password.ocultar': 'Ocultar contraseña',

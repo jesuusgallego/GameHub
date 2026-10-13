@@ -142,3 +142,58 @@ CREATE TABLE IF NOT EXISTS password_resets (
 -- sin versión cuentan como 0, que es el valor de partida: siguen valiendo hasta el
 -- primer cambio de contraseña.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
+
+-- Nombre de usuario en mayúsculas: de 3 a 20 caracteres, solo A-Z, 0-9 y guion bajo
+-- (misma regla que USERNAME_REGEX en config/validacion.js). Antes valía cualquier texto
+-- de hasta 50 caracteres, así que primero convierto los que ya existen.
+-- Cada nombre se convierte así: sin tildes ("José" -> JOSE, la Ñ pasa a N), espacios,
+-- puntos y guiones a "_", se quita lo demás, mayúsculas y como mucho 20 caracteres. Si
+-- queda de menos de 3 se llama USUARIO. Si el resultado ya lo tiene otra persona se le
+-- añade un número ("ANA" -> ANA2, ANA3...). Solo toca los nombres que no cumplen la
+-- regla, así que en los arranques siguientes no hace nada. El bucle va usuario a
+-- usuario y cada UPDATE se ve en la siguiente comprobación, por eso nunca repite nombre.
+DO $$
+DECLARE
+  u RECORD;
+  base TEXT;
+  candidato TEXT;
+  n INTEGER;
+BEGIN
+  FOR u IN
+    SELECT id, username FROM users WHERE username !~ '^[A-Z0-9_]{3,20}$' ORDER BY id
+  LOOP
+    base := upper(translate(
+      u.username,
+      'ÁÉÍÓÚÜÑÀÈÌÒÙÂÊÎÔÛÄËÏÖÇáéíóúüñàèìòùâêîôûäëïöç',
+      'AEIOUUNAEIOUAEIOUAEIOCAEIOUUNAEIOUAEIOUAEIOC'
+    ));
+    base := regexp_replace(base, '[\s.-]+', '_', 'g');
+    base := left(regexp_replace(base, '[^A-Z0-9_]', '', 'g'), 20);
+    IF length(base) < 3 THEN
+      base := 'USUARIO';
+    END IF;
+
+    candidato := base;
+    n := 1;
+    WHILE EXISTS (SELECT 1 FROM users WHERE username = candidato AND id <> u.id) LOOP
+      n := n + 1;
+      candidato := left(base, 20 - length(n::text)) || n::text;
+    END LOOP;
+
+    UPDATE users SET username = candidato WHERE id = u.id;
+  END LOOP;
+END $$;
+
+-- La misma regla como restricción: aunque algún día un cambio del código se olvidara de
+-- validar, la base de datos no deja guardar un nombre que no la cumple. ADD CONSTRAINT
+-- no tiene IF NOT EXISTS, por eso se comprueba a mano que no esté ya.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conname = 'users_username_formato' AND conrelid = 'users'::regclass
+  ) THEN
+    ALTER TABLE users
+      ADD CONSTRAINT users_username_formato CHECK (username ~ '^[A-Z0-9_]{3,20}$');
+  END IF;
+END $$;

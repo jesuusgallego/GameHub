@@ -43,7 +43,9 @@ pregunta si quieres reiniciar para instalarla; si dices *Más tarde*, se instala
 ## Cómo se usa
 
 1. **Crea una cuenta** con un nombre de usuario, tu email y una contraseña (8 caracteres o
-   más, con mayúscula, minúscula y número).
+   más, con mayúscula, minúscula y número). El nombre de usuario es único y va siempre en
+   MAYÚSCULAS: de 3 a 20 caracteres, con letras, números y guion bajo (`_`). Después puedes
+   iniciar sesión con el email **o** con el nombre de usuario.
 2. **Busca un juego** en *Buscar* y añádelo a tu biblioteca.
 3. **Gestiona tu biblioteca** en *Mi biblioteca*: cambia el estado desde la etiqueta de cada
    tarjeta; con el **clic derecho** sobre una tarjeta puedes editarla o quitarla, y con un clic

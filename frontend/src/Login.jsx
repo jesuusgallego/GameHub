@@ -7,11 +7,11 @@ import { useIdioma } from './IdiomaContext'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
 import { escribirToken } from './sesion'
-import { emailRegex } from './validacion'
 
 function Login({ setToken }) {
   const { t } = useIdioma()
-  const [email, setEmail] = useState("")
+  // Email o nombre de usuario: el servidor distingue cuál es
+  const [identificador, setIdentificador] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [enviando, setEnviando] = useState(false)
@@ -23,8 +23,8 @@ function Login({ setToken }) {
     e.preventDefault()
     setError("")
 
-    if (!emailRegex.test(email)) {
-      setError(t('validacion.emailInvalido'))
+    if (identificador.trim() === "") {
+      setError(t('auth.login.identificadorVacio'))
       return
     }
 
@@ -34,7 +34,7 @@ function Login({ setToken }) {
     }
 
     setEnviando(true)
-    apiFetch('/auth/login', { method: 'POST', body: { email, password } })
+    apiFetch('/auth/login', { method: 'POST', body: { identifier: identificador.trim(), password } })
       .then(data => {
         setToken(data.token)
         escribirToken(data.token)
@@ -56,12 +56,14 @@ function Login({ setToken }) {
 
         <form className="formulario" onSubmit={handleLogin}>
           <label className="campo">
-            <span>{t('auth.email')}</span>
+            <span>{t('auth.login.identificador')}</span>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
+              type="text"
+              value={identificador}
+              onChange={(e) => setIdentificador(e.target.value)}
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
               required
             />
           </label>

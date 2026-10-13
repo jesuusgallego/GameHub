@@ -16,6 +16,8 @@ export default {
   'validacion.emailInvalido': 'The email format is not valid',
   'validacion.passwordRequisitos': 'The password must have at least 8 characters, an uppercase letter, a lowercase letter and a number',
   'validacion.usernameObligatorio': 'The username is required',
+  'validacion.usernameInvalido': 'The username must be 3 to 20 characters: only UPPERCASE letters, numbers and underscore',
+  'validacion.usernameAyuda': '3 to 20 characters: letters (typed in UPPERCASE), numbers and underscore (_). No spaces or symbols.',
 
   // ---- Game statuses ----
   'estado.jugando': 'Playing',
@@ -40,6 +42,8 @@ export default {
   'auth.email': 'Email',
   'auth.password': 'Password',
   'auth.login.titulo': 'Log in',
+  'auth.login.identificador': 'Email or username',
+  'auth.login.identificadorVacio': 'Enter your email or your username',
   'auth.login.passwordVacia': 'Enter your password',
   'auth.login.entrando': 'Logging in...',
   'auth.login.sinCuenta': "Don't have an account?",
@@ -258,7 +262,7 @@ export default {
   'cuenta.borrarConfirmarTitulo': 'Delete your account?',
   'cuenta.borrarConfirmarMensaje': 'You will lose your profile and every game in your library. This action cannot be undone.',
   'cuenta.borrarConfirmar': 'Delete forever',
-  'cuenta.emailAyuda': 'The one you use to sign in.',
+  'cuenta.emailAyuda': 'You can use it to sign in and to recover your password.',
   'cuenta.passwordAyuda': "Pick a password you don't use anywhere else.",
   'password.mostrar': 'Show password',
   'password.ocultar': 'Hide password',
@@ -348,7 +352,8 @@ export const erroresApi = {
   'Error al obtener las ilustraciones en IGDB': 'Error getting the artwork from IGDB',
   'Error al obtener la información del juego en IGDB': 'Error getting the game information from IGDB',
   'Error al buscar en IGDB': 'Error searching on IGDB',
-  'El nombre de usuario no puede pasar de 50 caracteres': 'The username cannot be longer than 50 characters',
+  'El nombre de usuario debe tener de 3 a 20 caracteres: solo letras MAYÚSCULAS, números y guion bajo':
+    'The username must be 3 to 20 characters: only UPPERCASE letters, numbers and underscore',
   'El nombre de usuario es obligatorio': 'The username is required',
   'El email o username ya está en uso': 'That email or username is already in use',
   'El email no tiene un formato válido': 'The email format is not valid',

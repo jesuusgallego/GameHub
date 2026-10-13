@@ -13,7 +13,7 @@ require.cache[rutaDb] = {
 };
 
 const { register } = require('../src/controllers/authController');
-const { EMAIL_REGEX, PASSWORD_REGEX } = require('../src/config/validacion');
+const { EMAIL_REGEX, PASSWORD_REGEX, USERNAME_REGEX, MENSAJE_USERNAME } = require('../src/config/validacion');
 
 async function registrar(body) {
   const res = { status(c) { this.c = c; return this; }, json(o) { this.o = o; } };
@@ -21,7 +21,7 @@ async function registrar(body) {
   return { status: res.c, error: res.o?.error };
 }
 
-const valido = { username: 'ana', email: 'ana@x.com', password: 'Clave1234' };
+const valido = { username: 'ANA', email: 'ana@x.com', password: 'Clave1234' };
 
 test('el registro rechaza lo que no es texto o está vacío', async () => {
   for (const malo of [
@@ -53,11 +53,26 @@ test('el registro rechaza contraseñas débiles', async () => {
   assert.strictEqual(consultas, 0);
 });
 
-test('el registro rechaza un nombre de usuario de más de 50 caracteres', async () => {
-  const r = await registrar({ ...valido, username: 'a'.repeat(51) });
-  assert.strictEqual(r.status, 400);
-  assert.match(r.error, /50 caracteres/);
+test('el registro rechaza un nombre de usuario que no cumple la regla', async () => {
+  const malos = [
+    'ana', 'Ana', 'AnA', // minúsculas
+    'AB', 'A', // demasiado corto
+    'A'.repeat(21), // demasiado largo
+    'ANA GOMEZ', ' ANA', 'ANA ', // espacios (el servidor no recorta)
+    'ANA!', 'ANA-B', 'ANA.B', 'ANA@X', 'ÑANDU', 'JOSÉ', '日本語', 'ANA\n',
+  ];
+  for (const username of malos) {
+    const r = await registrar({ ...valido, username });
+    assert.strictEqual(r.status, 400, JSON.stringify(username));
+    assert.strictEqual(r.error, MENSAJE_USERNAME, JSON.stringify(username));
+  }
   assert.strictEqual(consultas, 0);
+});
+
+test('el nombre de usuario acepta mayúsculas, números y guion bajo (3 a 20)', () => {
+  for (const ok of ['ANA', 'JESUS_GALLEGO', 'XX_PRO_99', 'A'.repeat(20), '123', '___']) {
+    assert.ok(USERNAME_REGEX.test(ok), ok);
+  }
 });
 
 test('las reglas aceptan lo normal', () => {

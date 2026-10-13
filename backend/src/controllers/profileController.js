@@ -1,7 +1,9 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/db');
 const { emitirToken } = require('../services/sesion');
-const { EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, SALT_ROUNDS } = require('../config/validacion');
+const {
+  EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
+} = require('../config/validacion');
 
 // La foto llega como data URL: solo admito imágenes de estos tipos en base64
 const avatarRegex = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/;
@@ -105,8 +107,9 @@ async function updateProfile(req, res) {
     if (typeof username !== 'string' || username.trim() === '') {
       return res.status(400).json({ error: 'El nombre de usuario es obligatorio' });
     }
-    if (username.trim().length > 50) {
-      return res.status(400).json({ error: 'El nombre de usuario no puede pasar de 50 caracteres' });
+    // Sin recortar: el formulario ya manda el nombre listo (mayúsculas, sin espacios)
+    if (!USERNAME_REGEX.test(username)) {
+      return res.status(400).json({ error: MENSAJE_USERNAME });
     }
   }
 
@@ -132,7 +135,7 @@ async function updateProfile(req, res) {
        WHERE id = $7
        RETURNING ${COLUMNAS_PUBLICAS}`,
       [
-        has('username'), has('username') ? username.trim() : null,
+        has('username'), has('username') ? username : null,
         has('bio'), bioLimpia,
         has('avatar'), avatar,
         req.user.id,

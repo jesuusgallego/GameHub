@@ -348,6 +348,13 @@ El esquema es [`backend/src/models/sql/schema.sql`](../backend/src/models/sql/sc
 cada arranque, así que una base de datos nueva queda lista y una antigua se pone al día sola. Al
 añadir una columna, hazlo con `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` en ese mismo archivo.
 
+Si un cambio necesita **convertir datos que ya existen**, se escribe también ahí, como un bloque
+`DO $$ ... $$` que solo toque lo que aún no cumple la regla (así los arranques siguientes no
+hacen nada). Ejemplo: los nombres de usuario antiguos se pasan a mayúsculas, sin tildes y con
+`_` en lugar de espacios; si dos quedan iguales, el segundo recibe un número (`ANA`, `ANA2`).
+Después se añade la regla como `CHECK` (con una comprobación en `pg_constraint`, porque
+`ADD CONSTRAINT` no tiene `IF NOT EXISTS`).
+
 | Tabla | Qué guarda |
 |-------|------------|
 | `users` | Usuarios: nombre, email, hash de la contraseña (bcrypt), foto (`avatar`, data URL), bio y `token_version` |
@@ -395,8 +402,8 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/health` | No | Comprueba servidor y conexión a la base de datos |
-| POST | `/auth/register` | No | Crea un usuario (`username` de hasta 50 caracteres, `email` con formato válido y `password` de 8+ con mayúscula, minúscula y número; 400 si no, 409 si ya existe) |
-| POST | `/auth/login` | No | Inicia sesión y devuelve un token JWT |
+| POST | `/auth/register` | No | Crea un usuario (`username` de 3 a 20 caracteres con solo `A-Z`, `0-9` y `_`, **ya en mayúsculas**; `email` con formato válido y `password` de 8+ con mayúscula, minúscula y número; 400 si no, 409 si el email o el nombre ya existen) |
+| POST | `/auth/login` | No | Inicia sesión y devuelve un token JWT. `identifier` es el email o el nombre de usuario (este se acepta en minúsculas: se busca en mayúsculas). Sigue valiendo el campo antiguo `email`, que mandan las apps de escritorio ya instaladas |
 | POST | `/auth/forgot-password` | No | Envía al email un código de 6 dígitos para restablecer la contraseña (`email`, y `idioma` opcional: `es` o `en`). Responde siempre `{ ok: true }`, exista o no la cuenta, para no revelar qué emails están registrados. Un código por minuto como máximo y cinco peticiones por hora y IP |
 | POST | `/auth/reset-password` | No | Cambia la contraseña con el código recibido (`email`, `code`, `new_password`). El código caduca a los 15 minutos, se invalida a los 5 intentos fallidos y solo sirve una vez. 400 con "El código no es válido o ha caducado" para cualquier fallo del código. Cierra todas las sesiones abiertas |
 | GET | `/games/search?q=<nombre>` | Bearer token | Busca juegos por nombre en IGDB |
@@ -408,7 +415,7 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | DELETE | `/games/:id` | Bearer token | Elimina un juego de tu biblioteca |
 | GET | `/profile` | Bearer token | Tus datos: usuario, email, bio, foto y fecha de alta |
 | GET | `/profile/stats` | Bearer token | Estadísticas de tu biblioteca (juegos por estado, nota media) y tus 5 juegos mejor valorados |
-| PATCH | `/profile` | Bearer token | Cambia `username`, `bio` y/o `avatar` (data URL JPG/PNG/WebP; `null` borra bio o foto). 409 si el usuario ya existe |
+| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio` y/o `avatar` (data URL JPG/PNG/WebP; `null` borra bio o foto). 409 si el usuario ya existe |
 | PATCH | `/profile/email` | Bearer token | Cambia el email (`email` + `current_password`). 403 si la contraseña es incorrecta |
 | PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`). Cierra todas las demás sesiones abiertas y devuelve un `token` nuevo para la actual |
 | DELETE | `/profile` | Bearer token | Borra tu cuenta y toda tu biblioteca (`password`) |
@@ -429,9 +436,10 @@ minutos y 1000 peticiones cada 15 minutos en total.
 ```bash
 # Registrar y entrar (guarda el token que devuelve el login)
 curl -X POST localhost:4000/auth/register -H 'Content-Type: application/json' \
-  -d '{"username":"prueba","email":"prueba@example.com","password":"Test1234!"}'
+  -d '{"username":"PRUEBA","email":"prueba@example.com","password":"Test1234!"}'
+# identifier: el email o el nombre de usuario
 curl -X POST localhost:4000/auth/login -H 'Content-Type: application/json' \
-  -d '{"email":"prueba@example.com","password":"Test1234!"}'
+  -d '{"identifier":"prueba@example.com","password":"Test1234!"}'
 
 # Usar el token en una ruta protegida
 curl localhost:4000/games -H "Authorization: Bearer TU_TOKEN"
@@ -449,7 +457,8 @@ Las pruebas (`npm test`) usan el ejecutor de pruebas que trae Node (`node --test
 dependencias extra. Cubren la lógica que no necesita navegador ni servidor:
 
 - **Backend:** lectura de logros de Steam (con Steam simulado), recuperación de contraseña
-  (código y correo), validación de sesiones y validación del registro.
+  (código y correo), validación de sesiones, validación del registro y inicio de sesión con
+  email o nombre de usuario.
 - **Frontend:** búsqueda, filtros y orden de la biblioteca, traducción de géneros y modos de
   IGDB, y reglas de validación (comprueba que coinciden con las del backend).
 - **Escritorio:** avisos de actualización, que el instalador incluya los archivos que carga
@@ -496,9 +505,15 @@ Decisiones y detalles que no se ven leyendo un solo archivo.
   la compara con la de la base de datos en cada petición (una consulta por la clave primaria).
   Cambiar o recuperar la contraseña la sube y cierra el resto de sesiones. Los tokens anteriores
   a existir la versión no llevan `v` y cuentan como 0.
-- Las reglas de email y contraseña están en `backend/src/config/validacion.js` y
-  `frontend/src/validacion.js`; **deben coincidir** (una prueba lo comprueba). El formulario
+- Las reglas de email, contraseña y nombre de usuario están en `backend/src/config/validacion.js`
+  y `frontend/src/validacion.js`; **deben coincidir** (una prueba lo comprueba). El formulario
   las usa para avisar al momento, pero la que manda es la del servidor.
+- **Nombre de usuario:** `^[A-Z0-9_]{3,20}$`. Solo mayúsculas hace que sea único sin
+  ambigüedad (`ana` y `Ana` serían los dos `ANA`) y no admite `@`, así que al iniciar sesión un
+  texto con `@` es un email y uno sin `@` es un nombre. El campo del formulario lo deja listo
+  al escribir (`normalizarUsername`); el servidor no lo arregla, lo rechaza. La misma regla es
+  un `CHECK` en `schema.sql`, y ese archivo convierte los nombres antiguos al arrancar (ver
+  la sección de la base de datos).
 - Un 401 significa "sesión caducada" y el frontend cierra la sesión; por eso una contraseña
   incorrecta al confirmar un cambio responde **403**, no 401.
 

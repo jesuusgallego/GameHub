@@ -7,6 +7,7 @@ import RecortadorFoto from './RecortadorFoto'
 import { useCambioVista } from './useCambioVista'
 import Mensaje from './Mensaje'
 import { useIdioma } from './IdiomaContext'
+import { usernameRegex, normalizarUsername, USERNAME_MAX } from './validacion'
 
 const BIO_MAX = 300
 
@@ -45,7 +46,7 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
 
   // Solo envío lo que ha cambiado, y "Guardar" se activa solo si hay algo que enviar
   const cambios = {}
-  if (username.trim() !== perfil.username) cambios.username = username.trim()
+  if (username !== perfil.username) cambios.username = username
   if (bio.trim() !== (perfil.bio ?? "")) cambios.bio = bio.trim() || null
   if (avatar !== perfil.avatar) cambios.avatar = avatar
   const hayCambios = Object.keys(cambios).length > 0
@@ -123,8 +124,13 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
     setError("")
     setGuardado(false)
 
-    if (username.trim() === "") {
+    if (username === "") {
       setError(t('validacion.usernameObligatorio'))
+      return
+    }
+
+    if (!usernameRegex.test(username)) {
+      setError(t('validacion.usernameInvalido'))
       return
     }
 
@@ -216,11 +222,14 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
         <input
           type="text"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          maxLength={50}
+          onChange={(e) => setUsername(normalizarUsername(e.target.value))}
+          maxLength={USERNAME_MAX}
           autoComplete="username"
+          autoCapitalize="characters"
+          spellCheck={false}
           required
         />
+        <small>{t('validacion.usernameAyuda')}</small>
       </label>
 
       <label className="campo">

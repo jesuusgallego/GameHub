@@ -4,6 +4,24 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
+### Añadido
+- **Inicio de sesión con email o con nombre de usuario.** El campo de la pantalla de entrada
+  acepta cualquiera de los dos. El nombre de usuario se puede escribir también en minúsculas.
+
+### Cambiado
+- **Nombre de usuario único y en MAYÚSCULAS:** de 3 a 20 caracteres, solo letras sin tilde,
+  números y guion bajo (`_`). El campo no deja escribir minúsculas ni caracteres raros: pasa
+  las letras a mayúsculas, quita las tildes y descarta espacios y símbolos. El servidor y la
+  base de datos aplican la misma regla. Antes valía cualquier texto de hasta 50 caracteres.
+- **Los nombres de usuario que ya existían se convierten solos** al arrancar el servidor:
+  `Jesus Gallego` pasa a `JESUS_GALLEGO`, `José` a `JOSE`, y si dos quedan iguales el segundo
+  recibe un número (`ANA`, `ANA2`). Las cuentas siguen entrando con su email y su contraseña.
+
+### Interno
+- `POST /auth/login` recibe `identifier` (email o nombre). Sigue aceptando `email` para que las
+  apps de escritorio ya instaladas puedan entrar. **Hay que desplegar el backend antes de
+  publicar la app**: una interfaz nueva contra un servidor antiguo no entraría con el nombre.
+
 ## [1.1.0] - 2026-10-12
 
 Recuperación de contraseña, sesiones más seguras y mejoras en el perfil y en las actualizaciones.

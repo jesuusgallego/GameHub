@@ -14,12 +14,21 @@ const MENSAJE_PASSWORD_DEBIL =
 const MENSAJE_PASSWORD_REGISTRO =
   'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número';
 
-// Longitud máxima del nombre de usuario (la columna es VARCHAR(50))
-const USERNAME_MAX = 50;
+// Nombre de usuario: de 3 a 20 caracteres, solo letras MAYÚSCULAS sin tilde (A-Z),
+// números y guion bajo. Ir siempre en mayúsculas hace que sea único sin ambigüedad
+// ("ana" y "Ana" no pueden convivir: los dos serían ANA). Tampoco admite "@": así, al
+// iniciar sesión, un texto con "@" es un email y uno sin "@" es un nombre de usuario.
+// La base de datos tiene la misma regla como CHECK (schema.sql).
+const USERNAME_REGEX = /^[A-Z0-9_]{3,20}$/;
+
+// El texto exacto está también en frontend/src/textos/en.js (erroresApi): ahí se traduce
+const MENSAJE_USERNAME =
+  'El nombre de usuario debe tener de 3 a 20 caracteres: solo letras MAYÚSCULAS, números y guion bajo';
 
 // Coste de bcrypt: cada +1 duplica el tiempo de calcular un hash
 const SALT_ROUNDS = 10;
 
 module.exports = {
-  EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, MENSAJE_PASSWORD_REGISTRO, USERNAME_MAX, SALT_ROUNDS,
+  EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, MENSAJE_PASSWORD_REGISTRO,
+  USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
 };

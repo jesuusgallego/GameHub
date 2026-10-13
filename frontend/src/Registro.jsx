@@ -6,7 +6,7 @@ import MenuAjustes from './MenuAjustes'
 import { useIdioma } from './IdiomaContext'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
-import { emailRegex, passwordRegex } from './validacion'
+import { emailRegex, passwordRegex, usernameRegex, normalizarUsername, USERNAME_MAX } from './validacion'
 
 function Registro() {
   const { t } = useIdioma()
@@ -21,8 +21,13 @@ function Registro() {
     e.preventDefault()
     setError("")
 
-    if (username.trim() === "") {
+    if (username === "") {
       setError(t('validacion.usernameObligatorio'))
+      return
+    }
+
+    if (!usernameRegex.test(username)) {
+      setError(t('validacion.usernameInvalido'))
       return
     }
 
@@ -39,7 +44,7 @@ function Registro() {
     setEnviando(true)
     apiFetch('/auth/register', {
       method: 'POST',
-      body: { username: username.trim(), email, password }
+      body: { username, email, password }
     })
       .then(() => navigate('/login'))
       .catch(err => setError(err.message))
@@ -62,10 +67,14 @@ function Registro() {
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => setUsername(normalizarUsername(e.target.value))}
+              maxLength={USERNAME_MAX}
               autoComplete="username"
+              autoCapitalize="characters"
+              spellCheck={false}
               required
             />
+            <small>{t('validacion.usernameAyuda')}</small>
           </label>
           <label className="campo">
             <span>{t('auth.email')}</span>
