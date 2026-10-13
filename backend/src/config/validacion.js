@@ -39,10 +39,27 @@ const TEXTOS_PERFIL = {
 };
 
 const MENSAJE_SEXO = 'El sexo no es válido';
+const MENSAJE_PAIS = 'El país no es válido';
+const MENSAJE_TELEFONO =
+  'El teléfono no es válido: escríbelo con el prefijo del país, por ejemplo +34 600 123 456';
+
+// Teléfono en formato internacional: "+", prefijo del país (no empieza por 0) y de 7 a 15
+// dígitos en total. La base de datos tiene el mismo CHECK. No se verifica que el número
+// exista ni que sea de quien lo escribe.
+const TELEFONO_REGEX = /^\+[1-9][0-9]{6,14}$/;
+
+// Deja el teléfono en su forma canónica: sin espacios, guiones, puntos ni paréntesis, y
+// con "+" en lugar del "00" de las llamadas internacionales ("0034 600-123-456" ->
+// "+34600123456"). No comprueba que sea válido. El formulario hace lo mismo
+// (normalizarTelefono en frontend/src/validacion.js).
+function normalizarTelefono(texto) {
+  return texto.replace(/[\s().-]/g, '').replace(/^00/, '+');
+}
 const MENSAJE_FECHA_NACIMIENTO = 'La fecha de nacimiento no es válida';
 
 // Edad máxima creíble: una fecha más antigua se toma por una errata
 const EDAD_MAX = 120;
+const PAISES = require('./paises');
 
 // Deja un texto del perfil listo para guardar: recortado, y NULL si queda vacío (borrar
 // el campo). Devuelve undefined si no vale: no es texto, es demasiado largo o lleva
@@ -57,6 +74,17 @@ function limpiarTextoPerfil(campo, valor) {
   // [...texto] cuenta personas-caracteres, no unidades UTF-16: así lo cuenta VARCHAR
   if ([...texto].length > TEXTOS_PERFIL[campo].max || /\p{Cc}/u.test(texto)) return undefined;
   return texto;
+}
+
+// Deja el teléfono listo para guardar: en forma canónica y NULL si va vacío. Devuelve
+// undefined si no es texto o no es un teléfono internacional válido.
+function limpiarTelefono(valor) {
+  if (valor === null) return null;
+  if (typeof valor !== 'string') return undefined;
+
+  const telefono = normalizarTelefono(valor);
+  if (telefono === '') return null;
+  return TELEFONO_REGEX.test(telefono) ? telefono : undefined;
 }
 
 // "AAAA-MM-DD", una fecha que existe (no 2020-02-30), que no es futura y de hace menos de
@@ -86,5 +114,6 @@ module.exports = {
   EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, MENSAJE_PASSWORD_REGISTRO,
   USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
   SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, EDAD_MAX,
-  limpiarTextoPerfil, fechaNacimientoValida,
+  PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO, TELEFONO_REGEX, normalizarTelefono,
+  limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida,
 };

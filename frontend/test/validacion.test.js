@@ -4,8 +4,9 @@ import assert from 'node:assert'
 import { createRequire } from 'node:module'
 import {
   emailRegex, passwordRegex, usernameRegex, normalizarUsername, USERNAME_MAX,
-  SEXOS, LIMITES_PERFIL, EDAD_MAX, limitesFechaNacimiento,
+  SEXOS, LIMITES_PERFIL, EDAD_MAX, limitesFechaNacimiento, telefonoRegex, normalizarTelefono,
 } from '../src/validacion.js'
+import { PAISES, nombrePais, opcionesPaises } from '../src/paises.js'
 import es from '../src/textos/es.js'
 import en from '../src/textos/en.js'
 import { erroresApi } from '../src/textos/en.js'
@@ -45,6 +46,44 @@ test('limitesFechaNacimiento: de hoy a hace 120 años, en formato AAAA-MM-DD', (
   assert.deepStrictEqual(limitesFechaNacimiento(new Date(2026, 0, 5)), { min: '1906-01-05', max: '2026-01-05' })
 })
 
+test('telefonoRegex y normalizarTelefono: formato internacional sin separadores', () => {
+  const casos = {
+    '+34 600 123 456': '+34600123456', '0034-600.123.456': '+34600123456', '(+34) 600123456': '+34600123456',
+    '+1 (415) 555-0132': '+14155550132', '600123456': '600123456', '': '',
+  }
+  for (const [entrada, salida] of Object.entries(casos)) {
+    assert.strictEqual(normalizarTelefono(entrada), salida, entrada)
+  }
+  for (const ok of ['+34600123456', '+14155550132', '+1234567']) assert.ok(telefonoRegex.test(ok), ok)
+  for (const mal of ['', '600123456', '+0123456789', '+34 600', '+3460012345678901', '+34abc123456', '34600123456']) {
+    assert.ok(!telefonoRegex.test(mal), mal)
+  }
+})
+
+test('la lista de países: 250 códigos únicos, con nombre en español e inglés', () => {
+  assert.strictEqual(PAISES.length, 250)
+  assert.strictEqual(new Set(PAISES).size, PAISES.length, 'hay códigos repetidos')
+  for (const codigo of PAISES) {
+    assert.match(codigo, /^[A-Z]{2}$/)
+    for (const idioma of ['es', 'en']) {
+      assert.notStrictEqual(nombrePais(codigo, idioma), codigo, `${codigo} sin nombre en ${idioma}`)
+    }
+  }
+  assert.strictEqual(nombrePais('ES', 'es'), 'España')
+  assert.strictEqual(nombrePais('ES', 'en'), 'Spain')
+  assert.strictEqual(nombrePais('DE', 'es'), 'Alemania')
+})
+
+test('opcionesPaises ordena por el nombre en el idioma de la interfaz', () => {
+  const es = opcionesPaises('es').map((o) => o.etiqueta)
+  const en = opcionesPaises('en').map((o) => o.etiqueta)
+  assert.strictEqual(es.length, 250)
+  assert.ok(es.indexOf('Alemania') < es.indexOf('España'))
+  assert.ok(es.indexOf('España') < es.indexOf('Francia'))
+  assert.ok(en.indexOf('Spain') < en.indexOf('Sweden'))
+  assert.ok(opcionesPaises('es').some((o) => o.valor === 'ES' && o.etiqueta === 'España'))
+})
+
 // Si el formulario y el servidor discreparan, el formulario dejaría pasar cosas que el
 // servidor rechaza (o al revés). Las reglas viven en dos sitios porque son dos paquetes;
 // esta prueba hace que no se separen sin avisar.
@@ -60,6 +99,12 @@ test('las reglas coinciden con las del backend', () => {
     assert.strictEqual(max, servidor.TEXTOS_PERFIL[campo].max, campo)
   }
   assert.deepStrictEqual(Object.keys(LIMITES_PERFIL), Object.keys(servidor.TEXTOS_PERFIL))
+  assert.strictEqual(telefonoRegex.source, servidor.TELEFONO_REGEX.source)
+  assert.deepStrictEqual(PAISES, servidor.PAISES)
+  // Misma normalización del teléfono en los dos lados
+  for (const t of ['+34 600 123 456', '0034-600.123.456', '(+34) 600123456', '600 123 456', '', ' +1 415 555 0132 ']) {
+    assert.strictEqual(normalizarTelefono(t), servidor.normalizarTelefono(t), JSON.stringify(t))
+  }
 })
 
 test('cada opción de sexo tiene texto en los dos idiomas', () => {
@@ -76,6 +121,7 @@ test('los mensajes de validación del servidor tienen traducción', () => {
   const servidor = require('../../backend/src/config/validacion.js')
   const mensajes = [
     servidor.MENSAJE_USERNAME, servidor.MENSAJE_SEXO, servidor.MENSAJE_FECHA_NACIMIENTO,
+    servidor.MENSAJE_PAIS, servidor.MENSAJE_TELEFONO,
     ...Object.values(servidor.TEXTOS_PERFIL).map((c) => c.mensaje),
   ]
   for (const mensaje of mensajes) assert.ok(erroresApi[mensaje], `falta en erroresApi de en.js: ${mensaje}`)

@@ -9,9 +9,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   acepta cualquiera de los dos. El nombre de usuario se puede escribir también con
   mayúsculas: se busca en minúsculas.
 - **Datos personales en el perfil**, todos opcionales: nombre, apellidos, fecha de nacimiento,
-  sexo (hombre, mujer u otro) y localización. Se editan en *Perfil → Editar perfil* y se
-  muestran en el banner del perfil (la edad se calcula a partir de la fecha de nacimiento,
-  que no se enseña). Por ahora solo los ve su dueño.
+  sexo (hombre, mujer u otro), localización (ciudad o región), país y teléfono. Se editan en
+  *Perfil → Editar perfil*. El banner muestra nombre, edad (calculada con la fecha de
+  nacimiento, que no se enseña), sexo y "localización, país"; el teléfono no se muestra en
+  ningún sitio. Por ahora solo los ve su dueño.
+- **País** como campo aparte: una lista de 250 países con su nombre en el idioma de la interfaz.
+- **Teléfono** en formato internacional (`+34 600 123 456`): se guarda sin espacios y no se
+  verifica que el número exista.
 
 ### Cambiado
 - **Nombre de usuario único y en minúsculas:** de 3 a 20 caracteres, solo letras sin tilde,
@@ -28,8 +32,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - `POST /auth/login` recibe `identifier` (email o nombre). Sigue aceptando `email` para que las
   apps de escritorio ya instaladas puedan entrar. **Hay que desplegar el backend antes de
   publicar la app**: una interfaz nueva contra un servidor antiguo no entraría con el nombre.
-- `PATCH /profile` acepta `first_name`, `last_name`, `birth_date` (`AAAA-MM-DD`), `gender` y
-  `location`; `GET /profile` devuelve además `age`. Nuevas columnas en `users` y reglas
+- `PATCH /profile` acepta `first_name`, `last_name`, `birth_date` (`AAAA-MM-DD`), `gender`,
+  `location`, `country` (código ISO de dos letras) y `phone`; `GET /profile` devuelve además `age`. Nuevas columnas en `users` y reglas
   compartidas con el formulario (una prueba comprueba que coinciden).
 - `schema.sql` quita la restricción de nombre de usuario de una versión de desarrollo anterior
   (mayúsculas) antes de convertir los nombres, para que una base de datos que ya la tuviera

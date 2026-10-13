@@ -19,7 +19,9 @@ require.cache[rutaDb] = {
 };
 
 const { updateProfile } = require('../src/controllers/profileController');
-const { MENSAJE_USERNAME, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, TEXTOS_PERFIL } = require('../src/config/validacion');
+const {
+  MENSAJE_USERNAME, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, MENSAJE_PAIS, MENSAJE_TELEFONO, TEXTOS_PERFIL,
+} = require('../src/config/validacion');
 
 beforeEach(() => { consultas.length = 0; filas = [{ id: 1, username: 'ana' }]; fallo = null; });
 
@@ -39,6 +41,22 @@ test('guarda solo los campos que llegan, con parámetros y el id al final', asyn
   assert.match(sql, /SET first_name = \$1, last_name = \$2, location = \$3, birth_date = \$4, gender = \$5 WHERE id = \$6/);
   assert.deepStrictEqual(params, ['Ana', 'García', 'Sevilla', '1990-06-15', 'mujer', 7]);
   assert.match(sql, /EXTRACT\(YEAR FROM age\(birth_date\)\)::int AS age/, 'devuelve también la edad');
+});
+
+test('país y teléfono: el país en su código y el teléfono ya normalizado', async () => {
+  const r = await editar({ country: 'ES', phone: '+34 600-123-456', location: 'Sevilla' });
+  assert.strictEqual(r.status, 200);
+  const { sql, params } = consultas[0];
+  assert.match(sql, /SET location = \$1, country = \$2, phone = \$3 WHERE id = \$4/);
+  assert.deepStrictEqual(params, ['Sevilla', 'ES', '+34600123456', 7]);
+  assert.match(sql, /country, phone,/, 'los devuelve');
+  assert.doesNotMatch(sql, /RETURNING[^]*password_hash/, 'nunca devuelve el hash');
+});
+
+test('país y teléfono se pueden borrar con null o vacío', async () => {
+  await editar({ country: null, phone: '  ' });
+  assert.match(consultas[0].sql, /SET country = \$1, phone = \$2 WHERE id = \$3/);
+  assert.deepStrictEqual(consultas[0].params, [null, null, 7]);
 });
 
 test('null y vacío borran el dato (NULL); el resto de campos no se toca', async () => {
@@ -77,6 +95,15 @@ test('rechaza datos personales que no valen, sin consultar la base de datos', as
     [{ gender: 'xyz' }, MENSAJE_SEXO],
     [{ gender: '' }, MENSAJE_SEXO],
     [{ gender: 'Hombre' }, MENSAJE_SEXO],
+    [{ country: 'XX' }, MENSAJE_PAIS],
+    [{ country: 'es' }, MENSAJE_PAIS],
+    [{ country: 'ESP' }, MENSAJE_PAIS],
+    [{ country: '' }, MENSAJE_PAIS],
+    [{ country: 34 }, MENSAJE_PAIS],
+    [{ phone: '600123456' }, MENSAJE_TELEFONO],
+    [{ phone: '+34 abc' }, MENSAJE_TELEFONO],
+    [{ phone: 600123456 }, MENSAJE_TELEFONO],
+    [{ phone: '+0 600123456' }, MENSAJE_TELEFONO],
   ];
   for (const [body, error] of casos) {
     const r = await editar(body);

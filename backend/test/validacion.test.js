@@ -15,7 +15,7 @@ require.cache[rutaDb] = {
 const { register } = require('../src/controllers/authController');
 const {
   EMAIL_REGEX, PASSWORD_REGEX, USERNAME_REGEX, MENSAJE_USERNAME,
-  limpiarTextoPerfil, fechaNacimientoValida,
+  limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida, PAISES, normalizarTelefono,
 } = require('../src/config/validacion');
 
 async function registrar(body) {
@@ -92,6 +92,34 @@ test('limpiarTextoPerfil recorta, convierte el vacío en null y rechaza lo que n
   assert.strictEqual(limpiarTextoPerfil('last_name', 'a'.repeat(100)), 'a'.repeat(100));
   assert.strictEqual(limpiarTextoPerfil('last_name', 'a'.repeat(101)), undefined);
   assert.strictEqual(limpiarTextoPerfil('location', 'a'.repeat(101)), undefined);
+});
+
+test('limpiarTelefono deja el formato internacional canónico y rechaza lo demás', () => {
+  const buenos = {
+    '+34 600 123 456': '+34600123456', '0034-600.123.456': '+34600123456',
+    '(+34) 600123456': '+34600123456', '+1 (415) 555-0132': '+14155550132', '  +44 20 7946 0958 ': '+442079460958',
+  };
+  for (const [entrada, salida] of Object.entries(buenos)) {
+    assert.strictEqual(limpiarTelefono(entrada), salida, entrada);
+  }
+  assert.strictEqual(limpiarTelefono(''), null);
+  assert.strictEqual(limpiarTelefono('   '), null);
+  assert.strictEqual(limpiarTelefono(null), null);
+  for (const malo of [
+    '600123456', '34600123456', '+0 600123456', '+34 6', '+34600123456789012', '+34 abc 123 456',
+    '+34 600 123 456 ext 2', 5, {}, ['+34600123456'], true,
+  ]) {
+    assert.strictEqual(limpiarTelefono(malo), undefined, JSON.stringify(malo));
+  }
+  assert.strictEqual(normalizarTelefono('00 34 600 123 456'), '+34600123456');
+});
+
+test('la lista de países tiene 250 códigos de dos letras, sin repetir', () => {
+  assert.strictEqual(PAISES.length, 250);
+  assert.strictEqual(new Set(PAISES).size, 250);
+  assert.ok(PAISES.every((c) => /^[A-Z]{2}$/.test(c)));
+  for (const c of ['ES', 'MX', 'AR', 'US', 'GB', 'DE', 'FR', 'PT', 'XK']) assert.ok(PAISES.includes(c), c);
+  for (const c of ['XX', 'ZZ', 'UK', 'EU', 'es']) assert.ok(!PAISES.includes(c), c);
 });
 
 test('fechaNacimientoValida acepta fechas reales y plausibles', () => {

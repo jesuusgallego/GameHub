@@ -50,3 +50,13 @@ export function limitesFechaNacimiento(hoy = new Date()) {
   const masAntigua = new Date(hoy.getFullYear() - EDAD_MAX, hoy.getMonth(), hoy.getDate())
   return { min: aFechaIso(masAntigua), max: aFechaIso(hoy) }
 }
+
+// Teléfono en formato internacional: "+", prefijo del país y de 7 a 15 dígitos en total
+export const telefonoRegex = /^\+[1-9][0-9]{6,14}$/
+
+// Deja el teléfono en su forma canónica, igual que el servidor: sin espacios, guiones,
+// puntos ni paréntesis, y con "+" en lugar del "00" ("0034 600-123-456" -> "+34600123456").
+// No comprueba que sea válido; para eso, telefonoRegex.
+export function normalizarTelefono(texto) {
+  return texto.replace(/[\s().-]/g, '').replace(/^00/, '+')
+}

@@ -1,14 +1,15 @@
 import Avatar from './Avatar'
 import { useIdioma } from './IdiomaContext'
+import { nombrePais } from './paises'
 
 // Banner del perfil: foto, nombre, bio y tres cifras de la biblioteca.
 // El fondo es siempre el mismo (una aurora con los colores de la marca, solo CSS):
 // no depende del usuario ni de sus juegos. Es decorativo.
-//  - perfil: { username, avatar, bio, created_at, first_name, last_name, age, gender, location }
+//  - perfil: { username, avatar, bio, created_at, first_name, last_name, age, gender, location, country }
 //  - stats: lo que calcula GET /profile/stats, o null mientras carga
 //  - onEditar(): salta a la pestaña de edición
 function CabeceraPerfil({ perfil, stats, onEditar }) {
-  const { t, locale } = useIdioma()
+  const { t, locale, idioma } = useIdioma()
 
   const miembroDesde = new Date(perfil.created_at).toLocaleDateString(locale, {
     month: 'long',
@@ -21,7 +22,9 @@ function CabeceraPerfil({ perfil, stats, onEditar }) {
     [perfil.first_name, perfil.last_name].filter(Boolean).join(" "),
     perfil.age != null ? t('perfil.edad', { n: perfil.age }) : "",
     perfil.gender ? t(`sexo.${perfil.gender}`) : "",
-    perfil.location ?? "",
+    // "Sevilla, España": la localización y el país van juntos. El teléfono no se enseña
+    // aquí a propósito: es un dato de contacto que no debe acabar a la vista de otros.
+    [perfil.location, perfil.country ? nombrePais(perfil.country, idioma) : ""].filter(Boolean).join(", "),
   ].filter(Boolean)
 
   // Mientras no llegan las estadísticas enseño rayas, no ceros que luego cambian

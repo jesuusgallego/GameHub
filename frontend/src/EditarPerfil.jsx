@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { apiFetch } from './api'
 import Avatar from './Avatar'
 import Cargando from './Cargando'
@@ -8,12 +8,16 @@ import { useCambioVista } from './useCambioVista'
 import Mensaje from './Mensaje'
 import { useIdioma } from './IdiomaContext'
 import Desplegable from './Desplegable'
-import { usernameRegex, normalizarUsername, USERNAME_MAX, SEXOS, LIMITES_PERFIL, limitesFechaNacimiento } from './validacion'
+import {
+  usernameRegex, normalizarUsername, USERNAME_MAX, SEXOS, LIMITES_PERFIL, limitesFechaNacimiento,
+  telefonoRegex, normalizarTelefono,
+} from './validacion'
+import { opcionesPaises } from './paises'
 
 const BIO_MAX = 300
 
 // Formulario de foto, nombre de usuario, bio y datos personales (nombre y apellidos,
-// fecha de nacimiento, sexo y localización: todos opcionales).
+// fecha de nacimiento, sexo, localización, país y teléfono: todos opcionales).
 // La foto puede ser una imagen subida o una ilustración de uno de los juegos de la
 // biblioteca. En los dos casos se encuadra en el RecortadorFoto y acaba siendo un
 // cuadrado de 256 px en base64.
@@ -22,7 +26,7 @@ const BIO_MAX = 300
 //  - cerrarSesion(): para cuando el backend dice 401 (sesión caducada)
 // Los campos son copias locales: no se guarda nada hasta pulsar "Guardar".
 function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
-  const { t } = useIdioma()
+  const { t, idioma } = useIdioma()
   const [username, setUsername] = useState(perfil.username)
   const [bio, setBio] = useState(perfil.bio ?? "")
   const [nombre, setNombre] = useState(perfil.first_name ?? "")
@@ -30,6 +34,8 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   const [nacimiento, setNacimiento] = useState(perfil.birth_date ?? "") // "AAAA-MM-DD" o ""
   const [sexo, setSexo] = useState(perfil.gender ?? "") // "" = sin indicar
   const [localizacion, setLocalizacion] = useState(perfil.location ?? "")
+  const [pais, setPais] = useState(perfil.country ?? "") // código ISO ("ES") o "" = sin indicar
+  const [telefono, setTelefono] = useState(perfil.phone ?? "")
   const [avatar, setAvatar] = useState(perfil.avatar)
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState("")
@@ -53,6 +59,11 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
 
   // Lo que admite el campo de fecha: ni futura ni de hace más de 120 años
   const { min: nacimientoMin, max: nacimientoMax } = limitesFechaNacimiento()
+  // Los países en el idioma de la interfaz, ordenados por su nombre
+  const opcionesPais = useMemo(
+    () => [{ valor: "", etiqueta: t('editarPerfil.paisSinIndicar') }, ...opcionesPaises(idioma)],
+    [idioma, t]
+  )
   const opcionesSexo = [
     { valor: "", etiqueta: t('sexo.sinIndicar') },
     ...SEXOS.map((valor) => ({ valor, etiqueta: t(`sexo.${valor}`) })),
@@ -69,6 +80,11 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   if (nacimiento !== (perfil.birth_date ?? "")) cambios.birth_date = nacimiento || null
   if (sexo !== (perfil.gender ?? "")) cambios.gender = sexo || null
   if (localizacion.trim() !== (perfil.location ?? "")) cambios.location = localizacion.trim() || null
+  if (pais !== (perfil.country ?? "")) cambios.country = pais || null
+  // Comparo y envío el teléfono ya normalizado (el servidor lo guarda así): si no,
+  // "+34 600 123 456" frente a "+34600123456" parecería un cambio pendiente para siempre
+  const telefonoLimpio = normalizarTelefono(telefono)
+  if (telefonoLimpio !== (perfil.phone ?? "")) cambios.phone = telefonoLimpio || null
   const hayCambios = Object.keys(cambios).length > 0
 
   // Al cambiar de foto subida (o al irme) libero la URL temporal anterior, que si
@@ -151,6 +167,11 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
 
     if (!usernameRegex.test(username)) {
       setError(t('validacion.usernameInvalido'))
+      return
+    }
+
+    if (telefonoLimpio !== "" && !telefonoRegex.test(telefonoLimpio)) {
+      setError(t('validacion.telefonoInvalido'))
       return
     }
 
@@ -307,16 +328,35 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
         </label>
       </div>
 
+      <div className="formulario__pareja">
+        <label className="campo">
+          <span>{t('editarPerfil.pais')}</span>
+          <Desplegable opciones={opcionesPais} valor={pais} onChange={setPais} />
+        </label>
+        <label className="campo">
+          <span>{t('editarPerfil.localizacion')}</span>
+          <input
+            type="text"
+            value={localizacion}
+            onChange={(e) => setLocalizacion(e.target.value)}
+            maxLength={LIMITES_PERFIL.location}
+            placeholder={t('editarPerfil.localizacionPlaceholder')}
+            autoComplete="address-level2"
+          />
+        </label>
+      </div>
+
       <label className="campo">
-        <span>{t('editarPerfil.localizacion')}</span>
+        <span>{t('editarPerfil.telefono')}</span>
         <input
-          type="text"
-          value={localizacion}
-          onChange={(e) => setLocalizacion(e.target.value)}
-          maxLength={LIMITES_PERFIL.location}
-          placeholder={t('editarPerfil.localizacionPlaceholder')}
-          autoComplete="address-level2"
+          type="tel"
+          value={telefono}
+          onChange={(e) => setTelefono(e.target.value)}
+          maxLength={25}
+          placeholder="+34 600 123 456"
+          autoComplete="tel"
         />
+        <small>{t('editarPerfil.telefonoAyuda')}</small>
       </label>
 
       <Mensaje texto={error} />

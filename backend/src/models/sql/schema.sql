@@ -220,7 +220,9 @@ END $$;
 --  - birth_date: fecha de nacimiento. Se guarda la fecha y no la edad, que se quedaría
 --    desfasada cada cumpleaños; la edad se calcula al leer (ver profileController)
 --  - gender: 'hombre', 'mujer' u 'otro'
---  - location: texto libre ("Sevilla, España")
+--  - location: texto libre, la ciudad o región ("Sevilla")
+--  - country: país como código ISO de dos letras en mayúsculas ("ES"); aparte de location
+--  - phone: teléfono en formato internacional sin separadores ("+34600123456")
 -- Las columnas se añaden aparte por lo mismo que avatar y bio: CREATE TABLE IF NOT EXISTS
 -- no toca una tabla que ya existe. El CHECK de gender, escrito en la propia columna, solo
 -- se añade cuando la columna se crea.
@@ -230,3 +232,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS birth_date DATE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(10)
     CHECK (gender IN ('hombre', 'mujer', 'otro'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(2)
+    CHECK (country ~ '^[A-Z]{2}$');
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(16)
+    CHECK (phone ~ '^\+[1-9][0-9]{6,14}$');

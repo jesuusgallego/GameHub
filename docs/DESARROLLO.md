@@ -357,7 +357,7 @@ Después se añade la regla como `CHECK` (con una comprobación en `pg_constrain
 
 | Tabla | Qué guarda |
 |-------|------------|
-| `users` | Usuarios: nombre de usuario, email, hash de la contraseña (bcrypt), foto (`avatar`, data URL), bio, `token_version` y datos personales opcionales (`first_name`, `last_name`, `birth_date`, `gender`, `location`). Se guarda la fecha de nacimiento y no la edad, que se calcularía mal con el tiempo |
+| `users` | Usuarios: nombre de usuario, email, hash de la contraseña (bcrypt), foto (`avatar`, data URL), bio, `token_version` y datos personales opcionales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, `country`, `phone`). Se guarda la fecha de nacimiento y no la edad, que se calcularía mal con el tiempo |
 | `user_games` | Un juego en la biblioteca de un usuario: `igdb_id`, estado, nota, reseña, plataforma, metadatos de IGDB (`genres`, `developers`, `publishers`, `release_date`, `igdb_rating`) y el progreso de Steam (`steam_appid`, `playtime_minutes`, `achievements_*`, `imported_from`) |
 | `translations` | Caché de traducciones de descripciones, por huella SHA-256 del texto y idioma |
 | `translation_usage` | Caracteres enviados a Azure cada mes (para respetar el tope propio) |
@@ -413,9 +413,9 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | GET | `/games` | Bearer token | Lista los juegos de tu biblioteca |
 | PATCH | `/games/:id` | Bearer token | Actualiza `status`, `rating`, `review` o `platform`. Los campos omitidos no cambian; enviar `null` borra `rating`, `review` o `platform` |
 | DELETE | `/games/:id` | Bearer token | Elimina un juego de tu biblioteca |
-| GET | `/profile` | Bearer token | Tus datos: usuario, email, bio, foto, fecha de alta y datos personales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, y `age`, que se calcula con la fecha de nacimiento) |
+| GET | `/profile` | Bearer token | Tus datos: usuario, email, bio, foto, fecha de alta y datos personales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, `country`, `phone`, y `age`, que se calcula con la fecha de nacimiento) |
 | GET | `/profile/stats` | Bearer token | Estadísticas de tu biblioteca (juegos por estado, nota media) y tus 5 juegos mejor valorados |
-| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) y/o los datos personales, todos opcionales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años) y `gender` (`hombre`, `mujer` u `otro`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username`. 409 si el usuario ya existe |
+| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) y/o los datos personales, todos opcionales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años), `gender` (`hombre`, `mujer` u `otro`), `country` (código ISO 3166-1 de dos letras en mayúsculas, de la lista de `config/paises.js`) y `phone` (internacional: `+`, prefijo y 7 a 15 dígitos; el servidor quita espacios, guiones y paréntesis y cambia un `00` inicial por `+`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username`. 409 si el usuario ya existe |
 | PATCH | `/profile/email` | Bearer token | Cambia el email (`email` + `current_password`). 403 si la contraseña es incorrecta |
 | PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`). Cierra todas las demás sesiones abiertas y devuelve un `token` nuevo para la actual |
 | DELETE | `/profile` | Bearer token | Borra tu cuenta y toda tu biblioteca (`password`) |
@@ -514,6 +514,13 @@ Decisiones y detalles que no se ven leyendo un solo archivo.
   al escribir (`normalizarUsername`); el servidor no lo arregla, lo rechaza. La misma regla es
   un `CHECK` en `schema.sql`, y ese archivo convierte los nombres antiguos al arrancar (ver
   la sección de la base de datos).
+- **País y teléfono:** el país se guarda como código (`ES`), no como nombre: el nombre depende
+  del idioma y lo pone el navegador con `Intl.DisplayNames` (`frontend/src/paises.js`). La
+  lista está en `backend/src/config/paises.js` y en `frontend/src/paises.js` (una prueba exige
+  que coincidan). El teléfono se guarda en forma canónica (`+34600123456`) y el formulario
+  aplica la misma normalización (`normalizarTelefono`), si no, lo escrito y lo guardado
+  parecerían distintos. El teléfono es un dato de contacto: **no se muestra en el banner**, y al
+  hacer públicos los perfiles (1.3) tendrá que seguir privado por defecto.
 - Un 401 significa "sesión caducada" y el frontend cierra la sesión; por eso una contraseña
   incorrecta al confirmar un cambio responde **403**, no 401.
 

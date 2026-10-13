@@ -3,8 +3,8 @@ const pool = require('../config/db');
 const { emitirToken } = require('../services/sesion');
 const {
   EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
-  SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO,
-  limpiarTextoPerfil, fechaNacimientoValida,
+  SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO,
+  limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida,
 } = require('../config/validacion');
 
 // La foto llega como data URL: solo admito imágenes de estos tipos en base64
@@ -16,7 +16,7 @@ const AVATAR_MAX_CARACTERES = 200000;
 // edad en sí la dejaría desfasada cada cumpleaños). Esta fecha tampoco se enseña a nadie
 // más que a su dueño: hoy GET /profile solo devuelve el perfil propio.
 const COLUMNAS_PUBLICAS = `id, username, email, bio, avatar, created_at,
-  first_name, last_name, birth_date, gender, location,
+  first_name, last_name, birth_date, gender, location, country, phone,
   EXTRACT(YEAR FROM age(birth_date))::int AS age`;
 
 // Comparo la contraseña enviada con el hash guardado. Si la contraseña es
@@ -103,11 +103,12 @@ async function getStats(req, res) {
   }
 }
 
-// PATCH /profile — cambiar nombre de usuario, bio, foto y datos personales
+// PATCH /profile — cambiar nombre de usuario, bio, foto y datos personales (nombre,
+// apellidos, fecha de nacimiento, sexo, localización, país y teléfono)
 // Todos los campos son opcionales: solo se tocan los que llegan. Campo ausente = no lo
 // toco; null (o texto vacío) = lo borro, salvo el nombre de usuario, que es obligatorio.
 async function updateProfile(req, res) {
-  const { username, bio, avatar, birth_date, gender } = req.body;
+  const { username, bio, avatar, birth_date, gender, country, phone } = req.body;
 
   // Igual que en updateGame: campo ausente = no lo toco; null = lo borro
   const has = (field) => Object.prototype.hasOwnProperty.call(req.body, field);
@@ -165,6 +166,22 @@ async function updateProfile(req, res) {
       return res.status(400).json({ error: MENSAJE_SEXO });
     }
     cambios.gender = gender;
+  }
+
+  if (has('country')) {
+    // El código tal cual (mayúsculas, dos letras) y de la lista: no lo "arreglo"
+    if (country !== null && !PAISES.includes(country)) {
+      return res.status(400).json({ error: MENSAJE_PAIS });
+    }
+    cambios.country = country;
+  }
+
+  if (has('phone')) {
+    const limpio = limpiarTelefono(phone);
+    if (limpio === undefined) {
+      return res.status(400).json({ error: MENSAJE_TELEFONO });
+    }
+    cambios.phone = limpio;
   }
 
   try {
