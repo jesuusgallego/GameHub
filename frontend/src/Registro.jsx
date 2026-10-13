@@ -70,7 +70,7 @@ function Registro() {
               onChange={(e) => setUsername(normalizarUsername(e.target.value))}
               maxLength={USERNAME_MAX}
               autoComplete="username"
-              autoCapitalize="characters"
+              autoCapitalize="none"
               spellCheck={false}
               required
             />

@@ -143,15 +143,32 @@ CREATE TABLE IF NOT EXISTS password_resets (
 -- primer cambio de contraseña.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
 
--- Nombre de usuario en mayúsculas: de 3 a 20 caracteres, solo A-Z, 0-9 y guion bajo
+-- Nombre de usuario en minúsculas: de 3 a 20 caracteres, solo a-z, 0-9 y guion bajo
 -- (misma regla que USERNAME_REGEX en config/validacion.js). Antes valía cualquier texto
 -- de hasta 50 caracteres, así que primero convierto los que ya existen.
--- Cada nombre se convierte así: sin tildes ("José" -> JOSE, la Ñ pasa a N), espacios,
--- puntos y guiones a "_", se quita lo demás, mayúsculas y como mucho 20 caracteres. Si
--- queda de menos de 3 se llama USUARIO. Si el resultado ya lo tiene otra persona se le
--- añade un número ("ANA" -> ANA2, ANA3...). Solo toca los nombres que no cumplen la
+-- Cada nombre se convierte así: sin tildes ("José" -> jose, la Ñ pasa a n), espacios,
+-- puntos y guiones a "_", se quita lo demás, minúsculas y como mucho 20 caracteres. Si
+-- queda de menos de 3 se llama usuario. Si el resultado ya lo tiene otra persona se le
+-- añade un número ("ana" -> ana2, ana3...). Solo toca los nombres que no cumplen la
 -- regla, así que en los arranques siguientes no hace nada. El bucle va usuario a
 -- usuario y cada UPDATE se ve en la siguiente comprobación, por eso nunca repite nombre.
+-- Los que ya cumplían la regla no se tocan, así que conservan su nombre aunque otro
+-- acabe pareciéndose.
+-- Una versión anterior de esta regla pedía mayúsculas (no llegó a publicarse, pero sí a
+-- bases de datos de desarrollo). Si la restricción que hay no es la de ahora, la quito
+-- antes de convertir los nombres: rechazaría los que acaban en minúsculas. Cuando ya es
+-- la actual no hace nada.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conname = 'users_username_formato' AND conrelid = 'users'::regclass
+       AND pg_get_constraintdef(oid) NOT LIKE '%a-z%'
+  ) THEN
+    ALTER TABLE users DROP CONSTRAINT users_username_formato;
+  END IF;
+END $$;
+
 DO $$
 DECLARE
   u RECORD;
@@ -160,17 +177,17 @@ DECLARE
   n INTEGER;
 BEGIN
   FOR u IN
-    SELECT id, username FROM users WHERE username !~ '^[A-Z0-9_]{3,20}$' ORDER BY id
+    SELECT id, username FROM users WHERE username !~ '^[a-z0-9_]{3,20}$' ORDER BY id
   LOOP
-    base := upper(translate(
+    base := lower(translate(
       u.username,
       'ÁÉÍÓÚÜÑÀÈÌÒÙÂÊÎÔÛÄËÏÖÇáéíóúüñàèìòùâêîôûäëïöç',
       'AEIOUUNAEIOUAEIOUAEIOCAEIOUUNAEIOUAEIOUAEIOC'
     ));
     base := regexp_replace(base, '[\s.-]+', '_', 'g');
-    base := left(regexp_replace(base, '[^A-Z0-9_]', '', 'g'), 20);
+    base := left(regexp_replace(base, '[^a-z0-9_]', '', 'g'), 20);
     IF length(base) < 3 THEN
-      base := 'USUARIO';
+      base := 'usuario';
     END IF;
 
     candidato := base;
@@ -194,6 +211,22 @@ BEGIN
      WHERE conname = 'users_username_formato' AND conrelid = 'users'::regclass
   ) THEN
     ALTER TABLE users
-      ADD CONSTRAINT users_username_formato CHECK (username ~ '^[A-Z0-9_]{3,20}$');
+      ADD CONSTRAINT users_username_formato CHECK (username ~ '^[a-z0-9_]{3,20}$');
   END IF;
 END $$;
+
+-- Datos personales del perfil, todos opcionales (NULL = sin indicar):
+--  - first_name, last_name: nombre y apellidos
+--  - birth_date: fecha de nacimiento. Se guarda la fecha y no la edad, que se quedaría
+--    desfasada cada cumpleaños; la edad se calcula al leer (ver profileController)
+--  - gender: 'hombre', 'mujer' u 'otro'
+--  - location: texto libre ("Sevilla, España")
+-- Las columnas se añaden aparte por lo mismo que avatar y bio: CREATE TABLE IF NOT EXISTS
+-- no toca una tabla que ya existe. El CHECK de gender, escrito en la propia columna, solo
+-- se añade cuando la columna se crea.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(50);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS birth_date DATE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(10)
+    CHECK (gender IN ('hombre', 'mujer', 'otro'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(100);

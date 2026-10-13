@@ -23,7 +23,7 @@ async function register(req, res) {
 
   // Lo mismo que valida el formulario, pero el formulario no es una garantía: la API
   // también la puede llamar quien no pase por él
-  // Sin recortar ni pasar a mayúsculas: el servidor no "arregla" el nombre, lo rechaza.
+  // Sin recortar ni pasar a minúsculas: el servidor no "arregla" el nombre, lo rechaza.
   // El formulario ya lo deja listo mientras se escribe.
   if (!USERNAME_REGEX.test(username)) {
     return res.status(400).json({ error: MENSAJE_USERNAME });
@@ -83,12 +83,12 @@ async function login(req, res) {
   try {
     // Un nombre de usuario nunca lleva "@" y un email siempre (ver USERNAME_REGEX), así
     // que no hace falta saber de cuál se trata: busco por los dos y solo puede coincidir
-    // uno. El nombre se pasa a mayúsculas para que "ana" entre como ANA.
+    // uno. El nombre se pasa a minúsculas para que "Ana" entre como ana.
     const texto = identifier.trim();
     const result = await pool.query(
       `SELECT id, username, email, password_hash, token_version
          FROM users WHERE email = $1 OR username = $2`,
-      [texto, texto.toUpperCase()]
+      [texto, texto.toLowerCase()]
     );
 
     const user = result.rows[0];

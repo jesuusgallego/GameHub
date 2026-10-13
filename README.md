@@ -44,8 +44,9 @@ pregunta si quieres reiniciar para instalarla; si dices *Más tarde*, se instala
 
 1. **Crea una cuenta** con un nombre de usuario, tu email y una contraseña (8 caracteres o
    más, con mayúscula, minúscula y número). El nombre de usuario es único y va siempre en
-   MAYÚSCULAS: de 3 a 20 caracteres, con letras, números y guion bajo (`_`). Después puedes
-   iniciar sesión con el email **o** con el nombre de usuario.
+   minúsculas: de 3 a 20 caracteres, con letras, números y guion bajo (`_`). Después puedes
+   iniciar sesión con el email **o** con el nombre de usuario. En *Perfil → Editar perfil*
+   puedes añadir, si quieres, tu nombre y apellidos, fecha de nacimiento, sexo y localización.
 2. **Busca un juego** en *Buscar* y añádelo a tu biblioteca.
 3. **Gestiona tu biblioteca** en *Mi biblioteca*: cambia el estado desde la etiqueta de cada
    tarjeta; con el **clic derecho** sobre una tarjeta puedes editarla o quitarla, y con un clic
@@ -111,6 +112,8 @@ flowchart LR
 Lo que guarda GameHub de ti:
 
 - Tu nombre de usuario y tu email.
+- Si los rellenas, tu nombre y apellidos, fecha de nacimiento, sexo y localización. Son opcionales
+  y por ahora solo los ves tú.
 - Tu contraseña **solo como huella irreversible** (bcrypt): ni siquiera el servidor puede leerla.
 - Tu biblioteca: los juegos, su estado, tu nota y tu reseña.
 - Opcional: tu foto, tu descripción y tu SteamID.

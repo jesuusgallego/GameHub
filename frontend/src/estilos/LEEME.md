@@ -14,7 +14,7 @@ a su vez importa el resto de archivos con `@import`.
 | `paginas.css` | Contenedor central, títulos de página/sección y la página Buscar | `Buscar` |
 | `mensajes.css` | Mensajes de error, éxito y aviso; estados vacíos | `Mensaje` |
 | `tarjetas.css` | Rejilla de juegos, tarjetas, su animación de entrada, chips de estado, insignia de Steam, icono de plataforma | `GameCard`, `JuegoGuardado`, `InsigniaSteam`, `IconoPlataforma` |
-| `formularios.css` | `.formulario` y `.campo` | formularios |
+| `formularios.css` | `.formulario`, `.campo`, `.formulario__pareja` (dos campos por fila) y el subtítulo de sección | formularios |
 | `desplegable.css` | Desplegable propio (el del estado y filtros) | `Desplegable` |
 | `login.css` | Inicio de sesión, registro y recuperar contraseña | `Login`, `Registro`, `Recuperar` |
 | `biblioteca.css` | Mi biblioteca: fila "Jugando ahora", filtros laterales y barra de orden, portadas pulsables | `Biblioteca`, `JugandoAhora`, `FiltrosBiblioteca`, `OrdenBiblioteca` |

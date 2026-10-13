@@ -4,7 +4,7 @@ import { useIdioma } from './IdiomaContext'
 // Banner del perfil: foto, nombre, bio y tres cifras de la biblioteca.
 // El fondo es siempre el mismo (una aurora con los colores de la marca, solo CSS):
 // no depende del usuario ni de sus juegos. Es decorativo.
-//  - perfil: { username, avatar, bio, created_at }
+//  - perfil: { username, avatar, bio, created_at, first_name, last_name, age, gender, location }
 //  - stats: lo que calcula GET /profile/stats, o null mientras carga
 //  - onEditar(): salta a la pestaña de edición
 function CabeceraPerfil({ perfil, stats, onEditar }) {
@@ -14,6 +14,15 @@ function CabeceraPerfil({ perfil, stats, onEditar }) {
     month: 'long',
     year: 'numeric',
   })
+
+  // Datos personales: solo los que haya, separados por puntos medios. Si no hay
+  // ninguno no se pinta la línea.
+  const datosPersonales = [
+    [perfil.first_name, perfil.last_name].filter(Boolean).join(" "),
+    perfil.age != null ? t('perfil.edad', { n: perfil.age }) : "",
+    perfil.gender ? t(`sexo.${perfil.gender}`) : "",
+    perfil.location ?? "",
+  ].filter(Boolean)
 
   // Mientras no llegan las estadísticas enseño rayas, no ceros que luego cambian
   const cargando = stats === null
@@ -41,6 +50,9 @@ function CabeceraPerfil({ perfil, stats, onEditar }) {
           <Avatar usuario={perfil} tamano="enorme" />
           <div className="banner-perfil__datos">
             <h1 className="titulo-pagina">{perfil.username}</h1>
+            {datosPersonales.length > 0 && (
+              <p className="banner-perfil__meta">{datosPersonales.join(" · ")}</p>
+            )}
             <p className="banner-perfil__meta">{t('perfil.miembroDesde', { fecha: miembroDesde })}</p>
             {perfil.bio
               ? <p className="banner-perfil__bio">{perfil.bio}</p>

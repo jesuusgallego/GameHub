@@ -7,11 +7,13 @@ import RecortadorFoto from './RecortadorFoto'
 import { useCambioVista } from './useCambioVista'
 import Mensaje from './Mensaje'
 import { useIdioma } from './IdiomaContext'
-import { usernameRegex, normalizarUsername, USERNAME_MAX } from './validacion'
+import Desplegable from './Desplegable'
+import { usernameRegex, normalizarUsername, USERNAME_MAX, SEXOS, LIMITES_PERFIL, limitesFechaNacimiento } from './validacion'
 
 const BIO_MAX = 300
 
-// Formulario de foto, nombre de usuario y bio.
+// Formulario de foto, nombre de usuario, bio y datos personales (nombre y apellidos,
+// fecha de nacimiento, sexo y localización: todos opcionales).
 // La foto puede ser una imagen subida o una ilustración de uno de los juegos de la
 // biblioteca. En los dos casos se encuadra en el RecortadorFoto y acaba siendo un
 // cuadrado de 256 px en base64.
@@ -23,6 +25,11 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   const { t } = useIdioma()
   const [username, setUsername] = useState(perfil.username)
   const [bio, setBio] = useState(perfil.bio ?? "")
+  const [nombre, setNombre] = useState(perfil.first_name ?? "")
+  const [apellidos, setApellidos] = useState(perfil.last_name ?? "")
+  const [nacimiento, setNacimiento] = useState(perfil.birth_date ?? "") // "AAAA-MM-DD" o ""
+  const [sexo, setSexo] = useState(perfil.gender ?? "") // "" = sin indicar
+  const [localizacion, setLocalizacion] = useState(perfil.location ?? "")
   const [avatar, setAvatar] = useState(perfil.avatar)
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState("")
@@ -44,11 +51,24 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   const [aperturas, setAperturas] = useState(0)
   const archivoRef = useRef(null)
 
+  // Lo que admite el campo de fecha: ni futura ni de hace más de 120 años
+  const { min: nacimientoMin, max: nacimientoMax } = limitesFechaNacimiento()
+  const opcionesSexo = [
+    { valor: "", etiqueta: t('sexo.sinIndicar') },
+    ...SEXOS.map((valor) => ({ valor, etiqueta: t(`sexo.${valor}`) })),
+  ]
+
   // Solo envío lo que ha cambiado, y "Guardar" se activa solo si hay algo que enviar
   const cambios = {}
   if (username !== perfil.username) cambios.username = username
   if (bio.trim() !== (perfil.bio ?? "")) cambios.bio = bio.trim() || null
   if (avatar !== perfil.avatar) cambios.avatar = avatar
+  // Un campo vacío se manda como null: así se borra el dato
+  if (nombre.trim() !== (perfil.first_name ?? "")) cambios.first_name = nombre.trim() || null
+  if (apellidos.trim() !== (perfil.last_name ?? "")) cambios.last_name = apellidos.trim() || null
+  if (nacimiento !== (perfil.birth_date ?? "")) cambios.birth_date = nacimiento || null
+  if (sexo !== (perfil.gender ?? "")) cambios.gender = sexo || null
+  if (localizacion.trim() !== (perfil.location ?? "")) cambios.location = localizacion.trim() || null
   const hayCambios = Object.keys(cambios).length > 0
 
   // Al cambiar de foto subida (o al irme) libero la URL temporal anterior, que si
@@ -225,7 +245,7 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
           onChange={(e) => setUsername(normalizarUsername(e.target.value))}
           maxLength={USERNAME_MAX}
           autoComplete="username"
-          autoCapitalize="characters"
+          autoCapitalize="none"
           spellCheck={false}
           required
         />
@@ -241,6 +261,62 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
           placeholder={t('editarPerfil.bioPlaceholder')}
         />
         <small>{bio.length}/{BIO_MAX}</small>
+      </label>
+
+      <h2 className="subtitulo-formulario">{t('editarPerfil.datosPersonales')}</h2>
+      <p className="ayuda-formulario">{t('editarPerfil.datosAyuda')}</p>
+
+      <div className="formulario__pareja">
+        <label className="campo">
+          <span>{t('editarPerfil.nombre')}</span>
+          <input
+            type="text"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            maxLength={LIMITES_PERFIL.first_name}
+            autoComplete="given-name"
+          />
+        </label>
+        <label className="campo">
+          <span>{t('editarPerfil.apellidos')}</span>
+          <input
+            type="text"
+            value={apellidos}
+            onChange={(e) => setApellidos(e.target.value)}
+            maxLength={LIMITES_PERFIL.last_name}
+            autoComplete="family-name"
+          />
+        </label>
+      </div>
+
+      <div className="formulario__pareja">
+        <label className="campo">
+          <span>{t('editarPerfil.nacimiento')}</span>
+          <input
+            type="date"
+            value={nacimiento}
+            onChange={(e) => setNacimiento(e.target.value)}
+            min={nacimientoMin}
+            max={nacimientoMax}
+            autoComplete="bday"
+          />
+        </label>
+        <label className="campo">
+          <span>{t('editarPerfil.sexo')}</span>
+          <Desplegable opciones={opcionesSexo} valor={sexo} onChange={setSexo} />
+        </label>
+      </div>
+
+      <label className="campo">
+        <span>{t('editarPerfil.localizacion')}</span>
+        <input
+          type="text"
+          value={localizacion}
+          onChange={(e) => setLocalizacion(e.target.value)}
+          maxLength={LIMITES_PERFIL.location}
+          placeholder={t('editarPerfil.localizacionPlaceholder')}
+          autoComplete="address-level2"
+        />
       </label>
 
       <Mensaje texto={error} />

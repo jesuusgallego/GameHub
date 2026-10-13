@@ -6,21 +6,34 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ### Añadido
 - **Inicio de sesión con email o con nombre de usuario.** El campo de la pantalla de entrada
-  acepta cualquiera de los dos. El nombre de usuario se puede escribir también en minúsculas.
+  acepta cualquiera de los dos. El nombre de usuario se puede escribir también con
+  mayúsculas: se busca en minúsculas.
+- **Datos personales en el perfil**, todos opcionales: nombre, apellidos, fecha de nacimiento,
+  sexo (hombre, mujer u otro) y localización. Se editan en *Perfil → Editar perfil* y se
+  muestran en el banner del perfil (la edad se calcula a partir de la fecha de nacimiento,
+  que no se enseña). Por ahora solo los ve su dueño.
 
 ### Cambiado
-- **Nombre de usuario único y en MAYÚSCULAS:** de 3 a 20 caracteres, solo letras sin tilde,
-  números y guion bajo (`_`). El campo no deja escribir minúsculas ni caracteres raros: pasa
-  las letras a mayúsculas, quita las tildes y descarta espacios y símbolos. El servidor y la
+- **Nombre de usuario único y en minúsculas:** de 3 a 20 caracteres, solo letras sin tilde,
+  números y guion bajo (`_`). El campo no deja escribir mayúsculas ni caracteres raros: pasa
+  las letras a minúsculas, quita las tildes y descarta espacios y símbolos. El servidor y la
   base de datos aplican la misma regla. Antes valía cualquier texto de hasta 50 caracteres.
 - **Los nombres de usuario que ya existían se convierten solos** al arrancar el servidor:
-  `Jesus Gallego` pasa a `JESUS_GALLEGO`, `José` a `JOSE`, y si dos quedan iguales el segundo
-  recibe un número (`ANA`, `ANA2`). Las cuentas siguen entrando con su email y su contraseña.
+  `Jesus Gallego` pasa a `jesus_gallego`, `José` a `jose`, y si dos quedan iguales el segundo
+  recibe un número (`ana`, `ana2`). Las cuentas siguen entrando con su email y su contraseña.
+- El nombre de usuario se ve tal cual en el banner del perfil, en minúsculas (antes el estilo
+  de los títulos lo pasaba a mayúsculas).
 
 ### Interno
 - `POST /auth/login` recibe `identifier` (email o nombre). Sigue aceptando `email` para que las
   apps de escritorio ya instaladas puedan entrar. **Hay que desplegar el backend antes de
   publicar la app**: una interfaz nueva contra un servidor antiguo no entraría con el nombre.
+- `PATCH /profile` acepta `first_name`, `last_name`, `birth_date` (`AAAA-MM-DD`), `gender` y
+  `location`; `GET /profile` devuelve además `age`. Nuevas columnas en `users` y reglas
+  compartidas con el formulario (una prueba comprueba que coinciden).
+- `schema.sql` quita la restricción de nombre de usuario de una versión de desarrollo anterior
+  (mayúsculas) antes de convertir los nombres, para que una base de datos que ya la tuviera
+  pueda arrancar.
 
 ## [1.1.0] - 2026-10-12
 

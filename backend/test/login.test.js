@@ -9,7 +9,7 @@ process.env.JWT_SECRET = 'secreto-de-prueba-secreto-de-prueba';
 
 // La "base de datos": una sola cuenta. La consulta del login se resuelve como lo haría
 // Postgres: coincide si alguno de los dos parámetros es el email o el nombre.
-const CUENTA = { id: 7, username: 'ANA', email: 'ana@x.com', token_version: 2 };
+const CUENTA = { id: 7, username: 'ana', email: 'ana@x.com', token_version: 2 };
 const consultas = [];
 const rutaDb = require.resolve('../src/config/db');
 require.cache[rutaDb] = {
@@ -39,14 +39,14 @@ async function entrar(body) {
 test('se puede entrar con el email', async () => {
   const r = await entrar({ identifier: 'ana@x.com', password: 'Clave1234' });
   assert.strictEqual(r.status, 200);
-  assert.strictEqual(r.cuerpo.user.username, 'ANA');
+  assert.strictEqual(r.cuerpo.user.username, 'ana');
   const token = jwt.verify(r.cuerpo.token, process.env.JWT_SECRET);
   assert.strictEqual(token.userId, 7);
   assert.strictEqual(token.v, 2);
 });
 
-test('se puede entrar con el nombre de usuario, también escrito en minúsculas', async () => {
-  for (const identifier of ['ANA', 'ana', 'Ana', '  ana  ']) {
+test('se puede entrar con el nombre de usuario, también escrito con mayúsculas', async () => {
+  for (const identifier of ['ana', 'ANA', 'Ana', '  ANA  ']) {
     const r = await entrar({ identifier, password: 'Clave1234' });
     assert.strictEqual(r.status, 200, identifier);
     assert.strictEqual(r.cuerpo.user.email, 'ana@x.com');
@@ -56,13 +56,13 @@ test('se puede entrar con el nombre de usuario, también escrito en minúsculas'
 test('el campo antiguo "email" sigue valiendo (apps de escritorio ya instaladas)', async () => {
   const r = await entrar({ email: 'ana@x.com', password: 'Clave1234' });
   assert.strictEqual(r.status, 200);
-  const r2 = await entrar({ email: 'ANA', password: 'Clave1234' });
+  const r2 = await entrar({ email: 'ana', password: 'Clave1234' });
   assert.strictEqual(r2.status, 200);
 });
 
-test('el email no se pasa a mayúsculas: se busca tal cual, y el nombre en mayúsculas', async () => {
+test('el email no se pasa a minúsculas: se busca tal cual, y el nombre en minúsculas', async () => {
   await entrar({ identifier: 'Ana@X.com', password: 'Clave1234' });
-  assert.deepStrictEqual(consultas[0].params, ['Ana@X.com', 'ANA@X.COM']);
+  assert.deepStrictEqual(consultas[0].params, ['Ana@X.com', 'ana@x.com']);
 });
 
 test('contraseña incorrecta o cuenta inexistente dan el mismo error', async () => {

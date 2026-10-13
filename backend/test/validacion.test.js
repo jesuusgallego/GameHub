@@ -13,7 +13,10 @@ require.cache[rutaDb] = {
 };
 
 const { register } = require('../src/controllers/authController');
-const { EMAIL_REGEX, PASSWORD_REGEX, USERNAME_REGEX, MENSAJE_USERNAME } = require('../src/config/validacion');
+const {
+  EMAIL_REGEX, PASSWORD_REGEX, USERNAME_REGEX, MENSAJE_USERNAME,
+  limpiarTextoPerfil, fechaNacimientoValida,
+} = require('../src/config/validacion');
 
 async function registrar(body) {
   const res = { status(c) { this.c = c; return this; }, json(o) { this.o = o; } };
@@ -21,7 +24,7 @@ async function registrar(body) {
   return { status: res.c, error: res.o?.error };
 }
 
-const valido = { username: 'ANA', email: 'ana@x.com', password: 'Clave1234' };
+const valido = { username: 'ana', email: 'ana@x.com', password: 'Clave1234' };
 
 test('el registro rechaza lo que no es texto o está vacío', async () => {
   for (const malo of [
@@ -55,11 +58,11 @@ test('el registro rechaza contraseñas débiles', async () => {
 
 test('el registro rechaza un nombre de usuario que no cumple la regla', async () => {
   const malos = [
-    'ana', 'Ana', 'AnA', // minúsculas
-    'AB', 'A', // demasiado corto
-    'A'.repeat(21), // demasiado largo
-    'ANA GOMEZ', ' ANA', 'ANA ', // espacios (el servidor no recorta)
-    'ANA!', 'ANA-B', 'ANA.B', 'ANA@X', 'ÑANDU', 'JOSÉ', '日本語', 'ANA\n',
+    'ANA', 'Ana', 'aNa', // mayúsculas
+    'ab', 'a', // demasiado corto
+    'a'.repeat(21), // demasiado largo
+    'ana gomez', ' ana', 'ana ', // espacios (el servidor no recorta)
+    'ana!', 'ana-b', 'ana.b', 'ana@x', 'ñandu', 'josé', '日本語', 'ana\n',
   ];
   for (const username of malos) {
     const r = await registrar({ ...valido, username });
@@ -69,9 +72,40 @@ test('el registro rechaza un nombre de usuario que no cumple la regla', async ()
   assert.strictEqual(consultas, 0);
 });
 
-test('el nombre de usuario acepta mayúsculas, números y guion bajo (3 a 20)', () => {
-  for (const ok of ['ANA', 'JESUS_GALLEGO', 'XX_PRO_99', 'A'.repeat(20), '123', '___']) {
+test('el nombre de usuario acepta minúsculas, números y guion bajo (3 a 20)', () => {
+  for (const ok of ['ana', 'jesus_gallego', 'xx_pro_99', 'a'.repeat(20), '123', '___']) {
     assert.ok(USERNAME_REGEX.test(ok), ok);
+  }
+});
+
+test('limpiarTextoPerfil recorta, convierte el vacío en null y rechaza lo que no vale', () => {
+  assert.strictEqual(limpiarTextoPerfil('first_name', '  Ana María '), 'Ana María');
+  assert.strictEqual(limpiarTextoPerfil('first_name', ''), null);
+  assert.strictEqual(limpiarTextoPerfil('first_name', '   '), null);
+  assert.strictEqual(limpiarTextoPerfil('first_name', null), null);
+  assert.strictEqual(limpiarTextoPerfil('last_name', "O'Brien-Ñúñez"), "O'Brien-Ñúñez");
+  // Los límites cuentan caracteres, no unidades UTF-16 (un emoji ocupa dos)
+  assert.strictEqual(limpiarTextoPerfil('first_name', '😀'.repeat(50)), '😀'.repeat(50));
+  for (const malo of ['a'.repeat(51), 'a\nb', 'a\u0000b', 5, {}, ['a'], true]) {
+    assert.strictEqual(limpiarTextoPerfil('first_name', malo), undefined, JSON.stringify(malo));
+  }
+  assert.strictEqual(limpiarTextoPerfil('last_name', 'a'.repeat(100)), 'a'.repeat(100));
+  assert.strictEqual(limpiarTextoPerfil('last_name', 'a'.repeat(101)), undefined);
+  assert.strictEqual(limpiarTextoPerfil('location', 'a'.repeat(101)), undefined);
+});
+
+test('fechaNacimientoValida acepta fechas reales y plausibles', () => {
+  const hoy = new Date(Date.UTC(2026, 9, 13)); // 13 de octubre de 2026
+  for (const ok of ['1990-06-15', '2026-10-13', '2000-02-29', '1906-10-13']) {
+    assert.ok(fechaNacimientoValida(ok, hoy), ok);
+  }
+  for (const mal of [
+    '2026-10-14', '2999-01-01', // futuras
+    '1906-10-12', '1800-01-01', // de hace más de 120 años
+    '2020-02-30', '2001-02-29', '1990-13-01', '1990-00-10', '1990-06-31', // no existen
+    '15/06/1990', '1990-6-5', '', 'ayer', '0050-01-01', '1990-06-15T00:00:00Z',
+  ]) {
+    assert.ok(!fechaNacimientoValida(mal, hoy), mal);
   }
 });
 

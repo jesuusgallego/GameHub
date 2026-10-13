@@ -26,3 +26,25 @@
   font-size: 0.8rem;
   color: var(--texto-suave);
 }
+
+/* Dos campos en la misma fila (nombre y apellidos...); en pantallas estrechas se apilan */
+.formulario__pareja {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+/* Título de una sección dentro de un formulario largo, con su ayuda debajo */
+.subtitulo-formulario {
+  margin-top: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--borde);
+  font-size: 1rem;
+}
+
+.ayuda-formulario {
+  margin-top: -0.5rem;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}

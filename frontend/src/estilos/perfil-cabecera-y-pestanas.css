@@ -105,6 +105,12 @@
   overflow-wrap: anywhere; /* un nombre muy largo sin espacios no debe salirse */
 }
 
+/* El nombre de usuario se enseña tal cual es (en minúsculas): el estilo de los títulos lo
+   pondría en mayúsculas y parecería otro nombre distinto */
+.banner-perfil__datos .titulo-pagina {
+  text-transform: none;
+}
+
 .banner-perfil__meta {
   font-size: 0.9rem;
   color: var(--banner-texto-suave);
