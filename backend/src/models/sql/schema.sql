@@ -236,3 +236,52 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(2)
     CHECK (country ~ '^[A-Z]{2}$');
 ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(16)
     CHECK (phone ~ '^\+[1-9][0-9]{6,14}$');
+
+-- Privacidad del perfil: quién puede ver cada parte. 'nadie' (solo yo), 'amigos' o
+-- 'todos' (cualquiera con sesión iniciada). Los datos personales (nombre, edad, sexo,
+-- localización y país) empiezan en 'nadie': nadie los comparte sin haberlo decidido. La
+-- biblioteca empieza en 'amigos'. El teléfono y la fecha de nacimiento no se enseñan
+-- nunca, con ninguna de las opciones. Nombre de usuario, foto y bio son siempre públicos.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_personal VARCHAR(10) NOT NULL DEFAULT 'nadie'
+    CHECK (visibility_personal IN ('nadie', 'amigos', 'todos'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_library VARCHAR(10) NOT NULL DEFAULT 'amigos'
+    CHECK (visibility_library IN ('nadie', 'amigos', 'todos'));
+
+-- Amistades y solicitudes. Una fila por pareja de personas, sin importar quién la pidió:
+--  - 'pendiente': requester_id envió la solicitud y addressee_id aún no ha respondido
+--  - 'aceptada': son amigos
+-- Rechazar o cancelar una solicitud, o dejar de ser amigos, borra la fila.
+-- Con ON DELETE CASCADE, al borrar una cuenta desaparecen sus amistades.
+CREATE TABLE IF NOT EXISTS friendships (
+    id SERIAL PRIMARY KEY,
+    requester_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    addressee_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(10) NOT NULL DEFAULT 'pendiente' CHECK (status IN ('pendiente', 'aceptada')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    responded_at TIMESTAMPTZ,
+    CHECK (requester_id <> addressee_id)
+);
+
+-- La pareja es única en cualquier sentido: LEAST/GREATEST ordenan los dos ids, así que
+-- (1, 2) y (2, 1) son la misma. Impide dos filas aunque dos personas se pidan amistad a
+-- la vez.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_friendships_pareja
+    ON friendships (LEAST(requester_id, addressee_id), GREATEST(requester_id, addressee_id));
+-- Para listar las solicitudes y amistades de cada persona sin recorrer toda la tabla
+CREATE INDEX IF NOT EXISTS idx_friendships_requester ON friendships (requester_id, status);
+CREATE INDEX IF NOT EXISTS idx_friendships_addressee ON friendships (addressee_id, status);
+
+-- Bloqueos: blocker_id ha bloqueado a blocked_id. Quien bloquea deja de ser su amigo, no
+-- recibe solicitudes suyas y la otra persona ya no puede verle el perfil ni encontrarle.
+CREATE TABLE IF NOT EXISTS blocks (
+    blocker_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    blocked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (blocker_id, blocked_id),
+    CHECK (blocker_id <> blocked_id)
+);
+CREATE INDEX IF NOT EXISTS idx_blocks_blocked ON blocks (blocked_id);
+
+-- La búsqueda de personas filtra por el comienzo del nombre de usuario (starts_with). Con
+-- pocos usuarios recorrer la tabla es instantáneo; si algún día hay muchos, bastaría un
+-- índice sobre username con la clase de operador text_pattern_ops.

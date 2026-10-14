@@ -80,3 +80,10 @@ async function pedir(ruta, { body, headers, ...resto }, token) {
 
   return data
 }
+
+// La foto de perfil de otra persona. Las listas de personas no llevan las fotos dentro
+// (pesan mucho): llevan `has_avatar` y el navegador pide cada imagen a esta dirección,
+// que no necesita sesión porque un <img> no puede enviar la cabecera Authorization.
+export function urlAvatar(username) {
+  return `${URL_BASE}/users/${encodeURIComponent(username)}/avatar`
+}

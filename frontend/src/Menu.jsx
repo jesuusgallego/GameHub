@@ -33,7 +33,9 @@ function colocarLinea(nav, linea, conAnimacion) {
 // Barra superior. NavLink añade la clase "active" al enlace de la página actual.
 // Perfil y cerrar sesión viven en el desplegable de la foto (MenuUsuario); el
 // idioma y el tema claro/oscuro, en el de las tres líneas (MenuAjustes).
-function Menu({ setToken, perfil }) {
+//  - solicitudes: cuántas solicitudes de amistad esperan respuesta; se enseña como una
+//    insignia en "Amigos"
+function Menu({ setToken, perfil, solicitudes = 0 }) {
   const { t } = useIdioma()
   const navRef = useRef(null)
   const lineaRef = useRef(null)
@@ -66,6 +68,14 @@ function Menu({ setToken, perfil }) {
         <nav className="barra__nav" ref={navRef}>
           <NavLink to="/biblioteca">{t('menu.biblioteca')}</NavLink>
           <NavLink to="/buscar">{t('menu.buscar')}</NavLink>
+          <NavLink to="/amigos">
+            {t('menu.amigos')}
+            {solicitudes > 0 && (
+              <span className="insignia" role="status" aria-label={t('menu.solicitudesPendientes', { n: solicitudes })}>
+                {solicitudes > 9 ? '9+' : solicitudes}
+              </span>
+            )}
+          </NavLink>
           <span className="barra__linea" ref={lineaRef} aria-hidden="true" />
         </nav>
 

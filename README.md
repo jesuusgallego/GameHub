@@ -57,7 +57,10 @@ pregunta si quieres reiniciar para instalarla; si dices *Más tarde*, se instala
    Steam no sabe si te has pasado un juego; el estado lo cambias tú.
 5. **Ajusta tu cuenta** en *Perfil*: foto, descripción, email, contraseña o borrar la cuenta.
    El idioma y el tema están en el menú de tres líneas de la esquina.
-6. **¿Olvidaste la contraseña?** Pulsa *¿Has olvidado tu contraseña?* en el inicio de sesión,
+6. **Hazte amigos** en *Amigos*: busca a alguien por el principio de su nombre de usuario y
+   envíale una solicitud. Lo que enseñas a los demás lo decides en *Perfil → Editar perfil →
+   Privacidad*. Puedes bloquear a quien quieras desde su perfil.
+7. **¿Olvidaste la contraseña?** Pulsa *¿Has olvidado tu contraseña?* en el inicio de sesión,
    escribe tu email, y te llegará un código de 6 dígitos (caduca a los 15 minutos).
 
 ## Cómo funciona por dentro
@@ -114,8 +117,10 @@ Lo que guarda GameHub de ti:
 
 - Tu nombre de usuario y tu email.
 - Si los rellenas, tu nombre y apellidos, fecha de nacimiento, sexo, localización, país y teléfono.
-  Son opcionales y por ahora solo los ves tú. El teléfono lo eliges con su prefijo (de una lista o escribiéndolo) y no se verifica ni se
-  muestra en ningún sitio.
+  Son opcionales y por defecto no los ve nadie más que tú: eliges si los ven tus amigos o todo
+  el mundo. El teléfono, el email y la fecha de nacimiento no los ve nadie más, ni con la
+  opción más abierta; el teléfono no se verifica.
+- Tus amigos, las solicitudes que envías y recibes y a quién has bloqueado.
 - Tu contraseña **solo como huella irreversible** (bcrypt): ni siquiera el servidor puede leerla.
 - Tu biblioteca: los juegos, su estado, tu nota y tu reseña.
 - Opcional: tu foto, tu descripción y tu SteamID.

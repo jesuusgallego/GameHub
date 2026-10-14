@@ -1,9 +1,11 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/db');
 const { emitirToken } = require('../services/sesion');
+const { estadisticasDe } = require('../services/estadisticas');
 const {
   EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
   SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO,
+  VISIBILIDADES, MENSAJE_VISIBILIDAD,
   limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida,
 } = require('../config/validacion');
 
@@ -17,6 +19,7 @@ const AVATAR_MAX_CARACTERES = 200000;
 // más que a su dueño: hoy GET /profile solo devuelve el perfil propio.
 const COLUMNAS_PUBLICAS = `id, username, email, bio, avatar, created_at,
   first_name, last_name, birth_date, gender, location, country, phone,
+  visibility_personal, visibility_library,
   EXTRACT(YEAR FROM age(birth_date))::int AS age`;
 
 // Comparo la contraseña enviada con el hash guardado. Si la contraseña es
@@ -68,35 +71,8 @@ async function getProfile(req, res) {
 
 // GET /profile/stats — estadísticas de la biblioteca del usuario
 async function getStats(req, res) {
-  const userId = req.user.id;
-
   try {
-    // Un solo recorrido de la tabla: COUNT(*) FILTER (WHERE ...) cuenta solo las
-    // filas que cumplen la condición. AVG ignora los NULL (juegos sin nota).
-    // Los COUNT llegan como bigint y pg los entrega como texto, por eso ::int.
-    const resumen = await pool.query(
-      `SELECT COUNT(*)::int AS total,
-              COUNT(*) FILTER (WHERE status = 'jugando')::int AS jugando,
-              COUNT(*) FILTER (WHERE status = 'completado')::int AS completado,
-              COUNT(*) FILTER (WHERE status = 'abandonado')::int AS abandonado,
-              COUNT(*) FILTER (WHERE status = 'pendiente')::int AS pendiente,
-              COUNT(rating)::int AS valorados,
-              ROUND(AVG(rating), 1)::float AS nota_media
-       FROM user_games
-       WHERE user_id = $1`,
-      [userId]
-    );
-
-    const mejores = await pool.query(
-      `SELECT id, igdb_id, name, cover_url, rating
-       FROM user_games
-       WHERE user_id = $1 AND rating IS NOT NULL
-       ORDER BY rating DESC, updated_at DESC
-       LIMIT 5`,
-      [userId]
-    );
-
-    res.json({ stats: resumen.rows[0], mejores: mejores.rows });
+    res.json(await estadisticasDe(req.user.id));
   } catch (err) {
     console.error('Error en getStats:', err);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -182,6 +158,15 @@ async function updateProfile(req, res) {
       return res.status(400).json({ error: MENSAJE_TELEFONO });
     }
     cambios.phone = limpio;
+  }
+
+  // Quién ve cada parte del perfil. No pueden ser null: siempre hay una opción elegida
+  for (const campo of ['visibility_personal', 'visibility_library']) {
+    if (!has(campo)) continue;
+    if (!VISIBILIDADES.includes(req.body[campo])) {
+      return res.status(400).json({ error: MENSAJE_VISIBILIDAD });
+    }
+    cambios[campo] = req.body[campo];
   }
 
   try {

@@ -363,6 +363,8 @@ Después se añade la regla como `CHECK` (con una comprobación en `pg_constrain
 | `translation_usage` | Caracteres enviados a Azure cada mes (para respetar el tope propio) |
 | `linked_accounts` | Cuentas vinculadas (hoy solo Steam): el SteamID público y la fecha de la última sincronización |
 | `password_resets` | Código vigente de recuperación de contraseña de cada usuario (solo su huella, caducidad e intentos) |
+| `friendships` | Amistades y solicitudes: una fila por pareja (índice único sobre `LEAST/GREATEST` de los dos ids, así (1,2) y (2,1) son la misma), con `status` `pendiente` o `aceptada` |
+| `blocks` | Bloqueos: quién ha bloqueado a quién |
 
 ### Mirar la base de datos con psql
 
@@ -419,6 +421,18 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | PATCH | `/profile/email` | Bearer token | Cambia el email (`email` + `current_password`). 403 si la contraseña es incorrecta |
 | PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`). Cierra todas las demás sesiones abiertas y devuelve un `token` nuevo para la actual |
 | DELETE | `/profile` | Bearer token | Borra tu cuenta y toda tu biblioteca (`password`) |
+| GET | `/users/search?q=` | Bearer token | Personas cuyo nombre empieza por `q` (2 a 20 caracteres, hasta 20 resultados), con su relación contigo. No salen tú, quien te ha bloqueado ni a quien has bloqueado. 60 búsquedas cada 5 minutos |
+| GET | `/users/:username` | Bearer token | El perfil de otra persona con solo lo que puedes ver (`personal` y `library` van `null` si no). 404 si no existe **o te ha bloqueado**; si la has bloqueado tú, solo lo mínimo con `relation: "bloqueado"` |
+| GET | `/users/:username/avatar` | No | La foto como imagen (`ETag`, `Cache-Control: no-cache`). Sin sesión porque un `<img>` no puede mandar `Authorization` |
+| GET | `/friends` | Bearer token | Tus amigos |
+| GET | `/friends/requests` | Bearer token | Solicitudes: `received` y `sent` |
+| POST | `/friends/requests` | Bearer token | Envía una solicitud (`username`). Si esa persona ya te había enviado una, se acepta. 409 si ya sois amigos, ya la enviaste o la has bloqueado; 30 por hora |
+| POST | `/friends/requests/:id/accept` | Bearer token | Acepta una solicitud recibida (solo quien la recibió) |
+| DELETE | `/friends/requests/:id` | Bearer token | Rechaza una recibida o cancela una enviada |
+| DELETE | `/friends/:username` | Bearer token | Deja de ser amigo |
+| GET | `/friends/blocks` | Bearer token | A quién has bloqueado |
+| POST | `/friends/blocks` | Bearer token | Bloquea (`username`) y borra la amistad o solicitud que hubiera |
+| DELETE | `/friends/blocks/:username` | Bearer token | Desbloquea (no devuelve la amistad) |
 | GET | `/accounts` | Bearer token | Cuentas vinculadas del usuario y `steam_disponible` (si el servidor tiene `STEAM_API_KEY`) |
 | PUT | `/accounts/steam` | Bearer token | Vincula una cuenta de Steam. `perfil` puede ser la URL del perfil, el nombre personalizado o el SteamID de 17 dígitos. No se elige nada más: la sincronización siempre añade los juegos que te faltan. 409 si ya hay una vinculada |
 | POST | `/accounts/steam/sync` | Bearer token | Trae de Steam las horas y los logros de los juegos que ya tienes y añade los que te faltan (siempre). 422 si el perfil es privado; 409 si ya hay una sincronización en curso. No hace falta llamarlo a mano: el servidor lo hace solo cada `STEAM_SYNC_MINUTOS` y el frontend al abrir el perfil si los datos tienen más de 10 minutos |
@@ -458,7 +472,8 @@ dependencias extra. Cubren la lógica que no necesita navegador ni servidor:
 
 - **Backend:** lectura de logros de Steam (con Steam simulado), recuperación de contraseña
   (código y correo), validación de sesiones, validación del registro, inicio de sesión con
-  email o nombre de usuario y edición del perfil (datos personales).
+  email o nombre de usuario, edición del perfil (datos personales), reglas de privacidad y
+  validación de las rutas de amigos.
 - **Frontend:** búsqueda, filtros y orden de la biblioteca, traducción de géneros y modos de
   IGDB, y reglas de validación (comprueba que coinciden con las del backend).
 - **Escritorio:** avisos de actualización, que el instalador incluya los archivos que carga
@@ -634,6 +649,34 @@ Epic se descartaron), por eso es la única que se puede vincular.
   avatar.
 - Al vincular Steam, `ConexionSteam.jsx` anima la conexión y avisa con `animationend` (no con
   temporizadores) cuando termina.
+
+### Amigos y perfiles públicos
+
+- **Dónde está cada cosa.** Backend: `services/privacidad.js` (la regla de qué ve cada persona,
+  sin base de datos), `controllers/userController.js` (buscar, perfil público y foto) y
+  `controllers/friendController.js` (amistades, solicitudes y bloqueos). Frontend: `Amigos.jsx`
+  (la página, con las pestañas del perfil), `PerfilPublico.jsx`, `AccionAmistad.jsx` (los
+  botones según la relación; los usan el perfil de otra persona y todas las listas),
+  `ListaPersonas.jsx` y `BuscarPersonas.jsx`.
+- **Relación.** Entre dos personas puede ser `self`, `amigos`, `enviada`, `recibida` o `ninguna`;
+  el bloqueo va aparte. Cada parte del perfil tiene un nivel (`nadie`, `amigos`, `todos`) y
+  `puedeVer(nivel, relacion)` decide. Ante un nivel que no conoce, no enseña.
+- **Qué no sale nunca de la API de otras personas:** email, teléfono y fecha de nacimiento
+  (de la fecha solo se calcula la edad). Hay una prueba contra Postgres real que lo comprueba.
+- **Defensa en las consultas.** Cuando una persona te ha bloqueado, `GET /users/:username`,
+  la búsqueda y las solicitudes responden como si no existiera (404): no revelan que tiene
+  cuenta. La búsqueda usa `starts_with` y no `LIKE`, porque en un `LIKE` el guion bajo (que
+  un nombre puede llevar) es un comodín.
+- **Fotos.** Las listas no llevan la foto dentro (hasta 200 KB en base64 cada una): llevan
+  `has_avatar` y `Avatar.jsx` pide la imagen a `GET /users/:username/avatar`.
+- **Insignia de solicitudes.** `Layout.jsx` pide `/friends/requests` al entrar y en cada
+  cambio de página y reparte el número con el contexto del `<Outlet />`. No hay actualización
+  en directo: llega al navegar o recargar.
+- **Cómo se probó.** Las pruebas del repositorio (`privacidad.test.js`, `social.test.js`)
+  cubren la tabla de privacidad y las validaciones sin base de datos. La lógica con SQL
+  (solicitudes cruzadas, bloqueos, privacidad por relación, la búsqueda con `_`) se comprobó
+  contra un Postgres real en memoria (PGlite) con tres usuarios; si tocas esas consultas,
+  vuelve a comprobarlas contra una base de datos de verdad.
 
 ### Tarjetas de la biblioteca
 

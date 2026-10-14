@@ -6,15 +6,19 @@ import { nombrePais } from './paises'
 // El fondo es siempre el mismo (una aurora con los colores de la marca, solo CSS):
 // no depende del usuario ni de sus juegos. Es decorativo.
 //  - perfil: { username, avatar, bio, created_at, first_name, last_name, age, gender, location, country }
-//  - stats: lo que calcula GET /profile/stats, o null mientras carga
-//  - onEditar(): salta a la pestaña de edición
-function CabeceraPerfil({ perfil, stats, onEditar }) {
+//  - stats: lo que calcula GET /profile/stats, o null mientras carga. `undefined` = no hay
+//    cifras que enseñar (el perfil de otra persona que no comparte su biblioteca)
+//  - onEditar(): salta a la pestaña de edición (solo en el mío)
+//  - propio: false en el perfil de otra persona (no hay "Aún no has escrito nada sobre ti")
+//  - acciones: botones de la amistad, en el sitio donde en el mío va "Editar perfil"
+function CabeceraPerfil({ perfil, stats, onEditar, propio = true, acciones }) {
   const { t, locale, idioma } = useIdioma()
 
-  const miembroDesde = new Date(perfil.created_at).toLocaleDateString(locale, {
-    month: 'long',
-    year: 'numeric',
-  })
+  // Un usuario bloqueado llega sin fecha de alta
+  const miembroDesde = perfil.created_at
+    ? new Date(perfil.created_at).toLocaleDateString(locale, { month: 'long', year: 'numeric' })
+    : ""
+
 
   // Datos personales: solo los que haya, separados por puntos medios. Si no hay
   // ninguno no se pinta la línea.
@@ -29,9 +33,10 @@ function CabeceraPerfil({ perfil, stats, onEditar }) {
 
   // Mientras no llegan las estadísticas enseño rayas, no ceros que luego cambian
   const cargando = stats === null
+  const sinCifras = stats === undefined
   const porcentajeCompletado = stats && stats.total > 0 ? Math.round((stats.completado / stats.total) * 100) : 0
 
-  const cifras = [
+  const cifras = sinCifras ? [] : [
     { etiqueta: t('stats.juegos'), valor: cargando ? "–" : stats.total },
     { etiqueta: t('stats.notaMedia'), valor: cargando ? "–" : (stats.nota_media ?? "—") },
     { etiqueta: t('stats.completados'), valor: cargando ? "–" : `${porcentajeCompletado}%` },
@@ -41,12 +46,15 @@ function CabeceraPerfil({ perfil, stats, onEditar }) {
     <header className="banner-perfil">
       <div className="banner-perfil__fondo" aria-hidden="true" />
 
-      <button type="button" className="banner-perfil__editar" onClick={onEditar}>
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-        </svg>
-        {t('perfil.editarBoton')}
-      </button>
+      {onEditar && (
+        <button type="button" className="banner-perfil__editar" onClick={onEditar}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+          </svg>
+          {t('perfil.editarBoton')}
+        </button>
+      )}
+      {acciones && <div className="banner-perfil__acciones">{acciones}</div>}
 
       <div className="banner-perfil__contenido">
         <div className="banner-perfil__identidad">
@@ -56,23 +64,27 @@ function CabeceraPerfil({ perfil, stats, onEditar }) {
             {datosPersonales.length > 0 && (
               <p className="banner-perfil__meta">{datosPersonales.join(" · ")}</p>
             )}
-            <p className="banner-perfil__meta">{t('perfil.miembroDesde', { fecha: miembroDesde })}</p>
+            {perfil.created_at && (
+              <p className="banner-perfil__meta">{t('perfil.miembroDesde', { fecha: miembroDesde })}</p>
+            )}
             {perfil.bio
               ? <p className="banner-perfil__bio">{perfil.bio}</p>
-              : <p className="banner-perfil__bio banner-perfil__bio--vacia">{t('perfil.sinBio')}</p>}
+              : propio && <p className="banner-perfil__bio banner-perfil__bio--vacia">{t('perfil.sinBio')}</p>}
           </div>
         </div>
 
         {/* En el HTML va primero la etiqueta (<dt>) y luego el valor (<dd>), que es lo
             correcto para un lector de pantalla; el CSS pinta el número encima. */}
-        <dl className="banner-perfil__cifras">
-          {cifras.map(({ etiqueta, valor }, i) => (
-            <div key={etiqueta} className="cifra" style={{ '--orden': i }}>
-              <dt className="cifra__etiqueta">{etiqueta}</dt>
-              <dd className="cifra__valor">{valor}</dd>
-            </div>
-          ))}
-        </dl>
+        {cifras.length > 0 && (
+          <dl className="banner-perfil__cifras">
+            {cifras.map(({ etiqueta, valor }, i) => (
+              <div key={etiqueta} className="cifra" style={{ '--orden': i }}>
+                <dt className="cifra__etiqueta">{etiqueta}</dt>
+                <dd className="cifra__valor">{valor}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </div>
     </header>
   )

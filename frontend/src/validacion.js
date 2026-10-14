@@ -31,6 +31,9 @@ export function normalizarUsername(texto) {
 // Valores de "sexo" (sin elegir se manda null)
 export const SEXOS = ['hombre', 'mujer', 'otro']
 
+// Quién puede ver una parte del perfil (mismas opciones que el servidor)
+export const VISIBILIDADES = ['nadie', 'amigos', 'todos']
+
 // Longitud máxima de cada texto
 export const LIMITES_PERFIL = { first_name: 50, last_name: 100, location: 100 }
 

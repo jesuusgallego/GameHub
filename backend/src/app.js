@@ -10,6 +10,8 @@ const { limitadorGeneral } = require('./middleware/limitadores');
 const gameRoutes = require('./routes/gameRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const accountRoutes = require('./routes/accountRoutes');
+const userRoutes = require('./routes/userRoutes');
+const friendRoutes = require('./routes/friendRoutes');
 const { iniciarSincronizacionAutomatica } = require('./services/sincronizacionAutomatica');
 
 const PORT = process.env.PORT || 4000;
@@ -54,6 +56,8 @@ app.use(express.json({ limit: '1mb' }));
 app.use('/games', gameRoutes);
 app.use('/profile', profileRoutes);
 app.use('/accounts', accountRoutes);
+app.use('/users', userRoutes);
+app.use('/friends', friendRoutes);
 
 // Compruebo a la vez el servidor y la base de datos: si la BD no responde, devuelvo 500
 app.get('/health', async (req, res) => {

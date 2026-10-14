@@ -1,0 +1,151 @@
+/* Amigos y perfil de otra persona: listas de personas, botones de la amistad e insignia. */
+
+/* ---- Insignia con el número de solicitudes, en el enlace "Amigos" de la barra ---- */
+.insignia {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  margin-left: 0.4rem;
+  padding: 0 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--sobre-peligro);
+  background: var(--peligro);
+  border-radius: 999px;
+  animation: insignia-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+@keyframes insignia-entrada {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* ---- Lista de personas ---- */
+.personas {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.persona {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  transition: border-color var(--transicion), transform var(--transicion);
+}
+
+.persona:hover {
+  border-color: color-mix(in srgb, var(--acento) 45%, var(--borde));
+}
+
+.persona__enlace {
+  display: flex;
+  flex: 1 1 12rem;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.persona__texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.persona__texto strong {
+  color: var(--texto-h);
+}
+
+.persona__texto small {
+  overflow: hidden;
+  color: var(--texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.persona__enlace:hover strong {
+  color: var(--acento);
+}
+
+/* ---- Botones de la amistad ---- */
+.accion-amistad {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.accion-amistad__botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ---- Solicitudes: recibidas y enviadas, una debajo de otra ---- */
+.solicitudes {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.buscar-personas {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* El panel del perfil de otra persona no necesita la altura mínima de las pestañas del
+   mío (que la tienen para que no salten al cambiar de una a otra) */
+.panel-perfil--compacto {
+  min-height: 0;
+}
+
+/* ---- Perfil de otra persona: los botones de la amistad en la esquina del banner ---- */
+.banner-perfil__acciones {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.banner-perfil__acciones .accion-amistad {
+  align-items: flex-end;
+}
+
+@media (max-width: 640px) {
+  /* En pantallas estrechas los botones dejan de flotar sobre el banner: se colocan en su
+     sitio, debajo de la identidad */
+  .banner-perfil__acciones {
+    position: static;
+    justify-content: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .accion-amistad {
+    align-items: flex-start;
+  }
+
+  .persona__acciones,
+  .persona .accion-amistad {
+    width: 100%;
+  }
+}

@@ -39,6 +39,7 @@
 @import './perfil-seguridad.css';
 @import './cuentas-vinculadas.css';
 @import './perfil-movil.css';
+@import './amigos.css';
 @import './progreso-steam.css';
 
 /* Pantallas estrechas: va el último para poder sobrescribir lo anterior */

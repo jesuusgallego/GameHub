@@ -183,3 +183,24 @@ test('los mensajes de validación del servidor tienen traducción', () => {
   ]
   for (const mensaje of mensajes) assert.ok(erroresApi[mensaje], `falta en erroresApi de en.js: ${mensaje}`)
 })
+
+// Cada mensaje de error fijo que escribe el backend en sus controladores tiene que estar en
+// erroresApi: si falta, quien usa la app en inglés lo vería en español. Se leen los
+// archivos del backend y se buscan los textos de `error: '...'`. Los mensajes que se
+// construyen con ${...} no se pueden comprobar así y no se incluyen.
+test('todos los mensajes de error del backend tienen traducción', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+  const carpeta = path.resolve(import.meta.dirname, '../../backend/src/controllers')
+  const mensajes = new Set()
+
+  for (const archivo of fs.readdirSync(carpeta)) {
+    const codigo = fs.readFileSync(path.join(carpeta, archivo), 'utf8')
+    for (const m of codigo.matchAll(/error:\s*'((?:[^'\\]|\\.)*)'/g)) mensajes.add(m[1].replace(/\\'/g, "'"))
+    for (const m of codigo.matchAll(/error:\s*"((?:[^"\\]|\\.)*)"/g)) mensajes.add(m[1])
+  }
+
+  assert.ok(mensajes.size > 30, `solo encontré ${mensajes.size} mensajes: ¿cambió el formato?`)
+  const sinTraducir = [...mensajes].filter((m) => !erroresApi[m])
+  assert.deepStrictEqual(sinTraducir, [], `faltan en erroresApi (en.js):\n  ${sinTraducir.join('\n  ')}`)
+})

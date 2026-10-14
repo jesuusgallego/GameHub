@@ -4,7 +4,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
+Amigos y perfiles públicos, inicio de sesión con nombre de usuario y datos personales.
+
 ### Añadido
+- **Amigos.** Nueva página *Amigos* con cuatro pestañas: tus amigos, las solicitudes
+  (recibidas y enviadas), buscar personas por el principio de su nombre de usuario y los
+  bloqueados. Las solicitudes pendientes salen como un número en la barra. Si dos personas se
+  envían solicitud a la vez, se aceptan solas.
+- **Perfil de otras personas** (`/usuarios/nombre`): el mismo banner que el tuyo, con los
+  botones de la amistad. Se ven siempre el nombre, la foto y la descripción; el resto
+  depende de lo que haya elegido cada persona.
+- **Privacidad del perfil** (en *Perfil → Editar perfil*): eliges quién ve tus datos
+  personales y quién ve tu biblioteca (solo yo, mis amigos o todo el mundo). Por defecto, los
+  datos personales no los ve nadie y la biblioteca solo los amigos. El email, el teléfono y la
+  fecha de nacimiento no los ve nadie, con ninguna opción.
+- **Bloquear** a una persona: deja de ser tu amiga, no puede ver tu perfil, encontrarte ni
+  enviarte solicitudes (para ella, tu cuenta es como si no existiera).
 - **Inicio de sesión con email o con nombre de usuario.** El campo de la pantalla de entrada
   acepta cualquiera de los dos. El nombre de usuario se puede escribir también con
   mayúsculas: se busca en minúsculas.
@@ -12,7 +27,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   sexo (hombre, mujer u otro), localización (ciudad o región), país y teléfono. Se editan en
   *Perfil → Editar perfil*. El banner muestra nombre, edad (calculada con la fecha de
   nacimiento, que no se enseña), sexo y "localización, país"; el teléfono no se muestra en
-  ningún sitio. Por ahora solo los ve su dueño.
+  ningún sitio.
 - **País** como campo aparte: una lista de 250 países con su nombre en el idioma de la interfaz.
 - **Teléfono** con el prefijo aparte: se elige de una lista de países con su prefijo
   (`España (+34)`) **o** se escribe en el propio campo (`+34` o `0034`: al teclearlo salta a
@@ -33,6 +48,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   de los títulos lo pasaba a mayúsculas).
 
 ### Interno
+- Nuevas rutas: `GET /users/search`, `GET /users/:username` y `GET /users/:username/avatar`;
+  `GET|POST /friends/requests`, `POST /friends/requests/:id/accept`, `DELETE
+  /friends/requests/:id`, `GET /friends`, `DELETE /friends/:username` y `GET|POST|DELETE
+  /friends/blocks`. Tablas nuevas `friendships` y `blocks`, y dos columnas de privacidad en
+  `users`. La regla de qué ve cada persona está en un solo sitio (`services/privacidad.js`) y
+  tiene su prueba con toda la tabla.
+- Las fotos de las listas de personas no viajan dentro del JSON: la API devuelve `has_avatar`
+  y la imagen se pide a `GET /users/:username/avatar` (público, con `ETag`).
+- Una prueba nueva comprueba que cada mensaje de error fijo del backend esté traducido en
+  `en.js`.
 - `POST /auth/login` recibe `identifier` (email o nombre). Sigue aceptando `email` para que las
   apps de escritorio ya instaladas puedan entrar. **Hay que desplegar el backend antes de
   publicar la app**: una interfaz nueva contra un servidor antiguo no entraría con el nombre.

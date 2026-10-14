@@ -27,6 +27,11 @@ const MENSAJE_USERNAME =
 
 // ---- Datos personales del perfil (todos opcionales) --------------------------------
 
+// Quién puede ver una parte del perfil: solo yo, mis amigos o cualquiera con sesión. Cada
+// persona lo elige para sus datos personales y para su biblioteca. La base de datos tiene
+// el mismo CHECK. Lo que decide qué se enseña está en services/privacidad.js.
+const VISIBILIDADES = ['nadie', 'amigos', 'todos'];
+
 // Opciones de "sexo". Sin elegir se guarda NULL. La base de datos tiene el mismo CHECK.
 const SEXOS = ['hombre', 'mujer', 'otro'];
 
@@ -39,6 +44,7 @@ const TEXTOS_PERFIL = {
 };
 
 const MENSAJE_SEXO = 'El sexo no es válido';
+const MENSAJE_VISIBILIDAD = 'La opción de privacidad no es válida';
 const MENSAJE_PAIS = 'El país no es válido';
 const MENSAJE_TELEFONO =
   'El teléfono no es válido: escríbelo con el prefijo del país, por ejemplo +34 600 123 456';
@@ -127,6 +133,7 @@ module.exports = {
   EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, MENSAJE_PASSWORD_REGISTRO,
   USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
   SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, EDAD_MAX,
+  VISIBILIDADES, MENSAJE_VISIBILIDAD,
   PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO, TELEFONO_REGEX, normalizarTelefono,
   limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida,
 };

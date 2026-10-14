@@ -35,10 +35,19 @@ const limitadorRegistro = limitador({ ventanaMinutos: 60, maximo: 10 });
 const limitadorPedirCodigo = limitador({ ventanaMinutos: 60, maximo: 5 });
 const limitadorUsarCodigo = limitador({ ventanaMinutos: 15, maximo: 10 });
 
+// Buscar personas: 60 búsquedas cada 5 minutos por IP. La interfaz espera a que dejes de
+// escribir antes de buscar, así que un uso normal queda muy por debajo.
+const limitadorBusqueda = limitador({ ventanaMinutos: 5, maximo: 60 });
+
+// Solicitudes de amistad: 30 por hora y por IP. Sin tope, una cuenta podría llenar de
+// solicitudes a todo el que encuentre.
+const limitadorSolicitudes = limitador({ ventanaMinutos: 60, maximo: 30 });
+
 // Tope general para todo lo demás. Es alto a propósito (un uso normal ni se acerca);
 // solo corta a quien automatiza peticiones sin parar.
 const limitadorGeneral = limitador({ ventanaMinutos: 15, maximo: 1000 });
 
 module.exports = {
   limitadorLogin, limitadorRegistro, limitadorPedirCodigo, limitadorUsarCodigo, limitadorGeneral,
+  limitadorBusqueda, limitadorSolicitudes,
 };
