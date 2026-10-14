@@ -108,10 +108,16 @@ test('limpiarTelefono deja el formato internacional canónico y rechaza lo demá
   for (const malo of [
     '600123456', '34600123456', '+0 600123456', '+34 6', '+34600123456789012', '+34 abc 123 456',
     '+34 600 123 456 ext 2', 5, {}, ['+34600123456'], true,
+    // Con forma de teléfono pero no son números reales de su país
+    '+34 123 456 789', '+34 000 000 000', '+999 123 456 789', '+1 000 000 0000',
   ]) {
     assert.strictEqual(limpiarTelefono(malo), undefined, JSON.stringify(malo));
   }
   assert.strictEqual(normalizarTelefono('00 34 600 123 456'), '+34600123456');
+  // Números reales de varios países
+  for (const ok of ['+49 151 23456789', '+52 55 1234 5678', '+33 6 12 34 56 78', '+351 912 345 678']) {
+    assert.ok(limpiarTelefono(ok), ok);
+  }
 });
 
 test('la lista de países tiene 250 códigos de dos letras, sin repetir', () => {

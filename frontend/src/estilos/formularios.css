@@ -48,3 +48,18 @@
   font-size: 0.85rem;
   color: var(--texto-suave);
 }
+
+/* Teléfono: el desplegable del prefijo y el campo del número en la misma fila (el
+   prefijo, más estrecho). En pantallas muy estrechas se apilan. */
+.campo-telefono {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 0.5rem;
+  align-items: start;
+}
+
+@media (max-width: 420px) {
+  .campo-telefono {
+    grid-template-columns: 1fr;
+  }
+}

@@ -7,6 +7,9 @@ import {
   SEXOS, LIMITES_PERFIL, EDAD_MAX, limitesFechaNacimiento, telefonoRegex, normalizarTelefono,
 } from '../src/validacion.js'
 import { PAISES, nombrePais, opcionesPaises } from '../src/paises.js'
+import {
+  PAISES_CON_PREFIJO, prefijoDe, separarPrefijo, componerTelefono, descomponerTelefono, telefonoValido,
+} from '../src/telefono.js'
 import es from '../src/textos/es.js'
 import en from '../src/textos/en.js'
 import { erroresApi } from '../src/textos/en.js'
@@ -58,6 +61,60 @@ test('telefonoRegex y normalizarTelefono: formato internacional sin separadores'
   for (const mal of ['', '600123456', '+0123456789', '+34 600', '+3460012345678901', '+34abc123456', '34600123456']) {
     assert.ok(!telefonoRegex.test(mal), mal)
   }
+})
+
+test('separarPrefijo: al escribir un prefijo completo salta al desplegable', () => {
+  // Todavía no es un prefijo completo: se queda como está
+  for (const parcial of ['', '+', '+3', '600123456', '00', '0']) {
+    assert.strictEqual(separarPrefijo(parcial), null, JSON.stringify(parcial))
+  }
+  assert.deepStrictEqual(separarPrefijo('+34'), { pais: 'ES', resto: '' })
+  assert.deepStrictEqual(separarPrefijo('+34 600 123 456'), { pais: 'ES', resto: '600123456' })
+  assert.deepStrictEqual(separarPrefijo('0034 600123456'), { pais: 'ES', resto: '600123456' })
+  assert.deepStrictEqual(separarPrefijo('+353 87 123 4567'), { pais: 'IE', resto: '871234567' })
+  assert.deepStrictEqual(separarPrefijo('+7 912 345 6789'), { pais: 'RU', resto: '9123456789' })
+  // Prefijo compartido: el principal, salvo que el país del perfil lo comparta
+  assert.strictEqual(separarPrefijo('+1 415 555 2671').pais, 'US')
+  assert.strictEqual(separarPrefijo('+1 604 555 1234', 'CA').pais, 'CA')
+  assert.strictEqual(separarPrefijo('+1 604 555 1234', 'ES').pais, 'US')
+  assert.strictEqual(separarPrefijo('+44 20 7946 0958').pais, 'GB')
+  assert.strictEqual(separarPrefijo('+999 123'), null, 'prefijo que no existe')
+})
+
+test('componerTelefono y descomponerTelefono son inversas', () => {
+  // El número se escribe como en su país: el 0 inicial del Reino Unido no va en internacional
+  assert.strictEqual(componerTelefono('ES', '600 12 34 56'), '+34600123456')
+  assert.strictEqual(componerTelefono('ES', '600123456'), '+34600123456')
+  assert.strictEqual(componerTelefono('GB', '020 7946 0958'), '+442079460958')
+  assert.strictEqual(componerTelefono('US', '(415) 555-2671'), '+14155552671')
+  assert.strictEqual(componerTelefono('', '+34 600 123 456'), '+34600123456', 'ya trae su prefijo')
+  assert.strictEqual(componerTelefono('ES', ''), '')
+  assert.strictEqual(componerTelefono('ES', '   '), '')
+  assert.strictEqual(componerTelefono('', '600123456'), '600123456', 'sin prefijo: no es válido')
+  assert.deepStrictEqual(descomponerTelefono('+34600123456'), { pais: 'ES', numero: '600 12 34 56' })
+  assert.deepStrictEqual(descomponerTelefono(''), { pais: '', numero: '' })
+  assert.deepStrictEqual(descomponerTelefono(null), { pais: '', numero: '' })
+  assert.strictEqual(descomponerTelefono('+16045551234', 'CA').pais, 'CA')
+  assert.strictEqual(descomponerTelefono('+16045551234').pais, 'CA', 'el país del propio número')
+  for (const tel of ['+34600123456', '+14155552671', '+442079460958', '+4915123456789']) {
+    const { pais, numero } = descomponerTelefono(tel)
+    assert.strictEqual(componerTelefono(pais, numero), tel)
+  }
+})
+
+test('telefonoValido distingue números reales de los que solo "parecen"', () => {
+  for (const ok of ['+34600123456', '+14155552671', '+442079460958', '+525512345678']) assert.ok(telefonoValido(ok), ok)
+  for (const mal of ['', '600123456', '+34123456789', '+34600', '+999123456789', '+34600123456ext2']) {
+    assert.ok(!telefonoValido(mal), mal)
+  }
+})
+
+test('prefijoDe y la lista de países con prefijo', () => {
+  assert.strictEqual(prefijoDe('ES'), '34')
+  assert.strictEqual(prefijoDe('US'), '1')
+  assert.strictEqual(prefijoDe('AQ'), '', 'la Antártida no tiene')
+  assert.ok(PAISES_CON_PREFIJO.includes('ES') && !PAISES_CON_PREFIJO.includes('AQ'))
+  assert.ok(PAISES_CON_PREFIJO.length >= 240)
 })
 
 test('la lista de países: 250 códigos únicos, con nombre en español e inglés', () => {

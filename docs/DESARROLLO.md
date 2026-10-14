@@ -415,7 +415,7 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | DELETE | `/games/:id` | Bearer token | Elimina un juego de tu biblioteca |
 | GET | `/profile` | Bearer token | Tus datos: usuario, email, bio, foto, fecha de alta y datos personales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, `country`, `phone`, y `age`, que se calcula con la fecha de nacimiento) |
 | GET | `/profile/stats` | Bearer token | Estadísticas de tu biblioteca (juegos por estado, nota media) y tus 5 juegos mejor valorados |
-| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) y/o los datos personales, todos opcionales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años), `gender` (`hombre`, `mujer` u `otro`), `country` (código ISO 3166-1 de dos letras en mayúsculas, de la lista de `config/paises.js`) y `phone` (internacional: `+`, prefijo y 7 a 15 dígitos; el servidor quita espacios, guiones y paréntesis y cambia un `00` inicial por `+`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username`. 409 si el usuario ya existe |
+| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) y/o los datos personales, todos opcionales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años), `gender` (`hombre`, `mujer` u `otro`), `country` (código ISO 3166-1 de dos letras en mayúsculas, de la lista de `config/paises.js`) y `phone` (internacional y válido: el servidor quita espacios, guiones y paréntesis, cambia un `00` inicial por `+` y lo comprueba con libphonenumber; se guarda como `+34600123456`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username`. 409 si el usuario ya existe |
 | PATCH | `/profile/email` | Bearer token | Cambia el email (`email` + `current_password`). 403 si la contraseña es incorrecta |
 | PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`). Cierra todas las demás sesiones abiertas y devuelve un `token` nuevo para la actual |
 | DELETE | `/profile` | Bearer token | Borra tu cuenta y toda tu biblioteca (`password`) |
@@ -514,13 +514,19 @@ Decisiones y detalles que no se ven leyendo un solo archivo.
   al escribir (`normalizarUsername`); el servidor no lo arregla, lo rechaza. La misma regla es
   un `CHECK` en `schema.sql`, y ese archivo convierte los nombres antiguos al arrancar (ver
   la sección de la base de datos).
-- **País y teléfono:** el país se guarda como código (`ES`), no como nombre: el nombre depende
-  del idioma y lo pone el navegador con `Intl.DisplayNames` (`frontend/src/paises.js`). La
-  lista está en `backend/src/config/paises.js` y en `frontend/src/paises.js` (una prueba exige
-  que coincidan). El teléfono se guarda en forma canónica (`+34600123456`) y el formulario
-  aplica la misma normalización (`normalizarTelefono`), si no, lo escrito y lo guardado
-  parecerían distintos. El teléfono es un dato de contacto: **no se muestra en el banner**, y al
-  hacer públicos los perfiles (1.3) tendrá que seguir privado por defecto.
+- **País:** se guarda como código (`ES`), no como nombre: el nombre depende del idioma y lo
+  pone el navegador con `Intl.DisplayNames` (`frontend/src/paises.js`). La lista está en
+  `backend/src/config/paises.js` y en `frontend/src/paises.js` (una prueba exige que coincidan).
+- **Teléfono:** se guarda en formato E.164 (`+34600123456`). El servidor lo valida con
+  [libphonenumber-js](https://www.npmjs.com/package/libphonenumber-js) (`limpiarTelefono`): sabe
+  qué prefijos existen y qué longitudes y comienzos admite cada país, y rechaza una extensión
+  (`ext 2`) en vez de descartarla en silencio. En el formulario el prefijo y el número van
+  separados (`CampoTelefono`, con la lógica sin React en `frontend/src/telefono.js`): el prefijo
+  se elige de la lista o se escribe con `+`/`00` en el campo del número, y `componerTelefono`
+  lo junta interpretando el número como lo escribiría alguien de ese país (quita el `0` inicial
+  del Reino Unido, por ejemplo). Es un dato de contacto: **no se muestra en el banner**, y al
+  hacer públicos los perfiles (1.3) tendrá que seguir privado por defecto. No hay verificación
+  por SMS.
 - Un 401 significa "sesión caducada" y el frontend cierra la sesión; por eso una contraseña
   incorrecta al confirmar un cambio responde **403**, no 401.
 

@@ -114,7 +114,8 @@ Lo que guarda GameHub de ti:
 
 - Tu nombre de usuario y tu email.
 - Si los rellenas, tu nombre y apellidos, fecha de nacimiento, sexo, localización, país y teléfono.
-  Son opcionales y por ahora solo los ves tú. El teléfono no se verifica ni se muestra en ningún sitio.
+  Son opcionales y por ahora solo los ves tú. El teléfono lo eliges con su prefijo (de una lista o escribiéndolo) y no se verifica ni se
+  muestra en ningún sitio.
 - Tu contraseña **solo como huella irreversible** (bcrypt): ni siquiera el servidor puede leerla.
 - Tu biblioteca: los juegos, su estado, tu nota y tu reseña.
 - Opcional: tu foto, tu descripción y tu SteamID.

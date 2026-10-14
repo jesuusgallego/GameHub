@@ -14,8 +14,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   nacimiento, que no se enseña), sexo y "localización, país"; el teléfono no se muestra en
   ningún sitio. Por ahora solo los ve su dueño.
 - **País** como campo aparte: una lista de 250 países con su nombre en el idioma de la interfaz.
-- **Teléfono** en formato internacional (`+34 600 123 456`): se guarda sin espacios y no se
-  verifica que el número exista.
+- **Teléfono** con el prefijo aparte: se elige de una lista de países con su prefijo
+  (`España (+34)`) **o** se escribe en el propio campo (`+34` o `0034`: al teclearlo salta a
+  la lista). El número se escribe como en su país (`600 12 34 56`, o `020 7946 0958` en
+  Reino Unido) y se guarda en formato internacional (`+34600123456`). Elegir el país del
+  perfil rellena el prefijo si estaba vacío. Se comprueba que sea un número real de ese
+  país, no solo que tenga cifras. El número no se verifica por SMS.
 
 ### Cambiado
 - **Nombre de usuario único y en minúsculas:** de 3 a 20 caracteres, solo letras sin tilde,
@@ -35,6 +39,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - `PATCH /profile` acepta `first_name`, `last_name`, `birth_date` (`AAAA-MM-DD`), `gender`,
   `location`, `country` (código ISO de dos letras) y `phone`; `GET /profile` devuelve además `age`. Nuevas columnas en `users` y reglas
   compartidas con el formulario (una prueba comprueba que coinciden).
+- Nueva dependencia, `libphonenumber-js` (frontend y backend): conoce el prefijo de cada país
+  y valida números. Añade unos 130 KB al paquete de la web (34 KB comprimidos).
 - `schema.sql` quita la restricción de nombre de usuario de una versión de desarrollo anterior
   (mayúsculas) antes de convertir los nombres, para que una base de datos que ya la tuviera
   pueda arrancar.

@@ -10,8 +10,11 @@ import { useIdioma } from './IdiomaContext'
 import Desplegable from './Desplegable'
 import {
   usernameRegex, normalizarUsername, USERNAME_MAX, SEXOS, LIMITES_PERFIL, limitesFechaNacimiento,
-  telefonoRegex, normalizarTelefono,
 } from './validacion'
+import CampoTelefono from './CampoTelefono'
+import {
+  PAISES_CON_PREFIJO, componerTelefono, descomponerTelefono, telefonoValido,
+} from './telefono'
 import { opcionesPaises } from './paises'
 
 const BIO_MAX = 300
@@ -35,7 +38,11 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   const [sexo, setSexo] = useState(perfil.gender ?? "") // "" = sin indicar
   const [localizacion, setLocalizacion] = useState(perfil.location ?? "")
   const [pais, setPais] = useState(perfil.country ?? "") // código ISO ("ES") o "" = sin indicar
-  const [telefono, setTelefono] = useState(perfil.phone ?? "")
+  // El teléfono se edita en dos partes: el prefijo (código del país, "ES") y el número
+  const [telefono, setTelefono] = useState(() => {
+    const { pais: prefijo, numero } = descomponerTelefono(perfil.phone, perfil.country)
+    return { prefijo, numero }
+  })
   const [avatar, setAvatar] = useState(perfil.avatar)
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState("")
@@ -56,6 +63,15 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   // la lista y no en la ilustración que dejé a medias
   const [aperturas, setAperturas] = useState(0)
   const archivoRef = useRef(null)
+
+  // Al elegir el país, si todavía no hay prefijo de teléfono, se pone el de ese país. Si ya
+  // había uno (elegido o escrito) no se toca: no quiero pisar lo que alguien puso a propósito
+  function cambiarPais(nuevo) {
+    setPais(nuevo)
+    if (!telefono.prefijo && PAISES_CON_PREFIJO.includes(nuevo)) {
+      setTelefono({ ...telefono, prefijo: nuevo })
+    }
+  }
 
   // Lo que admite el campo de fecha: ni futura ni de hace más de 120 años
   const { min: nacimientoMin, max: nacimientoMax } = limitesFechaNacimiento()
@@ -81,10 +97,11 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   if (sexo !== (perfil.gender ?? "")) cambios.gender = sexo || null
   if (localizacion.trim() !== (perfil.location ?? "")) cambios.location = localizacion.trim() || null
   if (pais !== (perfil.country ?? "")) cambios.country = pais || null
-  // Comparo y envío el teléfono ya normalizado (el servidor lo guarda así): si no,
-  // "+34 600 123 456" frente a "+34600123456" parecería un cambio pendiente para siempre
-  const telefonoLimpio = normalizarTelefono(telefono)
-  if (telefonoLimpio !== (perfil.phone ?? "")) cambios.phone = telefonoLimpio || null
+  // Comparo y envío el teléfono ya compuesto en formato internacional (el servidor lo
+  // guarda así): si no, "600 12 34 56" frente a "+34600123456" parecería un cambio
+  // pendiente para siempre
+  const telefonoCompuesto = componerTelefono(telefono.prefijo, telefono.numero)
+  if (telefonoCompuesto !== (perfil.phone ?? "")) cambios.phone = telefonoCompuesto || null
   const hayCambios = Object.keys(cambios).length > 0
 
   // Al cambiar de foto subida (o al irme) libero la URL temporal anterior, que si
@@ -170,8 +187,10 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
       return
     }
 
-    if (telefonoLimpio !== "" && !telefonoRegex.test(telefonoLimpio)) {
-      setError(t('validacion.telefonoInvalido'))
+    if (telefonoCompuesto !== "" && !telefonoValido(telefonoCompuesto)) {
+      setError(telefono.prefijo || telefonoCompuesto.startsWith('+')
+        ? t('validacion.telefonoInvalido')
+        : t('validacion.telefonoSinPrefijo'))
       return
     }
 
@@ -331,7 +350,7 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
       <div className="formulario__pareja">
         <label className="campo">
           <span>{t('editarPerfil.pais')}</span>
-          <Desplegable opciones={opcionesPais} valor={pais} onChange={setPais} />
+          <Desplegable opciones={opcionesPais} valor={pais} onChange={cambiarPais} />
         </label>
         <label className="campo">
           <span>{t('editarPerfil.localizacion')}</span>
@@ -346,18 +365,12 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
         </label>
       </div>
 
-      <label className="campo">
-        <span>{t('editarPerfil.telefono')}</span>
-        <input
-          type="tel"
-          value={telefono}
-          onChange={(e) => setTelefono(e.target.value)}
-          maxLength={25}
-          placeholder="+34 600 123 456"
-          autoComplete="tel"
-        />
-        <small>{t('editarPerfil.telefonoAyuda')}</small>
-      </label>
+      <CampoTelefono
+        prefijo={telefono.prefijo}
+        numero={telefono.numero}
+        preferido={pais}
+        onChange={setTelefono}
+      />
 
       <Mensaje texto={error} />
       <Mensaje tipo="ok" texto={guardado && !hayCambios ? t('editarPerfil.actualizado') : ""} />
