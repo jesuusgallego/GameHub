@@ -61,7 +61,7 @@ GAMEHUB_API_URL=https://api.tu-servidor.com npm run dist
 
 (Antes hay que haber hecho `npm install` en `frontend/` y en `desktop/`, como arriba.)
 
-Deja `desktop/release/GameHub Setup 1.1.0.exe`. **Compílalo en Windows** (o en GitHub
+Deja `desktop/release/GameHub Setup X.Y.Z.exe` (con la versión de `package.json`). **Compílalo en Windows** (o en GitHub
 Actions, ver abajo): desde WSL/Linux, `electron-builder` necesita Wine.
 
 ## Publicar una versión

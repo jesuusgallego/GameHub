@@ -9,18 +9,6 @@
   margin: 0 auto;
 }
 
-/* Cada bloque de la página: una tarjeta con su título */
-.panel {
-  padding: 1.5rem;
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio-grande);
-}
-
-.panel > .titulo-seccion {
-  margin-bottom: 1.25rem;
-}
-
 /* ---- Estadísticas del perfil ---------------------------------------------- */
 .estadisticas {
   display: flex;

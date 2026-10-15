@@ -8,7 +8,7 @@ npm install
 npm run dev       # servidor de desarrollo en http://localhost:5173
 npm run build     # compila a dist/ (web)
 npm run lint      # ESLint
-npm test          # pruebas de filtros, orden, búsqueda, géneros de IGDB y validación
+npm test          # pruebas de filtros, orden, búsqueda, géneros de IGDB, validación, privacidad y textos
 ```
 
 Necesita el backend en marcha: la URL se toma de `VITE_API_URL` (por defecto
@@ -25,7 +25,11 @@ Necesita el backend en marcha: la URL se toma de `VITE_API_URL` (por defecto
 | `src/ordenFiltros.js` | Búsqueda, filtros y orden de la biblioteca (funciones puras, con pruebas) |
 | `src/terminosIgdb.js` | Traducción de los géneros y modos de juego de IGDB (solo para mostrarlos; se guardan en inglés) |
 | `src/sesion.js` | Lectura, guardado y borrado del token de sesión (`localStorage`) |
-| `src/validacion.js` | Reglas de email y contraseña de los formularios (iguales a las del backend) |
+| `src/validacion.js` | Reglas de los formularios: email, contraseña, nombre de usuario y datos del perfil (iguales a las del backend) |
+| `src/telefono.js`, `src/paises.js` | Prefijo y número del teléfono (con libphonenumber-js) y la lista de países |
+| `src/privacidad.js` | Qué ve cada tipo de persona con lo elegido (para la tabla de Privacidad; el servidor es el que manda) |
+| `src/Social.jsx`, `src/PerfilPublico.jsx` | La página Social (actividad, amigos, solicitudes, descubrir, bloqueados) y el perfil de otra persona |
+| `src/PanelPrivacidad.jsx` | La pestaña *Perfil → Privacidad* |
 | `src/Recuperar.jsx` | Recuperar la contraseña en dos pasos: pedir el código y elegir la nueva |
 | `test/` | Pruebas (`node --test`) |
 

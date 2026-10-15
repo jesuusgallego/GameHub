@@ -23,7 +23,7 @@ function Layout({ setToken }) {
   const { pathname } = useLocation()
 
   // Pide el número de solicitudes recibidas. Si falla no hago nada: es solo un número
-  // en la barra, y el error (si lo hay) ya saldrá en la página de Amigos.
+  // en la barra, y el error (si lo hay) ya saldrá en la página Social.
   const refrescarSolicitudes = useCallback(() => {
     apiFetch('/friends/requests')
       .then((data) => setSolicitudes(data.received.length))

@@ -4,90 +4,86 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
-Social (amigos, actividad y perfiles públicos), privacidad por dato, inicio de sesión con
-nombre de usuario y datos personales.
+## [1.2.0] - 2026-10-15
+
+Social: amigos, actividad y perfiles públicos con privacidad por dato. Inicio de sesión con
+nombre de usuario y datos personales en el perfil.
 
 ### Añadido
 - **Social.** Una página nueva en la barra, con cinco pestañas:
-  - **Actividad:** quién está jugando a qué ahora mismo entre tus amigos y sus últimos
-    movimientos (juegos añadidos, empezados, completados o abandonados, con la nota y "hace 2
-    horas").
+  - **Actividad:** a qué están jugando ahora tus amigos y sus últimos movimientos (juegos
+    añadidos, empezados, completados o abandonados, con la nota y "hace 2 horas").
   - **Amigos:** tus amigos en tarjetas, con a qué juegan y cuántos juegos tienen, y un filtro
     por nombre.
-  - **Solicitudes:** las recibidas y las enviadas, con su número en la barra y en la pestaña.
+  - **Solicitudes:** las recibidas y las enviadas. Las pendientes salen como un número en la
+    barra.
   - **Descubrir:** un buscador por el principio del nombre de usuario y, debajo, "personas que
-    quizá conozcas" (amigos de tus amigos, ordenadas por los amigos que tenéis en común).
+    quizá conozcas" (amigos de tus amigos, ordenadas por los que tenéis en común).
   - **Bloqueados.**
+
   Si dos personas se envían solicitud a la vez, se aceptan solas.
-- **Perfil de otras personas** (`/usuarios/nombre`): el mismo banner que el tuyo y tres
-  pestañas: resumen, **biblioteca** (con filtros por estado y por "en común", y tu nota al lado
-  de la suya en los juegos que tenéis los dos) y **amigos**. Debajo del banner, los amigos y
-  juegos que tenéis en común.
-- **Privacidad**, una sección nueva del perfil (*Perfil → Privacidad*):
+- **Perfil de otras personas:** el mismo banner que el tuyo y tres pestañas: resumen,
+  **biblioteca** (con filtros por estado y por "en común", y tu nota al lado de la suya en los
+  juegos que tenéis los dos) y **amigos**. Bajo el banner, los amigos y los juegos que tenéis
+  en común.
+- **Privacidad**, una sección nueva del perfil:
   - Una tabla que enseña, en vivo, qué ve cada tipo de persona (tú, tus amigos, cualquiera)
     con lo que tienes elegido.
   - Un ajuste por dato (solo yo, mis amigos o todo el mundo): nombre y apellidos, edad, sexo,
     localización y país, biblioteca, texto de las reseñas y lista de amigos.
   - **Quién puede enviarte solicitudes:** cualquiera, amigos de mis amigos o nadie.
   - **Aparecer en las búsquedas** (y en las sugerencias), con un interruptor.
+
   Los cambios se guardan solos. Por defecto, los datos personales no los ve nadie y la
-  biblioteca, las reseñas y los amigos, solo los amigos. El email, el teléfono y la fecha de
+  biblioteca, las reseñas y los amigos, solo tus amigos. El email, el teléfono y la fecha de
   nacimiento no los ve nadie, con ninguna opción.
-- **Bloquear** a una persona: deja de ser tu amiga, no puede ver tu perfil, encontrarte ni
+- **Bloquear** a una persona: deja de ser tu amiga y no puede ver tu perfil, encontrarte ni
   enviarte solicitudes (para ella, tu cuenta es como si no existiera).
-- **Inicio de sesión con email o con nombre de usuario.** El campo de la pantalla de entrada
-  acepta cualquiera de los dos. El nombre de usuario se puede escribir también con
-  mayúsculas: se busca en minúsculas.
-- **Datos personales en el perfil**, todos opcionales: nombre, apellidos, fecha de nacimiento,
-  sexo (hombre, mujer u otro), localización (ciudad o región), país y teléfono. Se editan en
-  *Perfil → Editar perfil*. El banner muestra nombre, edad (calculada con la fecha de
-  nacimiento, que no se enseña), sexo y "localización, país"; el teléfono no se muestra en
-  ningún sitio.
-- **País** como campo aparte: una lista de 250 países con su nombre en el idioma de la interfaz.
-- **Teléfono** con el prefijo aparte: se elige de una lista de países con su prefijo
-  (`España (+34)`) **o** se escribe en el propio campo (`+34` o `0034`: al teclearlo salta a
-  la lista). El número se escribe como en su país (`600 12 34 56`, o `020 7946 0958` en
-  Reino Unido) y se guarda en formato internacional (`+34600123456`). Elegir el país del
-  perfil rellena el prefijo si estaba vacío. Se comprueba que sea un número real de ese
-  país, no solo que tenga cifras. El número no se verifica por SMS.
+- **Iniciar sesión con tu email o con tu nombre de usuario.** El campo de la pantalla de
+  entrada acepta cualquiera de los dos.
+- **Datos personales en el perfil**, todos opcionales: nombre y apellidos, fecha de
+  nacimiento (en el banner solo se ve la edad), sexo, localización, país y teléfono.
+  - El **país** se elige de una lista de 250 con su nombre en tu idioma.
+  - El **teléfono** lleva el prefijo aparte: lo eliges de la lista (`España (+34)`) o lo
+    escribes en el propio campo (`+34` o `0034`) y salta a la lista. El número se escribe como
+    en tu país (`600 12 34 56`) y se comprueba que sea un número real de ese país.
 
 ### Cambiado
-- **Nombre de usuario único y en minúsculas:** de 3 a 20 caracteres, solo letras sin tilde,
-  números y guion bajo (`_`). El campo no deja escribir mayúsculas ni caracteres raros: pasa
-  las letras a minúsculas, quita las tildes y descarta espacios y símbolos. El servidor y la
-  base de datos aplican la misma regla. Antes valía cualquier texto de hasta 50 caracteres.
-- **Los nombres de usuario que ya existían se convierten solos** al arrancar el servidor:
-  `Jesus Gallego` pasa a `jesus_gallego`, `José` a `jose`, y si dos quedan iguales el segundo
-  recibe un número (`ana`, `ana2`). Las cuentas siguen entrando con su email y su contraseña.
-- El nombre de usuario se ve tal cual en el banner del perfil, en minúsculas (antes el estilo
-  de los títulos lo pasaba a mayúsculas).
+- **El nombre de usuario es único y va en minúsculas:** de 3 a 20 caracteres, con letras sin
+  tilde, números y guion bajo (`_`). El campo corrige lo que escribes: pasa a minúsculas, quita
+  tildes y descarta espacios y símbolos. Antes valía cualquier texto de hasta 50 caracteres.
+- **Los nombres que ya existían se convierten solos:** `Jesus Gallego` pasa a `jesus_gallego`,
+  `José` a `jose`, y si dos quedan iguales el segundo recibe un número (`ana`, `ana2`). Las
+  cuentas siguen entrando con su email y su contraseña.
 
 ### Interno
-- Nuevas rutas: `GET /users/search`, `GET /users/:username` (con `/games`, `/friends` y
-  `/avatar`); `GET|POST /friends/requests`, `POST /friends/requests/:id/accept`, `DELETE
-  /friends/requests/:id`, `GET /friends` (con `/activity` y `/suggestions`), `DELETE
-  /friends/:username` y `GET|POST|DELETE /friends/blocks`. Tablas nuevas `friendships` y
-  `blocks`, y nueve columnas de privacidad en `users` (una por dato, `request_policy` y
-  `searchable`). La regla de qué ve cada persona está en un solo sitio (`services/privacidad.js`) y
-  tiene su prueba con toda la tabla.
-- Las fotos de las listas de personas no viajan dentro del JSON: la API devuelve `has_avatar`
-  y la imagen se pide a `GET /users/:username/avatar` (público, con `ETag`).
-- Dos pruebas nuevas vigilan los textos: que cada mensaje de error fijo del backend esté
-  traducido en `en.js` y que toda clave `t('...')` que usa el código exista en los dos
-  diccionarios.
-- Las reglas de privacidad del cliente (`privacidad.js`, para la tabla de quién ve qué) tienen
-  una prueba que comprueba que dan lo mismo que las del servidor en todas las combinaciones.
-- `POST /auth/login` recibe `identifier` (email o nombre). Sigue aceptando `email` para que las
-  apps de escritorio ya instaladas puedan entrar. **Hay que desplegar el backend antes de
-  publicar la app**: una interfaz nueva contra un servidor antiguo no entraría con el nombre.
-- `PATCH /profile` acepta `first_name`, `last_name`, `birth_date` (`AAAA-MM-DD`), `gender`,
-  `location`, `country` (código ISO de dos letras) y `phone`; `GET /profile` devuelve además `age`. Nuevas columnas en `users` y reglas
-  compartidas con el formulario (una prueba comprueba que coinciden).
-- Nueva dependencia, `libphonenumber-js` (frontend y backend): conoce el prefijo de cada país
-  y valida números. Añade unos 130 KB al paquete de la web (34 KB comprimidos).
-- `schema.sql` quita la restricción de nombre de usuario de una versión de desarrollo anterior
-  (mayúsculas) antes de convertir los nombres, para que una base de datos que ya la tuviera
-  pueda arrancar.
+- **Orden de despliegue:** primero el servidor (migra los nombres de usuario y crea las tablas
+  y columnas al arrancar) y después la app. Una interfaz nueva contra un servidor antiguo no
+  entraría con el nombre de usuario. `POST /auth/login` recibe `identifier` y sigue aceptando
+  `email` para las apps ya instaladas.
+- Rutas nuevas: `GET /users/search`, `GET /users/:username` (con `/games`, `/friends` y
+  `/avatar`), `/friends` (con `/requests`, `/activity`, `/suggestions` y `/blocks`).
+  `PATCH /profile` acepta los datos personales y los ajustes de privacidad; `GET /profile`
+  devuelve además `age`.
+- Tablas nuevas `friendships` y `blocks`, y columnas nuevas en `users` (datos personales,
+  nueve ajustes de privacidad y la política de solicitudes). `schema.sql` las crea y convierte
+  los nombres de usuario existentes; es idempotente.
+- La regla de qué ve cada persona está en un solo sitio (`services/privacidad.js`) y se prueba
+  con toda la tabla. El cliente repite `puedeVer` solo para la tabla de la pantalla de
+  Privacidad, con una prueba que comprueba que da lo mismo que el servidor.
+- Las fotos de las listas de personas no viajan dentro del JSON: la API devuelve `has_avatar` y
+  la imagen se pide a `GET /users/:username/avatar` (con `ETag`).
+- Nueva dependencia `libphonenumber-js` (frontend y backend): prefijos y validación de
+  números. Añade unos 130 KB al paquete de la web (34 KB comprimidos).
+- Pruebas nuevas: que cada error fijo del backend esté traducido, que toda clave `t('...')`
+  del código exista en los dos idiomas, y las de privacidad, perfil, login y rutas sociales.
+
+### Limitaciones conocidas
+- El teléfono no se verifica (no hay SMS).
+- Las solicitudes y la actividad de tus amigos llegan al navegar o recargar, no en directo.
+- Solo se puede bloquear: todavía no hay forma de reportar a un usuario.
+- No hay edad mínima para registrarse.
+- El instalador sigue sin firmar: Windows SmartScreen avisará de "editor desconocido".
 
 ## [1.1.0] - 2026-10-12
 

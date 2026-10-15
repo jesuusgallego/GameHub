@@ -154,21 +154,6 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAUL
 -- usuario y cada UPDATE se ve en la siguiente comprobación, por eso nunca repite nombre.
 -- Los que ya cumplían la regla no se tocan, así que conservan su nombre aunque otro
 -- acabe pareciéndose.
--- Una versión anterior de esta regla pedía mayúsculas (no llegó a publicarse, pero sí a
--- bases de datos de desarrollo). Si la restricción que hay no es la de ahora, la quito
--- antes de convertir los nombres: rechazaría los que acaban en minúsculas. Cuando ya es
--- la actual no hace nada.
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_constraint
-     WHERE conname = 'users_username_formato' AND conrelid = 'users'::regclass
-       AND pg_get_constraintdef(oid) NOT LIKE '%a-z%'
-  ) THEN
-    ALTER TABLE users DROP CONSTRAINT users_username_formato;
-  END IF;
-END $$;
-
 DO $$
 DECLARE
   u RECORD;
@@ -269,24 +254,6 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_friends VARCHAR(10) NOT NU
 ALTER TABLE users ADD COLUMN IF NOT EXISTS request_policy VARCHAR(20) NOT NULL DEFAULT 'todos'
     CHECK (request_policy IN ('todos', 'amigos_de_amigos', 'nadie'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS searchable BOOLEAN NOT NULL DEFAULT TRUE;
-
--- Una versión anterior tenía un único nivel para los datos personales (visibility_personal).
--- Si la columna todavía existe, su valor pasa a los cuatro datos y se borra. Solo se ejecuta
--- esa vez: después la columna ya no está.
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1 FROM information_schema.columns
-     WHERE table_name = 'users' AND column_name = 'visibility_personal'
-  ) THEN
-    UPDATE users
-       SET visibility_name = visibility_personal,
-           visibility_age = visibility_personal,
-           visibility_gender = visibility_personal,
-           visibility_location = visibility_personal;
-    ALTER TABLE users DROP COLUMN visibility_personal;
-  END IF;
-END $$;
 
 -- Amistades y solicitudes. Una fila por pareja de personas, sin importar quién la pidió:
 --  - 'pendiente': requester_id envió la solicitud y addressee_id aún no ha respondido

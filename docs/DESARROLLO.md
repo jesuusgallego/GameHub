@@ -60,17 +60,20 @@ GameHub/
 │   ├── src/
 │   │   ├── app.js               # Arranque, seguridad (helmet, CORS, límites) y rutas
 │   │   ├── routes/              # Qué URL llama a qué controlador
-│   │   ├── controllers/         # Lógica de cada ruta: auth, games, profile, accounts
+│   │   ├── controllers/         # Lógica de cada ruta: auth, games, profile, accounts, users, friends
 │   │   ├── middleware/          # Sesión (JWT, con versión por usuario) y límites de intentos
 │   │   ├── services/            # IGDB, Steam, traducción, correo, recuperación de contraseña,
-│   │   │                        # emisión de tokens y sincronización automática
+│   │   │                        # emisión de tokens, sincronización automática, privacidad
+│   │   │                        # (qué ve cada persona), amistades (SQL común) y estadísticas
 │   │   ├── models/sql/schema.sql  # Esquema de la BD (idempotente: se aplica al arrancar)
-│   │   └── config/              # db.js (conexión) y validacion.js (reglas de email y contraseña)
+│   │   └── config/              # db.js (conexión), validacion.js (reglas de email, contraseña,
+│   │                            # usuario y perfil) y paises.js (códigos ISO)
 │   ├── test/                    # Pruebas (npm test)
 │   ├── .env.example             # Plantilla de variables de entorno
 │   └── Dockerfile
 ├── frontend/                # Interfaz React, para web y escritorio
-│   ├── src/                     # Componentes .jsx, y sesion.js / validacion.js / terminosIgdb.js
+│   ├── src/                     # Componentes .jsx, y sesion.js / validacion.js / telefono.js /
+│   │                            # paises.js / privacidad.js / tiempo.js / terminosIgdb.js
 │   │   ├── estilos/             # CSS por zonas (ver estilos/LEEME.md)
 │   │   └── textos/              # Traducciones es/en
 │   └── test/                    # Pruebas (npm test)
@@ -637,10 +640,14 @@ Epic se descartaron), por eso es la única que se puede vincular.
 
 - **`/perfil`:** un banner con el avatar, la bio y tres cifras (juegos, nota media y %
   completados) sobre un fondo fijo con los colores de la marca (una aurora violeta, azul y cian
-  con una rejilla tenue, solo CSS), y debajo cuatro pestañas: Estadísticas, Editar perfil,
-  Cuentas vinculadas y Seguridad. La pestaña va en la URL (`/perfil?tab=cuentas`), se maneja con
-  las flechas del teclado y los cuatro paneles siguen montados al cambiar, así que lo que
-  escribes en "Editar perfil" no se pierde.
+  con una rejilla tenue, solo CSS), y debajo cinco pestañas: Estadísticas, Editar perfil,
+  Privacidad, Cuentas vinculadas y Seguridad. La pestaña va en la URL (`/perfil?tab=cuentas`),
+  se maneja con las flechas del teclado y los paneles siguen montados al cambiar, así que lo
+  que escribes en "Editar perfil" no se pierde.
+- **Privacidad (`PanelPrivacidad.jsx`):** una tabla de "quién ve qué" calculada en el cliente
+  con lo elegido (`privacidad.js`), y los ajustes en tarjetas. No hay botón Guardar: cada
+  cambio se envía al momento con actualización optimista y, si el servidor lo rechaza, vuelve
+  al valor anterior. Las reglas y su porqué están en "Social y perfiles públicos".
 - **Seguridad:** el email se ve como dato y los campos para cambiarlo salen al pulsar "Cambiar
   email". La contraseña de confirmación usa `autocomplete="new-password"` a propósito, para que
   el navegador no la rellene solo y el cambio no parezca hacerse sin pedirla. Todos los campos

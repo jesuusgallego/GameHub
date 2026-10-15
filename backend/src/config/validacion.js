@@ -60,12 +60,6 @@ const MENSAJE_PAIS = 'El país no es válido';
 const MENSAJE_TELEFONO =
   'El teléfono no es válido: escríbelo con el prefijo del país, por ejemplo +34 600 123 456';
 
-// Forma en que se guarda un teléfono (E.164): "+", prefijo del país (no empieza por 0) y de
-// 7 a 15 dígitos en total. La base de datos tiene el mismo CHECK. Para que se acepte,
-// además, tiene que ser un número posible en su país (ver limpiarTelefono). No se verifica
-// que el número exista ni que sea de quien lo escribe.
-const TELEFONO_REGEX = /^\+[1-9][0-9]{6,14}$/;
-
 // Deja el teléfono en su forma canónica: sin espacios, guiones, puntos ni paréntesis, y
 // con "+" en lugar del "00" de las llamadas internacionales ("0034 600-123-456" ->
 // "+34600123456"). No comprueba que sea válido. El formulario hace lo mismo
@@ -95,6 +89,9 @@ function limpiarTextoPerfil(campo, valor) {
   return texto;
 }
 
+// Un teléfono se guarda en formato E.164 ("+34600123456"); la columna tiene un CHECK con esa
+// forma (schema.sql). No se verifica que el número exista ni que sea de quien lo escribe.
+//
 // Deja el teléfono listo para guardar: en forma canónica y NULL si va vacío. Devuelve
 // undefined si no es texto o no es un número válido. La validez la decide libphonenumber
 // (la librería de Google que usan Android y muchas apps): conoce el prefijo de cada país y
@@ -145,6 +142,6 @@ module.exports = {
   USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
   SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, EDAD_MAX,
   VISIBILIDADES, MENSAJE_VISIBILIDAD, CAMPOS_VISIBILIDAD, POLITICAS_SOLICITUD, MENSAJE_POLITICA, MENSAJE_BUSCABLE,
-  PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO, TELEFONO_REGEX, normalizarTelefono,
+  PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO, normalizarTelefono,
   limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida,
 };

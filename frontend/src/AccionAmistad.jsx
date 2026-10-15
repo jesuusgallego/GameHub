@@ -5,7 +5,7 @@ import Mensaje from './Mensaje'
 import { useIdioma } from './IdiomaContext'
 
 // Los botones que corresponden a la relación con una persona: añadir, aceptar, cancelar,
-// eliminar o desbloquear. Los usan el perfil de otra persona y todas las listas de Amigos.
+// eliminar o desbloquear. Los usan el perfil de otra persona y todas las listas de Social.
 //  - persona: { username, relation, friendship_id, can_request }; relation es 'ninguna',
 //    'enviada', 'recibida', 'amigos' o 'bloqueado'
 //  - onCambio(personaNueva): se llama al terminar con la relación ya actualizada

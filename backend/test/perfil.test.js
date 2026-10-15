@@ -146,11 +146,6 @@ test('privacidad: rechaza niveles y políticas que no existen, sin consultar', a
   assert.strictEqual(consultas.length, 0);
 });
 
-test('el antiguo visibility_personal ya no existe: se ignora y no llega al SQL', async () => {
-  await editar({ visibility_personal: 'todos', first_name: 'Ana' });
-  assert.match(consultas[0].sql, /SET first_name = \$1 WHERE id = \$2/);
-});
-
 test('un campo que no existe se ignora y nunca llega al SQL', async () => {
   await editar({ 'username = 1; --': 'x', password_hash: 'x', first_name: 'Ana' });
   const { sql, params } = consultas[0];

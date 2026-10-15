@@ -109,6 +109,18 @@ tu propio correo.
 En local, sin `BREVO_API_KEY`, el correo no se envía: se escribe entero (con el código) en la
 consola del backend.
 
+### Actualizar el servidor a una versión nueva
+
+El servidor aplica `schema.sql` solo, al arrancar: crea lo que falte y no toca lo que ya hay.
+Normalmente basta con *Manual Deploy → Deploy latest commit* y mirar los **Logs**.
+
+La **1.2** hace además una conversión que no se deshace: los nombres de usuario que ya
+existían pasan a minúsculas, sin tildes ni espacios (`Jesus Gallego` → `jesus_gallego`) y, si
+dos quedan iguales, el segundo recibe un número. Las cuentas siguen entrando con su email.
+Si quieres poder volver atrás, haz antes una copia: en Neon, crea una *branch* de la base de
+datos (o exporta con `pg_dump`). Despliega el servidor **antes** de publicar la app: la
+interfaz nueva inicia sesión con `identifier`, que el servidor viejo no conoce.
+
 ## 3. Apuntar la app al servidor
 
 La dirección del servidor se **graba** en la app al compilarla. En GitHub:

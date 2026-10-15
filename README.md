@@ -20,10 +20,17 @@ para traer tus juegos, tus horas y tus logros.
   logros, tu nota o la de IGDB.
 - **Vincular Steam:** importa todos tus juegos, con las horas jugadas, la barra de progreso de
   logros y la lista de logros de cada juego. Se mantiene al día sola.
-- **Tu perfil:** foto (subida o una ilustración de uno de tus juegos), descripción y
-  estadísticas de tu biblioteca.
+- **Tu perfil:** foto (subida o una ilustración de uno de tus juegos), descripción,
+  estadísticas de tu biblioteca y, si quieres, tu nombre, edad, localización, país y teléfono.
+- **Social:** añade amigos, mira a qué están jugando y qué han terminado, descubre gente nueva
+  y compara vuestras bibliotecas (juegos en común y la nota de cada uno). Puedes bloquear a
+  quien quieras.
+- **Tú decides qué ve cada persona:** la privacidad es dato a dato (nombre, edad, biblioteca,
+  reseñas, lista de amigos...) y también eliges quién puede enviarte solicitudes y si apareces
+  en las búsquedas.
 - **A tu manera:** interfaz en español e inglés y tema claro u oscuro.
-- **Cuenta segura:** si olvidas la contraseña, te enviamos un código por correo.
+- **Cuenta segura:** inicia sesión con tu email o con tu nombre de usuario y, si olvidas la
+  contraseña, te enviamos un código por correo.
 
 ## Instalación (Windows)
 

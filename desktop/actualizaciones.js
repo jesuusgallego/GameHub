@@ -11,6 +11,22 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.2.0': {
+    es: [
+      'Social: mira a qué juegan tus amigos, añade gente y descubre personas que quizá conozcas.',
+      'Perfiles de otras personas, con su biblioteca y los juegos que tenéis en común.',
+      'Privacidad dato a dato: tú decides qué ve cada persona de ti.',
+      'Inicia sesión con tu email o con tu nombre de usuario (ahora en minúsculas).',
+      'Datos personales opcionales: nombre, edad, sexo, localización, país y teléfono.',
+    ],
+    en: [
+      'Social: see what your friends are playing, add people and discover people you may know.',
+      'Other people\'s profiles, with their library and the games you have in common.',
+      'Privacy detail by detail: you decide what each person sees about you.',
+      'Log in with your email or your username (now in lowercase).',
+      'Optional personal details: name, age, sex, location, country and phone.',
+    ],
+  },
   '1.1.0': {
     es: [
       'Recuperación de contraseña: si la olvidas, te enviamos un código por correo.',
