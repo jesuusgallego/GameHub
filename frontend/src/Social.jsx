@@ -4,7 +4,8 @@ import { apiFetch } from './api'
 import PestanasPerfil from './PestanasPerfil'
 import RejillaPersonas from './RejillaPersonas'
 import FilaPersona from './FilaPersona'
-import AvatarTono from './AvatarTono'
+import SalaCabecera from './SalaCabecera'
+import DetalleJuego from './DetalleJuego'
 import Actividad from './Actividad'
 import LateralSala from './LateralSala'
 import Invitaciones from './Invitaciones'
@@ -17,8 +18,9 @@ import { borrarToken } from './sesion'
 
 const PESTANAS = ['actividad', 'amigos', 'solicitudes', 'descubrir', 'bloqueados']
 
-// Página Social: "tu sala". Arriba, quién está en tu grupo; debajo, cinco pestañas en una
-// barra: lo que hacen tus amigos, tus amigos, las solicitudes, gente nueva y los bloqueados.
+// Página Social: "tu sala". Arriba, la cabecera con tus amigos como huecos de un lobby; debajo,
+// cinco pestañas en una barra: lo que hacen tus amigos, tus amigos, las solicitudes, gente
+// nueva y los bloqueados.
 //  - Todo se pide junto al entrar y se vuelve a pedir tras cada acción (aceptar, eliminar...):
 //    así lo que se ve es siempre lo que hay en el servidor.
 //  - La pestaña activa va en la URL (?tab=solicitudes).
@@ -30,6 +32,8 @@ function Social({ setToken }) {
   // Sube tras cada acción: es lo que hace que el efecto vuelva a pedir las listas
   const [version, setVersion] = useState(0)
   const [filtro, setFiltro] = useState("")
+  // El juego de "Para jugar juntos" cuya ficha está abierta (o null)
+  const [ficha, setFicha] = useState(null)
 
   const [params, setParams] = useSearchParams()
   const pestanaInicial = PESTANAS.includes(params.get('tab')) ? params.get('tab') : 'actividad'
@@ -62,8 +66,9 @@ function Social({ setToken }) {
       apiFetch('/friends/blocks'),
       apiFetch('/friends/activity'),
       apiFetch('/friends/suggestions'),
+      apiFetch('/friends/games'),
     ])
-      .then(([amigos, solicitudes, bloqueos, actividad, sugerencias]) => {
+      .then(([amigos, solicitudes, bloqueos, actividad, sugerencias, juegos]) => {
         if (cancelado) return
         setError("")
         setDatos({
@@ -73,6 +78,7 @@ function Social({ setToken }) {
           bloqueados: bloqueos.blocks,
           actividad: actividad.activity,
           sugerencias: sugerencias.suggestions,
+          juegos: juegos.games,
         })
       })
       .catch((err) => {
@@ -101,9 +107,22 @@ function Social({ setToken }) {
     can_request: true,
   }))
 
+  // Añadir a mi biblioteca el juego de la ficha. Relanza el error: BotonAnadir lo enseña.
+  async function anadirJuego(juego) {
+    try {
+      await apiFetch('/games', {
+        method: 'POST',
+        body: { igdb_id: juego.igdb_id, name: juego.name, cover_url: juego.cover_url },
+      })
+      alCambiar()
+    } catch (err) {
+      if (err.status === 401) cerrarSesion()
+      throw err
+    }
+  }
+
   const cargando = !datos && !error
   const recibidas = datos?.recibidas ?? []
-  const jugandoAhora = datos ? datos.amigos.filter((a) => a.playing).length : 0
 
   // Los amigos filtrados por lo que se escribe en el filtro de la pestaña
   const filtrados = datos
@@ -115,7 +134,15 @@ function Social({ setToken }) {
       <div className={datos.amigos.length > 0 ? "sala-dos-columnas" : undefined}>
         <Actividad amigos={datos.amigos} actividad={datos.actividad} onIrADescubrir={() => irA('descubrir')} />
         {datos.amigos.length > 0 && (
-          <LateralSala amigos={datos.amigos} recibidas={recibidas} sugerencias={datos.sugerencias} irA={irA} />
+          <LateralSala
+            recibidas={comoRelacion(datos.recibidas, 'recibida')}
+            sugerencias={comoRelacion(datos.sugerencias, 'ninguna')}
+            juegos={datos.juegos}
+            onAbrirJuego={setFicha}
+            onCambio={alCambiar}
+            cerrarSesion={cerrarSesion}
+            irA={irA}
+          />
         )}
       </div>
     ),
@@ -183,48 +210,14 @@ function Social({ setToken }) {
     contador: id === 'solicitudes' ? recibidas.length : id === 'amigos' ? (datos?.amigos.length ?? 0) : 0,
   }))
 
-  // El grupo de la cabecera: hasta 6 fotos, las de quienes juegan primero
-  const grupo = datos
-    ? [...datos.amigos].sort((a, b) => Number(Boolean(b.playing)) - Number(Boolean(a.playing))).slice(0, 6)
-    : []
-
   return (
     <div className="sala">
-      <header className="banner-perfil sala-cabecera">
-        <div className="banner-perfil__fondo" aria-hidden="true" />
-        <div className="sala-cabecera__contenido">
-          <div className="sala-cabecera__texto">
-            <span className="sala-cabecera__sobre">{t('social.sobretitulo')}</span>
-            <h1 className="sala-cabecera__titulo">{t('social.titulo')}</h1>
-            <p>{t('social.subtitulo')}</p>
-          </div>
-
-          <div className="sala-cabecera__grupo">
-            {grupo.length > 0 && (
-              <ul className="grupo-fotos" aria-hidden="true">
-                {grupo.map((a) => (
-                  <li key={a.username}><AvatarTono usuario={a} tamano="normal" vivo={Boolean(a.playing)} /></li>
-                ))}
-              </ul>
-            )}
-            <p className="sala-cabecera__resumen">
-              {datos
-                ? (
-                  <>
-                    <strong>{datos.amigos.length}</strong> {datos.amigos.length === 1 ? t('social.amigoUno') : t('social.amigos')}
-                    {jugandoAhora > 0 && (
-                      <span className="sala-cabecera__jugando">
-                        <span className="sala-titulo__punto" aria-hidden="true" />
-                        {t('social.jugandoN', { n: jugandoAhora })}
-                      </span>
-                    )}
-                  </>
-                )
-                : "…"}
-            </p>
-          </div>
-        </div>
-      </header>
+      <SalaCabecera
+        amigos={datos?.amigos ?? null}
+        actividad={datos?.actividad}
+        onInvitar={() => irA('descubrir')}
+        onVerAmigos={() => irA('amigos')}
+      />
 
       <PestanasPerfil
         variante="barra"
@@ -253,6 +246,15 @@ function Social({ setToken }) {
           )
         })}
       </div>
+
+      {ficha && (
+        <DetalleJuego
+          juego={ficha}
+          // Si ya lo tengo no hay nada que añadir: la ficha solo enseña el juego
+          onAnadir={ficha.mine ? undefined : () => anadirJuego(ficha)}
+          onCerrar={() => setFicha(null)}
+        />
+      )}
     </div>
   )
 }

@@ -5,16 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Cambiado
-- **La parte social, rediseñada.** Social pasa a ser "tu sala": una cabecera con tu grupo de
-  amigos, pestañas en barra (con el número de amigos y de solicitudes pendientes) y paneles
-  nuevos:
-  - **Actividad:** "Jugando ahora" con la portada de cada juego de fondo, y los últimos
-    movimientos agrupados en una línea del tiempo (hoy, ayer, esta semana...). A un lado, tu
-    grupo, las invitaciones y a quién quizá conozcas.
+- **La parte social, rediseñada.** Social pasa a ser "tu sala", con una cabecera de lobby y
+  pestañas en barra, centrada y con el número de amigos y de solicitudes pendientes:
+  - **Cabecera:** un mosaico con las portadas de lo que juegan tus amigos, una frase con
+    nombres ("Beto y Eva están jugando ahora mismo") y tus amigos como huecos de jugador:
+    se iluminan los que están jugando y el último hueco, con un "+", sirve para invitar.
+  - **Actividad:** "Jugando ahora" con la portada de cada juego de fondo y los últimos
+    movimientos en una línea del tiempo (hoy, ayer, esta semana...).
+  - **Columna lateral**, sustituyendo a "Tu grupo": las solicitudes con *Aceptar* y *Rechazar*
+    ahí mismo, **Para jugar juntos** (los juegos que juegan o tienen varios de tus amigos, si
+    tú ya lo tienes y un botón para abrir su ficha y añadirlo) y a quién quizá conozcas, con
+    *Añadir amigo* ahí mismo. En el móvil, las solicitudes suben al principio.
   - **Amigos:** cada persona es un carnet con su color, lo que está jugando, sus cifras (juegos,
     completados y nota) y los juegos y amigos que tenéis en común.
-  - **Solicitudes:** las recibidas como invitaciones, con Aceptar y Rechazar.
-  - **Descubrir** y **Bloqueados** con el mismo estilo.
+  - **Solicitudes:** las recibidas como invitaciones. **Descubrir** y **Bloqueados** con el
+    mismo estilo.
   - Cada persona tiene un color propio (sale de su nombre) que se ve en su foto, su carnet y su
     perfil.
 
@@ -37,6 +42,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   y consulta en el acto cuando vuelves.
 
 ### Interno
+- Nuevo `GET /friends/games` (juegos de tus amigos para jugar juntos).
 - Nuevos `GET /users/:username/common` y `GET /users/:username/games/:igdbId/achievements`;
   `GET /friends` trae además juegos y amigos en común, completados y nota media.
 - `seed:demo` crea también juegos de Steam con horas y logros, un amigo que los oculta y más

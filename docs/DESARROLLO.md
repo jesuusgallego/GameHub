@@ -432,6 +432,7 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | GET | `/users/:username/friends` | Bearer token | Su lista de amigos si te la deja ver (403 si no), con tu relación con cada uno |
 | GET | `/users/:username/avatar` | No | La foto como imagen (`ETag`, `Cache-Control: no-cache`). Sin sesión porque un `<img>` no puede mandar `Authorization` |
 | GET | `/friends` | Bearer token | Tus amigos. Si comparten su biblioteca con amigos: `games_count`, `completed_count`, `avg_rating`, `games_in_common` y `playing` (su juego "jugando" más reciente, con `igdb_id` y `since`). `mutual` son los amigos que compartís |
+| GET | `/friends/games` | Bearer token | "Para jugar juntos": hasta 6 juegos que alguno de tus amigos está jugando o que tienen al menos dos, con `friends_count`, `playing_count`, `people` (hasta 4) y `mine` (si tú ya lo tienes). Solo cuenta a los amigos que comparten su biblioteca |
 | GET | `/friends/activity` | Bearer token | Los últimos 30 movimientos en la biblioteca de tus amigos (no cuenta lo importado de Steam sin tocar) |
 | GET | `/friends/suggestions` | Bearer token | Amigos de tus amigos, por número de amigos en común (hasta 12) |
 | GET | `/friends/requests` | Bearer token | Solicitudes: `received` y `sent` |
@@ -678,7 +679,9 @@ Epic se descartaron), por eso es la única que se puede vincular.
   `controllers/userController.js` (buscar, perfil, biblioteca, amigos y foto de otra persona) y
   `controllers/friendController.js` (amistades, solicitudes, bloqueos, actividad y
   sugerencias). Frontend: `Social.jsx` ("la sala": cabecera con tu grupo, pestañas en barra y
-  paneles), `Actividad.jsx` (+ `EnDirecto.jsx`, la línea del tiempo por días y `LateralSala.jsx`),
+  paneles), `SalaCabecera.jsx` (el lobby: mosaico, frase y huecos), `Actividad.jsx` (+ `EnDirecto.jsx` y
+  la línea del tiempo por días) y `LateralSala.jsx` (solicitudes, `ParaJugarJuntos.jsx` y
+  sugerencias, cada una con su botón),
   `Carnet.jsx` (la persona como carnet de jugador; lo pintan `RejillaPersonas.jsx` y las listas),
   `Invitaciones.jsx` y `FilaPersona.jsx`, `Descubrir.jsx`, `AvatarTono.jsx` (la foto con su
   anillo de color), `AccionAmistad.jsx` (los botones según la relación; los usan el perfil de

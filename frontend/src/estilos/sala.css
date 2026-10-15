@@ -74,7 +74,7 @@
   }
 }
 
-/* ---- Cabecera: título grande y tu grupo ---- */
+/* ---- Cabecera: la pantalla de un lobby ---- */
 .sala-cabecera {
   --anillo-hueco: #16233a;
 }
@@ -83,19 +83,68 @@
   --anillo-hueco: #fff;
 }
 
+/* El mosaico de portadas, inclinado y desvanecido hacia la izquierda, donde está el título */
+.sala-cabecera__mosaico {
+  position: absolute;
+  top: -30%;
+  right: -8%;
+  bottom: -30%;
+  z-index: -1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.6rem;
+  align-content: center;
+  width: 66%;
+  opacity: 0.42;
+  transform: rotate(-9deg);
+  mask-image: linear-gradient(90deg, transparent, #000 48%);
+}
+
+:root[data-tema="claro"] .sala-cabecera__mosaico {
+  opacity: 0.3;
+}
+
+.sala-cabecera__mosaico img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 6px;
+  filter: saturate(1.15);
+}
+
+.sala-cabecera__mosaico img:nth-child(even) {
+  transform: translateY(1.4rem);
+}
+
+/* Líneas de barrido muy tenues, como una pantalla de recreativa */
+.sala-cabecera__rayas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 4px);
+  mix-blend-mode: multiply;
+}
+
+:root[data-tema="claro"] .sala-cabecera__rayas {
+  background: repeating-linear-gradient(0deg, rgba(15, 27, 42, 0.05) 0 1px, transparent 1px 4px);
+}
+
 .sala-cabecera__contenido {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 1.5rem 2rem;
-  padding: 2.25rem 2rem 1.75rem;
+  gap: 1.75rem 2rem;
+  padding: 2.25rem 2rem;
 }
 
 .sala-cabecera__texto {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
   min-width: 0;
 }
 
@@ -104,92 +153,137 @@
   align-items: center;
   gap: 0.6rem;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.24em;
+  font-weight: 800;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--banner-texto-suave);
 }
 
-.sala-cabecera__sobre::before {
-  content: "";
-  width: 1.8rem;
-  height: 3px;
-  background: linear-gradient(90deg, #5b3df5, var(--acento));
-  border-radius: 2px;
-}
-
+/* El título con una sombra de colores desplazada, como las letras de un arcade */
 .sala-cabecera__titulo {
   margin: 0;
   font-family: var(--display);
-  font-size: clamp(3rem, 8vw, 4.75rem);
+  font-size: clamp(3.4rem, 9vw, 5.5rem);
   font-weight: 700;
-  line-height: 0.92;
-  letter-spacing: 0.03em;
+  line-height: 0.9;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--banner-texto);
-  text-shadow: var(--banner-sombra-titulo);
+  text-shadow: 3px 3px 0 #5b3df5, 6px 6px 0 rgba(76, 201, 240, 0.55);
 }
 
-.sala-cabecera__texto p {
-  max-width: 32rem;
-  color: var(--banner-texto-suave);
+.sala-cabecera__frase {
+  max-width: 30rem;
+  padding-left: 0.85rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--banner-texto);
+  border-left: 3px solid var(--acento);
 }
 
-.sala-cabecera__grupo {
+/* ---- Los huecos de tus amigos, como al elegir personaje ---- */
+.huecos {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.7rem;
-}
-
-.grupo-fotos {
-  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  max-width: 40rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.grupo-fotos li + li {
-  margin-left: -0.75rem;
-}
-
-.grupo-fotos li {
-  transition: transform var(--transicion);
+.hueco {
   animation: sala-entrada 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(0.1s + var(--orden, 0) * 0.07s);
 }
 
-.grupo-fotos li:nth-child(2) { animation-delay: 0.06s; }
-.grupo-fotos li:nth-child(3) { animation-delay: 0.12s; }
-.grupo-fotos li:nth-child(4) { animation-delay: 0.18s; }
-.grupo-fotos li:nth-child(5) { animation-delay: 0.24s; }
-.grupo-fotos li:nth-child(6) { animation-delay: 0.3s; }
+.hueco__enlace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  width: 6.4rem;
+  height: 100%;
+  padding: 0.75rem 0.4rem 0.65rem;
+  font: inherit;
+  text-align: center;
+  color: var(--banner-texto);
+  text-decoration: none;
+  background: var(--banner-cristal);
+  border: 1px solid var(--banner-cristal-borde);
+  border-radius: var(--radio-grande);
+  backdrop-filter: blur(10px);
+  transition: transform var(--transicion), background-color var(--transicion),
+    border-color var(--transicion), box-shadow var(--transicion);
+}
 
-.grupo-fotos li:hover {
+.hueco__enlace:hover {
+  color: var(--banner-texto);
+  background: var(--banner-cristal-hover);
   transform: translateY(-4px);
 }
 
-.sala-cabecera__resumen {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.4rem 0.9rem;
-  font-size: 0.95rem;
+.hueco__enlace:active {
+  transform: scale(0.96);
+}
+
+/* Está jugando: el hueco se ilumina con el color de la persona */
+.hueco--vivo .hueco__enlace {
+  background: linear-gradient(180deg, hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.28), var(--banner-cristal));
+  border-color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.85);
+  box-shadow: 0 0 24px hsl(var(--tono, 220) 80% 55% / 0.35);
+}
+
+.hueco__nombre {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hueco__estado {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.7rem;
   color: var(--banner-texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.sala-cabecera__resumen strong {
+.hueco--vivo .hueco__estado {
+  font-weight: 700;
+  color: var(--estado-jugando);
+}
+
+/* Los huecos que no son una persona: el punteado dice "aquí cabe alguien" */
+.hueco--invitar .hueco__enlace,
+.hueco--vacio .hueco__enlace {
+  justify-content: center;
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--banner-boton-borde);
+}
+
+.hueco--invitar .hueco__enlace:hover,
+.hueco--vacio .hueco__enlace:hover {
+  background: var(--banner-cristal);
+  border-color: var(--banner-boton-borde-hover);
+}
+
+.hueco__mas {
+  display: grid;
+  place-items: center;
+  width: 3.9rem;
+  height: 3.9rem;
   font-family: var(--display);
-  font-size: 1.5rem;
-  color: var(--banner-texto);
-}
-
-.sala-cabecera__jugando {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
+  font-size: 1.4rem;
   font-weight: 600;
-  color: var(--banner-texto);
+  border: 2px dashed var(--banner-boton-borde);
+  border-radius: 50%;
 }
 
 /* ---- Pestañas en barra (variante de PestanasPerfil) ---- */
@@ -197,6 +291,10 @@
   position: sticky;
   top: 4.5rem;
   z-index: 5;
+  /* Se ajusta a las pestañas y se centra: a todo el ancho quedaba un hueco vacío */
+  align-self: center;
+  width: fit-content;
+  max-width: 100%;
   flex-direction: row;
   gap: 0.15rem;
   padding: 0.3rem;
@@ -628,7 +726,7 @@
   object-fit: cover;
 }
 
-/* ---- Columna lateral: grupo, invitaciones y sugerencias ---- */
+/* ---- Columna lateral: invitaciones, para jugar juntos y sugerencias ---- */
 .lateral {
   position: sticky;
   top: 9rem;
@@ -638,70 +736,191 @@
 }
 
 .lateral__bloque {
-  padding: 1rem 1rem 0.75rem;
+  padding: 1rem;
   background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--radio-grande);
 }
 
-.lateral__bloque .sala-titulo {
-  margin-bottom: 0.6rem;
+.lateral__titulo {
+  margin: 0 0 0.15rem;
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-h);
+}
+
+.lateral__ayuda {
+  margin: 0 0 0.75rem;
+  font-size: 0.82rem;
+  color: var(--texto-suave);
+}
+
+.lateral__vacio {
+  margin: 0.5rem 0 0.25rem;
+  font-size: 0.88rem;
+  color: var(--texto-suave);
 }
 
 .lateral__bloque--invitacion {
   background: linear-gradient(160deg, var(--acento-suave), transparent 70%), var(--superficie);
-  border-color: color-mix(in srgb, var(--acento) 45%, var(--borde));
+  border-color: color-mix(in srgb, var(--acento) 55%, var(--borde));
 }
 
-.lateral__bloque--invitacion .btn {
-  margin: 0.5rem 0 0.25rem;
+.lateral__bloque--invitacion .lateral__titulo {
+  margin-bottom: 0.7rem;
 }
 
-.grupo {
+/* Una persona con su botón ahí mismo: se responde sin cambiar de pestaña */
+.gente {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.55rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.grupo__fila {
+.gente__persona {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem 0.65rem;
+  background: var(--superficie-2);
+  border-radius: var(--radio);
+}
+
+.gente__identidad {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.4rem 0.45rem;
+  gap: 0.65rem;
+  min-width: 0;
   color: inherit;
   text-decoration: none;
-  border-radius: var(--radio);
-  transition: background-color var(--transicion), transform var(--transicion);
 }
 
-.grupo__fila:hover {
-  background: var(--superficie-2);
-  transform: translateX(2px);
+.gente__identidad strong {
+  color: var(--texto-h);
+  transition: color var(--transicion);
 }
 
-.grupo__texto {
+.gente__identidad:hover strong {
+  color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
+}
+
+.gente__texto {
   display: flex;
   flex-direction: column;
   min-width: 0;
   line-height: 1.25;
 }
 
-.grupo__texto strong {
-  color: var(--texto-h);
+.gente__texto small {
+  color: var(--texto-suave);
 }
 
-.grupo__texto small {
+.gente__persona .accion-amistad__botones .btn {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.juntos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.juntos__fila {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.5rem;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: var(--superficie-2);
+  border: 1px solid transparent;
+  border-radius: var(--radio);
+  transition: border-color var(--transicion), transform var(--transicion), background-color var(--transicion);
+}
+
+.juntos__fila:hover {
+  border-color: var(--acento);
+  transform: translateX(2px);
+}
+
+.juntos__fila:active {
+  transform: scale(0.98);
+}
+
+.juntos__portada {
+  flex: none;
+  align-self: flex-start;
+  width: 3.2rem;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
+  background: var(--campo);
+  border-radius: 5px;
+}
+
+.juntos__portada img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.juntos__texto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.juntos__texto strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  color: var(--texto-h);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.juntos__texto small {
   color: var(--texto-suave);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.juntos__pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.juntos__tienes,
+.juntos__anadir {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.juntos__tienes {
+  color: var(--exito);
+}
+
+.juntos__anadir {
+  color: var(--acento);
 }
 
 .lateral__mas {
-  margin: 0.25rem 0 0.1rem;
+  margin: 0.5rem 0 0;
   padding: 0.4rem 0.45rem;
   font: inherit;
   font-size: 0.88rem;
@@ -1755,8 +1974,19 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* En una sola columna, los bloques de la columna lateral se reparten entre la actividad
+     (display: contents los hace hijos directos de la rejilla) y las invitaciones, que son
+     lo único que pide una respuesta, suben al principio */
   .lateral {
-    position: static;
+    display: contents;
+  }
+
+  .lateral__bloque--invitacion {
+    order: -1;
+  }
+
+  .lateral__bloque {
+    min-width: 0;
   }
 }
 
@@ -1765,12 +1995,18 @@
     padding: 1.6rem 1.25rem 1.25rem;
   }
 
-  .sala-cabecera__grupo {
-    align-items: flex-start;
+  .sala-cabecera__mosaico {
+    width: 100%;
+    opacity: 0.25;
   }
 
-  .sala-cabecera__resumen {
+  .huecos {
     justify-content: flex-start;
+    gap: 0.5rem;
+  }
+
+  .hueco__enlace {
+    width: 5.4rem;
   }
 
   .rejilla-personas,
@@ -1844,6 +2080,11 @@
   .pestanas--barra .pestana {
     gap: 0.4rem;
     padding: 0.6rem 0.7rem;
+  }
+
+  /* Para que quepan las cinco: solo se queda el número de las solicitudes (el que avisa) */
+  .pestanas--barra .pestana:not(.pestana--activa):not(#pestana-solicitudes) .pestana__contador {
+    display: none;
   }
 
   .movimientos::before {

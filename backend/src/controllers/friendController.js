@@ -78,6 +78,39 @@ async function listFriends(req, res) {
   }
 }
 
+// GET /friends/games — juegos "para jugar juntos": los que juegan o comparten varios de mis
+// amigos, con cuántos lo tienen, cuántos lo están jugando y si yo ya lo tengo.
+// Solo cuenta a los amigos que dejan ver su biblioteca a sus amigos. Un juego entra si alguien
+// lo está jugando o si lo tienen al menos dos amigos (con uno solo y sin jugarlo no es una
+// propuesta, es la biblioteca de alguien). Salen primero los que se están jugando.
+async function listFriendGames(req, res) {
+  try {
+    const result = await pool.query(
+      `SELECT g.igdb_id, MAX(g.name) AS name, MAX(g.cover_url) AS cover_url,
+              COUNT(*)::int AS friends_count,
+              COUNT(*) FILTER (WHERE g.status = 'jugando')::int AS playing_count,
+              EXISTS (SELECT 1 FROM user_games m WHERE m.user_id = $1 AND m.igdb_id = g.igdb_id) AS mine,
+              json_agg(json_build_object('username', u.username, 'has_avatar', (u.avatar IS NOT NULL))
+                       ORDER BY (g.status = 'jugando') DESC, u.username) AS people
+         FROM user_games g
+         JOIN users u ON u.id = g.user_id
+        WHERE u.id IN (${amigosDe('$1')})
+          AND u.visibility_library IN ('amigos', 'todos')
+        GROUP BY g.igdb_id
+       HAVING COUNT(*) >= 2 OR COUNT(*) FILTER (WHERE g.status = 'jugando') >= 1
+        ORDER BY playing_count DESC, friends_count DESC, name
+        LIMIT 6`,
+      [req.user.id]
+    );
+
+    res.json({
+      games: result.rows.map(({ people, ...juego }) => ({ ...juego, people: people.slice(0, 4) })),
+    });
+  } catch (err) {
+    errorInterno(res, 'listFriendGames', err);
+  }
+}
+
 // GET /friends/activity — lo último que han hecho mis amigos en su biblioteca
 // No hay una tabla de eventos: salen de los propios juegos. Un juego es un movimiento
 // cuando lo añadió la persona o lo editó después; los que entraron de golpe al importar
@@ -382,6 +415,6 @@ async function unblockUser(req, res) {
 }
 
 module.exports = {
-  listFriends, listActivity, listSuggestions, listRequests, countRequests, sendRequest, acceptRequest, deleteRequest,
+  listFriends, listFriendGames, listActivity, listSuggestions, listRequests, countRequests, sendRequest, acceptRequest, deleteRequest,
   removeFriend, listBlocks, blockUser, unblockUser,
 };
