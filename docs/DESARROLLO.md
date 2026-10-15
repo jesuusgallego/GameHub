@@ -531,6 +531,11 @@ Decisiones y detalles que no se ven leyendo un solo archivo.
 - Las reglas de email, contraseña y nombre de usuario están en `backend/src/config/validacion.js`
   y `frontend/src/validacion.js`; **deben coincidir** (una prueba lo comprueba). El formulario
   las usa para avisar al momento, pero la que manda es la del servidor.
+  `backend/src/config/validacion.js` **no puede importar paquetes de npm**: las pruebas del
+  frontend lo cargan para comprobar que coincide, y el CI (`release.yml`) solo instala las
+  dependencias del frontend y del escritorio. Lo que necesita una librería va aparte (la
+  validación de teléfonos, con libphonenumber, está en `services/telefono.js`). Si no, la
+  Release falla en "Pruebas de la interfaz" con "Cannot find module".
 - **Nombre de usuario:** `^[a-z0-9_]{3,20}$`. Solo minúsculas hace que sea único sin
   ambigüedad (`ana` y `Ana` serían los dos `ana`) y no admite `@`, así que al iniciar sesión un
   texto con `@` es un email y uno sin `@` es un nombre. El campo del formulario lo deja listo

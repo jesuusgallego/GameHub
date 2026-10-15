@@ -6,8 +6,9 @@ const {
   EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
   SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO,
   VISIBILIDADES, MENSAJE_VISIBILIDAD, CAMPOS_VISIBILIDAD, POLITICAS_SOLICITUD, MENSAJE_POLITICA, MENSAJE_BUSCABLE,
-  limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida,
+  limpiarTextoPerfil, fechaNacimientoValida,
 } = require('../config/validacion');
+const { limpiarTelefono } = require('../services/telefono');
 
 // La foto llega como data URL: solo admito imágenes de estos tipos en base64
 const avatarRegex = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/;

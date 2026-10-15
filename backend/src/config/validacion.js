@@ -1,6 +1,11 @@
 // Reglas de validación y constantes de contraseñas que comparten varios controladores.
 // El frontend tiene las mismas reglas en frontend/src/validacion.js: si cambias una
 // aquí, cámbiala allí (hay una prueba que comprueba que coinciden).
+//
+// OJO: este archivo NO puede depender de paquetes de npm. Las pruebas del frontend lo
+// cargan para comprobar que coinciden, y en la integración continua solo se instalan las
+// dependencias del frontend y del escritorio, no las del backend. Lo que necesita una
+// librería (como validar teléfonos) va en services/telefono.js.
 
 // Formato mínimo de un email: algo@algo.algo, sin espacios
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -72,7 +77,6 @@ const MENSAJE_FECHA_NACIMIENTO = 'La fecha de nacimiento no es válida';
 // Edad máxima creíble: una fecha más antigua se toma por una errata
 const EDAD_MAX = 120;
 const PAISES = require('./paises');
-const { parsePhoneNumberFromString } = require('libphonenumber-js/min');
 
 // Deja un texto del perfil listo para guardar: recortado, y NULL si queda vacío (borrar
 // el campo). Devuelve undefined si no vale: no es texto, es demasiado largo o lleva
@@ -87,31 +91,6 @@ function limpiarTextoPerfil(campo, valor) {
   // [...texto] cuenta personas-caracteres, no unidades UTF-16: así lo cuenta VARCHAR
   if ([...texto].length > TEXTOS_PERFIL[campo].max || /\p{Cc}/u.test(texto)) return undefined;
   return texto;
-}
-
-// Un teléfono se guarda en formato E.164 ("+34600123456"); la columna tiene un CHECK con esa
-// forma (schema.sql). No se verifica que el número exista ni que sea de quien lo escribe.
-//
-// Deja el teléfono listo para guardar: en forma canónica y NULL si va vacío. Devuelve
-// undefined si no es texto o no es un número válido. La validez la decide libphonenumber
-// (la librería de Google que usan Android y muchas apps): conoce el prefijo de cada país y
-// qué longitudes y comienzos admite su numeración, algo que una expresión regular no sabe.
-// Sin país por defecto: el número tiene que venir completo, con su "+" y su prefijo (el
-// formulario ya junta el prefijo elegido con el número).
-function limpiarTelefono(valor) {
-  if (valor === null) return null;
-  if (typeof valor !== 'string') return undefined;
-
-  const texto = normalizarTelefono(valor);
-  if (texto === '') return null;
-
-  const telefono = parsePhoneNumberFromString(texto);
-  if (!telefono || !telefono.isValid()) return undefined;
-  // "+34 600 123 456 ext 2": la librería entiende la extensión pero .number la
-  // descartaría, y se guardaría un número distinto del que se escribió
-  if (telefono.ext) return undefined;
-  // .number es la forma E.164 ("+34600123456"), la que guarda la columna
-  return telefono.number;
 }
 
 // "AAAA-MM-DD", una fecha que existe (no 2020-02-30), que no es futura y de hace menos de
@@ -143,5 +122,5 @@ module.exports = {
   SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, EDAD_MAX,
   VISIBILIDADES, MENSAJE_VISIBILIDAD, CAMPOS_VISIBILIDAD, POLITICAS_SOLICITUD, MENSAJE_POLITICA, MENSAJE_BUSCABLE,
   PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO, normalizarTelefono,
-  limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida,
+  limpiarTextoPerfil, fechaNacimientoValida,
 };

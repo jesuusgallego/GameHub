@@ -15,8 +15,9 @@ require.cache[rutaDb] = {
 const { register } = require('../src/controllers/authController');
 const {
   EMAIL_REGEX, PASSWORD_REGEX, USERNAME_REGEX, MENSAJE_USERNAME,
-  limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida, PAISES, normalizarTelefono,
+  limpiarTextoPerfil, fechaNacimientoValida, PAISES, normalizarTelefono,
 } = require('../src/config/validacion');
+const { limpiarTelefono } = require('../src/services/telefono');
 
 async function registrar(body) {
   const res = { status(c) { this.c = c; return this; }, json(o) { this.o = o; } };
