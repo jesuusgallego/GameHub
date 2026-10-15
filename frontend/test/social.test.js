@@ -90,8 +90,11 @@ test('existen los textos de cada ajuste de privacidad, de cada nivel y de cada p
     ...VISIBILIDADES.map((v) => `privacidad.${v}`),
     ...POLITICAS_SOLICITUD.map((p) => `privacidad.politica.${p}`),
     ...['jugando', 'completado', 'abandonado', 'pendiente'].map((s) => `social.actividad.verbo.${s}`),
-    ...['actividad', 'amigos', 'solicitudes', 'descubrir', 'bloqueados'].flatMap((id) => [`social.tab.${id}`, `social.ayuda.${id}`]),
-    ...['resumen', 'biblioteca', 'amigos'].map((id) => `publico.tab.${id}`),
+    ...['actividad', 'amigos', 'solicitudes', 'descubrir', 'bloqueados'].map((id) => `social.tab.${id}`),
+    ...['resumen', 'biblioteca', 'comun', 'amigos'].map((id) => `publico.tab.${id}`),
+    ...['hoy', 'ayer', 'semana', 'mes', 'antes'].map((id) => `social.tramo.${id}`),
+    ...['juegos', 'completados', 'nota'].map((id) => `cara.${id}`),
+    ...['ambosCompletado', 'ambosJugando'].map((id) => `comun.veredicto.${id}`),
   ]
   for (const clave of claves) {
     assert.ok(clave in es, `falta en es.js: ${clave}`)

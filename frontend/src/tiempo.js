@@ -22,3 +22,22 @@ export function tiempoRelativo(fecha, idioma, ahora = Date.now()) {
 
   return formato.format(0, 'second')
 }
+
+// En qué tramo de la línea del tiempo cae una fecha, para agrupar la actividad: 'hoy',
+// 'ayer', 'semana' (los 7 días anteriores a ayer), 'mes' (los 30 siguientes) o 'antes'.
+// Cuenta días de calendario (medianoche a medianoche en la zona del navegador), no
+// períodos de 24 horas: algo de las 23:50 de ayer es "ayer" aunque haga 20 minutos.
+//  - ahora: solo para las pruebas
+export function tramoDia(fecha, ahora = Date.now()) {
+  const inicioDia = (ms) => {
+    const d = new Date(ms)
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  }
+  const dias = Math.round((inicioDia(ahora) - inicioDia(new Date(fecha).getTime())) / 86_400_000)
+
+  if (dias <= 0) return 'hoy'
+  if (dias === 1) return 'ayer'
+  if (dias <= 8) return 'semana'
+  if (dias <= 38) return 'mes'
+  return 'antes'
+}

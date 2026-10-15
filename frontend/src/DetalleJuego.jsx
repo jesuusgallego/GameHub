@@ -12,6 +12,7 @@ import LogrosSteam from './LogrosSteam'
 import IconoPlataforma from './IconoPlataforma'
 import IconoSteam from './IconoSteam'
 import VentanasJuego from './VentanasJuego'
+import SeccionAjena from './SeccionAjena'
 import { useAccionesJuego } from './useAccionesJuego'
 
 // "2015-05-19" -> "19 de mayo de 2015" (o "19 May 2015", según el idioma). Con
@@ -46,11 +47,15 @@ function Dato({ etiqueta, valores, ancho = false }) {
 //  - guardado: la fila del juego en mi biblioteca (o undefined si no lo tengo).
 //    Si existe, enseño su estado, nota, plataforma y reseña.
 //  - onAnadir: si se pasa, la ficha muestra el botón "Añadir a mi biblioteca"
-//    (lo usa la búsqueda; en Mi biblioteca el juego ya está guardado).
+//    (lo usa la búsqueda y la biblioteca de un amigo; en Mi biblioteca el juego ya está
+//    guardado).
+//  - ajeno: { usuario, juego, logrosVisibles, resenasVisibles } cuando la ficha se abre desde
+//    la biblioteca de otra persona: enseña su partida (estado, nota, horas y logros) y la
+//    mía al lado si lo tenemos los dos. Es de solo lectura: no hay Editar ni Quitar.
 //  - onActualizar(cambios) / onBorrar(): si se pasan (Mi biblioteca), el recuadro
 //    "En mi biblioteca" lleva los botones Editar y Quitar. Son funciones async que
 //    lanzan un Error si el backend falla. Al quitar el juego la ficha se cierra.
-function DetalleJuego({ juego, guardado, onAnadir, onActualizar, onBorrar, onCerrar }) {
+function DetalleJuego({ juego, guardado, ajeno, onAnadir, onActualizar, onBorrar, onCerrar }) {
   const { t, idioma, locale } = useIdioma()
   const dialogRef = useRef(null)
   // Cierre con animación de salida (ver useVentana.js)
@@ -160,7 +165,7 @@ function DetalleJuego({ juego, guardado, onAnadir, onActualizar, onBorrar, onCer
 
           {onAnadir && (
             <div className="detalle__anadir">
-              <BotonAnadir yaGuardado={Boolean(guardado)} onAnadir={onAnadir} bloque={false} />
+              <BotonAnadir yaGuardado={Boolean(guardado) || Boolean(ajeno?.juego.in_common)} onAnadir={onAnadir} bloque={false} />
             </div>
           )}
 
@@ -182,6 +187,15 @@ function DetalleJuego({ juego, guardado, onAnadir, onActualizar, onBorrar, onCer
             <Dato etiqueta={t('detalle.modos')} valores={datos.game_modes.map((modo) => nombreModo(modo, idioma))} />
             <Dato etiqueta={t('detalle.plataformas')} valores={datos.platforms} ancho />
           </dl>
+        )}
+
+        {ajeno && (
+          <SeccionAjena
+            usuario={ajeno.usuario}
+            juego={ajeno.juego}
+            logrosVisibles={ajeno.logrosVisibles}
+            resenasVisibles={ajeno.resenasVisibles}
+          />
         )}
 
         {guardado && (

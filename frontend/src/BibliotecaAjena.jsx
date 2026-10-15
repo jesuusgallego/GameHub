@@ -1,20 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { apiFetch } from './api'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
 import { ESTADOS } from './estados'
 import { useIdioma } from './IdiomaContext'
 
-// La biblioteca de otra persona (solo la ve quien ella deja). Filtros por estado y por
-// "en común" (los juegos que yo también tengo, con mi nota al lado para compararnos).
+// La biblioteca de otra persona (solo la ve quien ella deja): una rejilla de portadas con su
+// estado y su nota. Filtros por estado y por "en común" (los juegos que yo también tengo).
+// Pulsar un juego abre su ficha con la partida de esa persona (y sus logros, si los deja ver).
 //  - username: de quién es
+//  - juegoInicial: igdb_id de un juego que abrir en cuanto cargue (viene de la actividad)
+//  - onAbrir(fila, datos): el padre abre la ficha. `datos` trae reviews_visible y
+//    achievements_visible
+//  - cambios: sube cuando el padre cambió algo (añadí un juego a mi biblioteca): recargo para
+//    que "en común" y mi nota estén al día
 //  - cerrarSesion(): para un 401
-function BibliotecaAjena({ username, cerrarSesion }) {
+function BibliotecaAjena({ username, juegoInicial, onAbrir, cambios = 0, cerrarSesion }) {
   const { t } = useIdioma()
   const [datos, setDatos] = useState(null)
   const [error, setError] = useState("")
   const [estado, setEstado] = useState("todos")
   const [soloComun, setSoloComun] = useState(false)
+  // Para abrir el juego de la URL una sola vez (no cada vez que recargo la lista)
+  const abiertoInicial = useRef(false)
 
   useEffect(() => {
     let cancelado = false
@@ -28,7 +36,15 @@ function BibliotecaAjena({ username, cerrarSesion }) {
       })
 
     return () => { cancelado = true }
-  }, [username, cerrarSesion])
+  }, [username, cambios, cerrarSesion])
+
+  // Si vengo de pulsar un juego en la actividad, abro su ficha en cuanto hay datos (una vez)
+  useEffect(() => {
+    if (!datos || !juegoInicial || abiertoInicial.current) return
+    abiertoInicial.current = true
+    const fila = datos.games.find((g) => g.igdb_id === Number(juegoInicial))
+    if (fila) onAbrir(fila, datos)
+  }, [datos, juegoInicial, onAbrir])
 
   if (error) return <Mensaje texto={error} />
   if (!datos) return <Cargando texto={t('ajena.cargando')} centrado />
@@ -41,7 +57,7 @@ function BibliotecaAjena({ username, cerrarSesion }) {
     (g) => (estado === "todos" || g.status === estado) && (!soloComun || g.in_common)
   )
 
-  if (games.length === 0) return <p className="estado">{t('stats.vacioOtro')}</p>
+  if (games.length === 0) return <p className="sala-vacio">{t('stats.vacioOtro')}</p>
 
   return (
     <div className="biblioteca-ajena">
@@ -83,30 +99,40 @@ function BibliotecaAjena({ username, cerrarSesion }) {
       )}
 
       {visibles.length === 0 ? (
-        <p className="estado">{t('ajena.sinResultados')}</p>
+        <p className="sala-vacio">{t('ajena.sinResultados')}</p>
       ) : (
-        <ul className="juegos-ajenos">
-          {visibles.map((g, i) => (
-            <li key={g.igdb_id} className="juego-ajeno" style={{ '--orden': Math.min(i, 14) }}>
-              <div className="juego-ajeno__portada">
-                {g.cover_url ? <img src={g.cover_url} alt="" loading="lazy" /> : <span>{t('comun.sinPortada')}</span>}
-                {g.rating != null && <span className="juego-ajeno__nota">{g.rating}<small>/10</small></span>}
-              </div>
-              <div className="juego-ajeno__cuerpo">
-                <h4 className="juego-ajeno__nombre">{g.name}</h4>
-                <span className="juego-ajeno__estado">
-                  <span className={`punto punto--${g.status}`} aria-hidden="true" />
-                  {t(`estado.${g.status}`)}
-                </span>
-                {g.in_common && (
-                  <span className="juego-ajeno__comun">
-                    {t('ajena.tu', { nota: g.my_rating ?? "–" })}
+        <ul className="estanteria">
+          {visibles.map((g, i) => {
+            const logros = g.achievements_total > 0 ? g.achievements_unlocked / g.achievements_total : null
+            return (
+              <li key={g.igdb_id} style={{ '--orden': Math.min(i, 14) }}>
+                <button
+                  type="button"
+                  className={`cartucho cartucho--${g.status}`}
+                  onClick={() => onAbrir(g, datos)}
+                  aria-label={t('social.abrirFicha', { juego: g.name })}
+                >
+                  <span className="cartucho__portada">
+                    {g.cover_url ? <img src={g.cover_url} alt="" loading="lazy" /> : <span>{t('comun.sinPortada')}</span>}
+                    {g.rating != null && <span className="cartucho__nota">{g.rating}<small>/10</small></span>}
+                    {g.in_common && <span className="cartucho__comun">{t('ajena.enComun')}</span>}
+                    {logros !== null && (
+                      <span className="cartucho__logros" aria-hidden="true">
+                        <span style={{ '--p': logros }} />
+                      </span>
+                    )}
                   </span>
-                )}
-                {g.review && <p className="juego-ajeno__resena">{g.review}</p>}
-              </div>
-            </li>
-          ))}
+                  <span className="cartucho__cuerpo">
+                    <span className="cartucho__nombre">{g.name}</span>
+                    <span className="cartucho__estado">
+                      <span className={`punto punto--${g.status}`} aria-hidden="true" />
+                      {t(`estado.${g.status}`)}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>

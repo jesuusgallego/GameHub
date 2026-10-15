@@ -4,13 +4,43 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
+### Cambiado
+- **La parte social, rediseñada.** Social pasa a ser "tu sala": una cabecera con tu grupo de
+  amigos, pestañas en barra (con el número de amigos y de solicitudes pendientes) y paneles
+  nuevos:
+  - **Actividad:** "Jugando ahora" con la portada de cada juego de fondo, y los últimos
+    movimientos agrupados en una línea del tiempo (hoy, ayer, esta semana...). A un lado, tu
+    grupo, las invitaciones y a quién quizá conozcas.
+  - **Amigos:** cada persona es un carnet con su color, lo que está jugando, sus cifras (juegos,
+    completados y nota) y los juegos y amigos que tenéis en común.
+  - **Solicitudes:** las recibidas como invitaciones, con Aceptar y Rechazar.
+  - **Descubrir** y **Bloqueados** con el mismo estilo.
+  - Cada persona tiene un color propio (sale de su nombre) que se ve en su foto, su carnet y su
+    perfil.
+
 ### Añadido
+- **En el perfil de un amigo ves lo que tenéis en común:**
+  - Una banda bajo su banner con las portadas de los juegos y las fotos de los amigos que
+    compartís.
+  - Una pestaña **En común**: cada juego como un duelo (tu estado y tu nota frente a los suyos,
+    y los logros de los dos) con "vuestro favorito" destacado, y los amigos en común.
+  - **Cara a cara** en el resumen: tus juegos, completados y nota media frente a los suyos.
+- **La ficha de un juego de su biblioteca**, con su partida: estado, nota, reseña, horas jugadas
+  y la lista de **logros** de Steam con cuáles ha conseguido y cuándo. Si tú también lo tienes, tu
+  partida sale debajo. Desde ahí puedes añadirlo a tu biblioteca. Se abre pulsando una portada en
+  su biblioteca, en *En común* o en la actividad.
+- **Privacidad: "Horas y logros".** Un ajuste nuevo (por defecto, solo tus amigos) que decide si
+  los demás ven tus horas jugadas y tus logros. Solo se ven si también ven tu biblioteca.
 - **Las solicitudes de amistad llegan sin recargar.** La insignia de **Social** en la barra se
   actualiza sola cada minuto mientras usas la app. Se pausa con la pestaña oculta o tras cinco
   minutos sin tocar nada, para no mantener despiertos el servidor y la base de datos gratuitos,
   y consulta en el acto cuando vuelves.
 
 ### Interno
+- Nuevos `GET /users/:username/common` y `GET /users/:username/games/:igdbId/achievements`;
+  `GET /friends` trae además juegos y amigos en común, completados y nota media.
+- `seed:demo` crea también juegos de Steam con horas y logros, un amigo que los oculta y más
+  juegos en común (`--steam-id=` para una lista real de logros).
 - Nuevo `GET /friends/requests/count`, que devuelve solo el número de solicitudes recibidas.
 - `src/sondeo.js` en el frontend: sondeo reutilizable, con pruebas.
 - `npm run seed:demo` (en `backend/`): crea usuarios ficticios para probar la parte social, y

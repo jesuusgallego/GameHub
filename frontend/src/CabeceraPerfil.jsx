@@ -1,6 +1,7 @@
 import Avatar from './Avatar'
 import { useIdioma } from './IdiomaContext'
 import { nombrePais } from './paises'
+import { estiloTono } from './tono'
 
 // Banner del perfil: foto, nombre, bio y tres cifras de la biblioteca.
 // El fondo es siempre el mismo (una aurora con los colores de la marca, solo CSS):
@@ -11,7 +12,9 @@ import { nombrePais } from './paises'
 //  - onEditar(): salta a la pestaña de edición (solo en el mío)
 //  - propio: false en el perfil de otra persona (no hay "Aún no has escrito nada sobre ti")
 //  - acciones: botones de la amistad, en el sitio donde en el mío va "Editar perfil"
-function CabeceraPerfil({ perfil, stats, onEditar, propio = true, acciones }) {
+//  - conTono: el banner se tiñe con el color de esa persona (ver tono.js) en lugar del
+//    de la marca; es lo que distingue el perfil de cada amigo
+function CabeceraPerfil({ perfil, stats, onEditar, propio = true, acciones, conTono = false }) {
   const { t, locale, idioma } = useIdioma()
 
   // Un usuario bloqueado llega sin fecha de alta
@@ -43,7 +46,10 @@ function CabeceraPerfil({ perfil, stats, onEditar, propio = true, acciones }) {
   ]
 
   return (
-    <header className="banner-perfil">
+    <header
+      className={conTono ? "banner-perfil banner-perfil--tono" : "banner-perfil"}
+      style={conTono ? estiloTono(perfil.username) : undefined}
+    >
       <div className="banner-perfil__fondo" aria-hidden="true" />
 
       {onEditar && (

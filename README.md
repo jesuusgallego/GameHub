@@ -23,10 +23,11 @@ para traer tus juegos, tus horas y tus logros.
 - **Tu perfil:** foto (subida o una ilustración de uno de tus juegos), descripción,
   estadísticas de tu biblioteca y, si quieres, tu nombre, edad, localización, país y teléfono.
 - **Social:** añade amigos, mira a qué están jugando y qué han terminado, descubre gente nueva
-  y compara vuestras bibliotecas (juegos en común y la nota de cada uno). Puedes bloquear a
-  quien quieras.
+  y compara vuestras bibliotecas: en su perfil ves los juegos y los amigos que tenéis en común,
+  un cara a cara con vuestras cifras y, al abrir uno de sus juegos, su partida con los logros
+  que ha conseguido. Puedes bloquear a quien quieras.
 - **Tú decides qué ve cada persona:** la privacidad es dato a dato (nombre, edad, biblioteca,
-  reseñas, lista de amigos...) y también eliges quién puede enviarte solicitudes y si apareces
+  reseñas, horas y logros, lista de amigos...) y también eliges quién puede enviarte solicitudes y si apareces
   en las búsquedas.
 - **A tu manera:** interfaz en español e inglés y tema claro u oscuro.
 - **Cuenta segura:** inicia sesión con tu email o con tu nombre de usuario y, si olvidas la

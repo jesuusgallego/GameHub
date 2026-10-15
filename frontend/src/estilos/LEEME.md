@@ -27,7 +27,8 @@ a su vez importa el resto de archivos con `@import`.
 | `cuentas-vinculadas.css` | Tarjeta de plataforma (Steam), botón `.btn--steam`, escena animada de conexión | `CuentaSteam`, `ConexionSteam` |
 | `perfil-movil.css` | Perfil en pantallas estrechas | `Perfil` y sus piezas |
 | `progreso-steam.css` | Horas y barra de logros de Steam, y la lista de logros de la ficha | `ProgresoSteam`, `LogrosSteam` |
-| `social.css` | Página Social (tarjetas de personas, actividad), perfil de otra persona (etiquetas, biblioteca ajena, avisos), insignia de solicitudes y la sección Privacidad del perfil (tabla, ajustes, interruptor) | `Social`, `TarjetaPersona`, `Actividad`, `Descubrir`, `PerfilPublico`, `BibliotecaAjena`, `PanelPrivacidad`, `Interruptor` |
+| `social.css` | Lo común de lo social: insignia de solicitudes de la barra, botones de la amistad, avisos de "es privado", filtros de la biblioteca ajena y la sección Privacidad del perfil (tabla, ajustes, interruptor) | `AccionAmistad`, `AvisoPrivado`, `BibliotecaAjena`, `PanelPrivacidad`, `Interruptor` |
+| `sala.css` | La página Social ("la sala": cabecera, pestañas en barra, en directo, línea del tiempo, carnets, invitaciones, descubrir) y el perfil de otra persona (banner con su color, banda "en común", cara a cara, duelos, estantería, ficha con su partida). El color de cada persona sale de `--tono` (ver `src/tono.js`) | `Social`, `Actividad`, `EnDirecto`, `LateralSala`, `Carnet`, `Invitaciones`, `FilaPersona`, `Descubrir`, `AvatarTono`, `PerfilPublico`, `BandaEnComun`, `CaraACara`, `EnComun`, `BibliotecaAjena`, `SeccionAjena` |
 | `movil.css` | Ajustes generales para pantallas estrechas | varios |
 
 ## Reglas para trabajar aquí

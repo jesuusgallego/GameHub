@@ -23,7 +23,7 @@ export const GRUPOS_PRIVACIDAD = [
   },
   {
     id: 'biblioteca',
-    campos: ['visibility_library', 'visibility_reviews', 'visibility_friends'],
+    campos: ['visibility_library', 'visibility_reviews', 'visibility_achievements', 'visibility_friends'],
   },
 ]
 
@@ -35,6 +35,7 @@ export const PRIVACIDAD_POR_DEFECTO = {
   visibility_location: 'nadie',
   visibility_library: 'amigos',
   visibility_reviews: 'amigos',
+  visibility_achievements: 'amigos',
   visibility_friends: 'amigos',
 }
 

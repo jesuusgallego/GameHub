@@ -9,12 +9,15 @@ import Mensaje from './Mensaje'
 // descripción y, si ya lo tengo, el día en que lo conseguí. Primero salen los
 // desbloqueados (el más reciente arriba) y luego los pendientes, con el icono en gris.
 //  - juego: la fila de user_games (necesito su "id" para pedir los logros al backend)
+//  - ruta: la dirección de la API de los logros, sin el idioma. Sin ella, los de MI juego
+//    (/accounts/steam/games/:id/achievements); con ella, por ejemplo los de un amigo
+//    (/users/:usuario/games/:igdbId/achievements)
 //
 // Los logros NO se piden a Steam hasta que se abre el desplegable por primera vez:
 // la mayoría de las veces que se abre una ficha no se miran, y así nos ahorramos dos
 // llamadas a Steam por ficha. Una vez abierto, el contenido se queda montado aunque se
 // cierre: así el cierre puede animarse (si se desmontara de golpe no habría qué plegar).
-function LogrosSteam({ juego }) {
+function LogrosSteam({ juego, ruta }) {
   const { t } = useIdioma()
   const idPanel = useId()
   const [abierto, setAbierto] = useState(false)
@@ -47,7 +50,7 @@ function LogrosSteam({ juego }) {
       {/* Panel que se despliega: ver progreso-steam.css */}
       <div id={idPanel} className={abierto ? "logros-panel logros-panel--abierto" : "logros-panel"}>
         <div className="logros-panel__interior">
-          {visto && <ListaLogros juego={juego} />}
+          {visto && <ListaLogros ruta={ruta ?? `/accounts/steam/games/${juego.id}/achievements`} />}
         </div>
       </div>
     </div>
@@ -56,7 +59,7 @@ function LogrosSteam({ juego }) {
 
 // La lista en sí: pide los logros al montarse y los pinta. Si cambio de idioma con la
 // ficha abierta se vuelve a pedir, porque Steam traduce los nombres y las descripciones.
-function ListaLogros({ juego }) {
+function ListaLogros({ ruta }) {
   const { t, idioma, locale } = useIdioma()
   const [logros, setLogros] = useState(null)
   const [error, setError] = useState('')
@@ -64,7 +67,7 @@ function ListaLogros({ juego }) {
   useEffect(() => {
     let cancelado = false
 
-    apiFetch(`/accounts/steam/games/${juego.id}/achievements?lang=${idioma}`)
+    apiFetch(`${ruta}?lang=${idioma}`)
       .then((data) => {
         if (!cancelado) setLogros(ordenar(data.achievements))
       })
@@ -74,7 +77,7 @@ function ListaLogros({ juego }) {
 
     // Si se cierra la ficha antes de que llegue la respuesta, la ignoro
     return () => { cancelado = true }
-  }, [juego.id, idioma])
+  }, [ruta, idioma])
 
   function formatearFecha(segundos) {
     return new Date(segundos * 1000).toLocaleDateString(locale, {

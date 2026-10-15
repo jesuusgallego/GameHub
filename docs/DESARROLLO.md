@@ -420,16 +420,18 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | DELETE | `/games/:id` | Bearer token | Elimina un juego de tu biblioteca |
 | GET | `/profile` | Bearer token | Tus datos: usuario, email, bio, foto, fecha de alta y datos personales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, `country`, `phone`, y `age`, que se calcula con la fecha de nacimiento) |
 | GET | `/profile/stats` | Bearer token | Estadísticas de tu biblioteca (juegos por estado, nota media) y tus 5 juegos mejor valorados |
-| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) los datos personales (todos opcionales) y la privacidad (`visibility_name`, `visibility_age`, `visibility_gender`, `visibility_location`, `visibility_library`, `visibility_reviews` y `visibility_friends`, cada una `nadie`/`amigos`/`todos`; `request_policy`: `todos`/`amigos_de_amigos`/`nadie`; `searchable`: booleano). Datos personales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años), `gender` (`hombre`, `mujer` u `otro`), `country` (código ISO 3166-1 de dos letras en mayúsculas, de la lista de `config/paises.js`) y `phone` (internacional y válido: el servidor quita espacios, guiones y paréntesis, cambia un `00` inicial por `+` y lo comprueba con libphonenumber; se guarda como `+34600123456`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username`. 409 si el usuario ya existe |
+| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) los datos personales (todos opcionales) y la privacidad (`visibility_name`, `visibility_age`, `visibility_gender`, `visibility_location`, `visibility_library`, `visibility_reviews`, `visibility_achievements` y `visibility_friends`, cada una `nadie`/`amigos`/`todos`; `request_policy`: `todos`/`amigos_de_amigos`/`nadie`; `searchable`: booleano). Datos personales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años), `gender` (`hombre`, `mujer` u `otro`), `country` (código ISO 3166-1 de dos letras en mayúsculas, de la lista de `config/paises.js`) y `phone` (internacional y válido: el servidor quita espacios, guiones y paréntesis, cambia un `00` inicial por `+` y lo comprueba con libphonenumber; se guarda como `+34600123456`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username`. 409 si el usuario ya existe |
 | PATCH | `/profile/email` | Bearer token | Cambia el email (`email` + `current_password`). 403 si la contraseña es incorrecta |
 | PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`). Cierra todas las demás sesiones abiertas y devuelve un `token` nuevo para la actual |
 | DELETE | `/profile` | Bearer token | Borra tu cuenta y toda tu biblioteca (`password`) |
 | GET | `/users/search?q=` | Bearer token | Personas cuyo nombre empieza por `q` (2 a 20 caracteres, hasta 20 resultados), con su relación contigo, `can_request` y amigos en común. No salen tú, quien te ha bloqueado, a quien has bloqueado ni quien ha desactivado `searchable` (salvo sus amigos). 60 búsquedas cada 5 minutos |
 | GET | `/users/:username` | Bearer token | El perfil de otra persona con solo lo que puedes ver: `personal` solo lleva los datos permitidos, `library` va `null` si no, y trae amigos y juegos en común. 404 si no existe **o te ha bloqueado**; si la has bloqueado tú, solo lo mínimo con `relation: "bloqueado"` |
-| GET | `/users/:username/games` | Bearer token | Su biblioteca (hasta 500 juegos, con `in_common` y tu estado y nota) si te la deja ver; 403 si no. El texto de la reseña solo sale si `visibility_reviews` lo permite |
+| GET | `/users/:username/games` | Bearer token | Su biblioteca (hasta 500 juegos, con `in_common` y tu estado, nota y progreso `my_*`) si te la deja ver; 403 si no. El texto de la reseña solo sale si `visibility_reviews` lo permite, y las horas y los logros (`playtime_minutes`, `achievements_*`) solo si `visibility_achievements` lo permite (`achievements_visible` lo dice) |
+| GET | `/users/:username/common` | Bearer token | Lo que tenéis en común: `games` (los dos tenéis el juego, con `my_*` y `their_*`; `null` si no te deja ver su biblioteca) y `friends` (amigos compartidos, sin los que esconden su lista). 404 si no existe o te ha bloqueado; 400 si es tu propio nombre |
+| GET | `/users/:username/games/:igdbId/achievements?lang=es` | Bearer token | Los logros de Steam de un juego de su biblioteca, si te deja ver biblioteca **y** logros (403 si no). 404 si no tiene ese juego o no lo trae de Steam; 422 si tiene "Detalles del juego" privados en Steam. 40 cada 10 minutos por IP |
 | GET | `/users/:username/friends` | Bearer token | Su lista de amigos si te la deja ver (403 si no), con tu relación con cada uno |
 | GET | `/users/:username/avatar` | No | La foto como imagen (`ETag`, `Cache-Control: no-cache`). Sin sesión porque un `<img>` no puede mandar `Authorization` |
-| GET | `/friends` | Bearer token | Tus amigos, con `playing` (su juego "jugando" más reciente) y `games_count` si comparten su biblioteca con amigos |
+| GET | `/friends` | Bearer token | Tus amigos. Si comparten su biblioteca con amigos: `games_count`, `completed_count`, `avg_rating`, `games_in_common` y `playing` (su juego "jugando" más reciente, con `igdb_id` y `since`). `mutual` son los amigos que compartís |
 | GET | `/friends/activity` | Bearer token | Los últimos 30 movimientos en la biblioteca de tus amigos (no cuenta lo importado de Steam sin tocar) |
 | GET | `/friends/suggestions` | Bearer token | Amigos de tus amigos, por número de amigos en común (hasta 12) |
 | GET | `/friends/requests` | Bearer token | Solicitudes: `received` y `sent` |
@@ -675,11 +677,15 @@ Epic se descartaron), por eso es la única que se puede vincular.
   persona, amigos en común, si puede enviarle solicitud, sin bloqueos),
   `controllers/userController.js` (buscar, perfil, biblioteca, amigos y foto de otra persona) y
   `controllers/friendController.js` (amistades, solicitudes, bloqueos, actividad y
-  sugerencias). Frontend: `Social.jsx` (la página, con las pestañas del perfil),
-  `Actividad.jsx`, `Descubrir.jsx`, `RejillaPersonas.jsx` + `TarjetaPersona.jsx`,
-  `AccionAmistad.jsx` (los botones según la relación; los usan el perfil de otra persona y
-  todas las listas), `PerfilPublico.jsx` (con `BibliotecaAjena.jsx`, `AmigosAjenos.jsx` y
-  `AvisoPrivado.jsx`) y `PanelPrivacidad.jsx` (la pestaña *Perfil → Privacidad*).
+  sugerencias). Frontend: `Social.jsx` ("la sala": cabecera con tu grupo, pestañas en barra y
+  paneles), `Actividad.jsx` (+ `EnDirecto.jsx`, la línea del tiempo por días y `LateralSala.jsx`),
+  `Carnet.jsx` (la persona como carnet de jugador; lo pintan `RejillaPersonas.jsx` y las listas),
+  `Invitaciones.jsx` y `FilaPersona.jsx`, `Descubrir.jsx`, `AvatarTono.jsx` (la foto con su
+  anillo de color), `AccionAmistad.jsx` (los botones según la relación; los usan el perfil de
+  otra persona y todas las listas), `PerfilPublico.jsx` (con `BandaEnComun.jsx`, `CaraACara.jsx`,
+  `EnComun.jsx`, `BibliotecaAjena.jsx`, `AmigosAjenos.jsx` y `AvisoPrivado.jsx`), la ficha con
+  su partida (`SeccionAjena.jsx`, dentro de `DetalleJuego.jsx`) y `PanelPrivacidad.jsx` (la
+  pestaña *Perfil → Privacidad*).
 - **Relación.** Entre dos personas puede ser `self`, `amigos`, `enviada`, `recibida` o `ninguna`;
   el bloqueo va aparte. Cada dato tiene un nivel (`nadie`, `amigos`, `todos`) y
   `puedeVer(nivel, relacion)` decide. Ante un nivel que no conoce, no enseña. Los datos
@@ -703,6 +709,24 @@ Epic se descartaron), por eso es la única que se puede vincular.
   puede ver. Una prueba comprueba que las dos coinciden en todas las combinaciones. Los
   ajustes se guardan al cambiarlos (con actualización optimista: si el servidor lo rechaza,
   vuelve al valor anterior).
+- **Diseño de la parte social.** Cada persona tiene un *tono* (0-359) que sale de su nombre
+  (`tono.js`, un hash FNV-1a): el mismo en cualquier pantalla y sin guardar nada. El componente
+  lo pone en el `style` como `--tono` y `sala.css` lo usa con `hsl(var(--tono) ...)` para el
+  anillo de la foto, la banda del carnet, las invitaciones y el banner de su perfil
+  (`CabeceraPerfil` con `conTono`). `--tono-s` y `--tono-l` cambian con el tema. Las pestañas de
+  Social y del perfil de otra persona usan `PestanasPerfil` con `variante="barra"`; el de *Mi
+  perfil* sigue siendo la columna lateral.
+- **En común.** `PerfilPublico` pide `/users/:u/common` al cargar (alimenta la banda de debajo
+  del banner y la pestaña) y `/profile/stats` para el *cara a cara* (`comparar.js` calcula las
+  filas y quién gana). La biblioteca (`/users/:u/games`) y la lista de amigos se piden al abrir su
+  pestaña. Un juego de *En común* se convierte con `juegoAjeno.js` a la misma forma que uno de
+  la biblioteca para abrir la misma ficha.
+- **Logros de un amigo.** `visibility_achievements` (por defecto `amigos`) controla las horas
+  jugadas y los logros, y solo vale si también se ve la biblioteca. La lista de logros de un
+  juego no se guarda: `GET /users/:u/games/:igdbId/achievements` la pide a Steam con *su* SteamID
+  (igual que en tu propia ficha) y reutiliza `LogrosSteam.jsx` con el prop `ruta`. Si esa persona
+  tiene "Detalles del juego" privados en Steam, el servidor responde 422 con un mensaje que habla
+  de *esa persona* (el del servicio habla de "tu perfil").
 - **Fotos.** Las listas no llevan la foto dentro (hasta 200 KB en base64 cada una): llevan
   `has_avatar` y `Avatar.jsx` pide la imagen a `GET /users/:username/avatar`.
 - **Insignia de solicitudes (con sondeo).** `Layout.jsx` pide `/friends/requests/count` al
@@ -878,7 +902,10 @@ Más detalle del instalador, el aviso de "editor desconocido" y la seguridad de 
   privacidad, amistades, un bloqueo y bibliotecas con juegos reales de IGDB; cada uno prueba un
   caso distinto (ver la tabla del script, `backend/scripts/seed-demo.js`). Opciones:
   `npm run seed:demo -- --solicitudes-a=tu_usuario` añade 2 solicitudes pendientes hacia tu
-  cuenta, y `npm run seed:demo:borrar` los borra con todo lo suyo. Solo se ejecuta contra una
+  cuenta, `npm run seed:demo -- --steam-id=7656119...` hace que las personas con Steam usen tu SteamID
+  (con "Detalles del juego" en público) para ver una lista real de logros en sus fichas, y
+  `npm run seed:demo:borrar` los borra con todo lo suyo. Sin `--steam-id`, llevan un SteamID
+  inventado: se ven las horas y los contadores de logros, pero la lista da error. Solo se ejecuta contra una
   base de datos local (se niega con `NODE_ENV=production` o un `DATABASE_URL` remoto) y es una
   transacción: o crea todo o no cambia nada.
 - **Ver qué sirve la base de datos de producción:** desde el panel de Neon (consola SQL), no

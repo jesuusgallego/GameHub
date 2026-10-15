@@ -58,6 +58,12 @@ const ICONOS = {
       <path d="m6 6 12 12" />
     </>
   ),
+  comun: (
+    <>
+      <circle cx="9" cy="12" r="6" />
+      <circle cx="15" cy="12" r="6" />
+    </>
+  ),
   seguridad: (
     <>
       <path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5Z" />
@@ -69,13 +75,16 @@ const ICONOS = {
 // Barra de pestañas del perfil. Es una columna a la izquierda en pantallas anchas y
 // una fila con scroll en las estrechas (lo decide el CSS). Un indicador de fondo se
 // desliza hasta la pestaña activa.
-//  - pestanas: [{ id, etiqueta }]
+//  - pestanas: [{ id, etiqueta, contador? }]; `contador` es un número que sale al lado
+//    (solicitudes pendientes, juegos en común...); 0 o ausente no pinta nada
 //  - activa: id de la pestaña seleccionada
 //  - onCambiar(id): el padre cambia de pestaña
 //  - etiqueta: nombre accesible de la barra
+//  - variante: 'lateral' (la del perfil) o 'barra': siempre en fila, con el indicador como
+//    subrayado (la usa la parte social)
 // Teclado (patrón "tabs" de ARIA): las flechas pasan de una pestaña a otra, Inicio y
 // Fin saltan a la primera y la última, y solo la activa entra con Tab (tabIndex).
-function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta }) {
+function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lateral' }) {
   const navRef = useRef(null)
   const botonesRef = useRef({})
   // Posición y tamaño del indicador (null hasta la primera medida)
@@ -126,7 +135,7 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta }) {
   }
 
   return (
-    <div ref={navRef} className="pestanas" role="tablist" aria-label={etiqueta} onKeyDown={alPulsarTecla}>
+    <div ref={navRef} className={variante === 'barra' ? "pestanas pestanas--barra" : "pestanas"} role="tablist" aria-label={etiqueta} onKeyDown={alPulsarTecla}>
       {indicador && (
         <span
           className={listo ? "pestanas__indicador pestanas__indicador--lista" : "pestanas__indicador"}
@@ -139,7 +148,7 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta }) {
         />
       )}
 
-      {pestanas.map(({ id, etiqueta: texto }) => (
+      {pestanas.map(({ id, etiqueta: texto, contador }) => (
         <button
           key={id}
           ref={(el) => { botonesRef.current[id] = el }}
@@ -156,6 +165,7 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta }) {
             {ICONOS[id]}
           </svg>
           <span>{texto}</span>
+          {contador > 0 && <span className="pestana__contador">{contador}</span>}
         </button>
       ))}
     </div>

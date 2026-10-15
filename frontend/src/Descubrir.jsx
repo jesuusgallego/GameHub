@@ -64,7 +64,7 @@ function Descubrir({ sugerencias, onCambio, cerrarSesion }) {
 
   return (
     <div className="descubrir">
-      <label className="campo campo-busqueda">
+      <label className="campo campo-busqueda radar">
         <span>{t('social.buscarEtiqueta')}</span>
         <div className="campo-busqueda__caja">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -92,7 +92,7 @@ function Descubrir({ sugerencias, onCambio, cerrarSesion }) {
           {buscando && <Cargando texto={t('social.buscando')} />}
 
           {valido && !buscando && !error && resultados.length === 0 && termino === resuelto && (
-            <p className="estado">{t('social.sinResultados', { q: termino })}</p>
+            <p className="sala-vacio">{t('social.sinResultados', { q: termino })}</p>
           )}
 
           {valido && resultados.length > 0 && (
@@ -101,9 +101,9 @@ function Descubrir({ sugerencias, onCambio, cerrarSesion }) {
         </>
       ) : (
         <section>
-          <h3 className="estadisticas__subtitulo">{t('social.sugerencias')}</h3>
+          <h3 className="sala-titulo">{t('social.sugerencias')}</h3>
           {sugerencias.length === 0 ? (
-            <p className="estado">{t('social.sinSugerencias')}</p>
+            <p className="sala-vacio">{t('social.sinSugerencias')}</p>
           ) : (
             <RejillaPersonas
               personas={sugerencias.map((s) => ({ ...s, relation: 'ninguna', friendship_id: null, can_request: true }))}

@@ -10,7 +10,9 @@ import { useIdioma } from './IdiomaContext'
 //    'enviada', 'recibida', 'amigos' o 'bloqueado'
 //  - onCambio(personaNueva): se llama al terminar con la relación ya actualizada
 //  - cerrarSesion(): para un 401 (sesión caducada)
-function AccionAmistad({ persona, onCambio, cerrarSesion }) {
+//  - discreta: el botón de eliminar amigo pierde protagonismo (sale como texto, y se pone
+//    rojo al pasar el ratón): en las tarjetas, lo normal es mirar el perfil, no eliminar
+function AccionAmistad({ persona, onCambio, cerrarSesion, discreta = false }) {
   const { t } = useIdioma()
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState("")
@@ -93,7 +95,7 @@ function AccionAmistad({ persona, onCambio, cerrarSesion }) {
   }
 
   return (
-    <div className="accion-amistad">
+    <div className={discreta ? "accion-amistad accion-amistad--discreta" : "accion-amistad"}>
       <div className="accion-amistad__botones">{botones}</div>
       <Mensaje texto={error} />
 

@@ -3,7 +3,11 @@ import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { apiFetch } from './api'
 import PestanasPerfil from './PestanasPerfil'
 import RejillaPersonas from './RejillaPersonas'
+import FilaPersona from './FilaPersona'
+import AvatarTono from './AvatarTono'
 import Actividad from './Actividad'
+import LateralSala from './LateralSala'
+import Invitaciones from './Invitaciones'
 import Descubrir from './Descubrir'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
@@ -13,9 +17,8 @@ import { borrarToken } from './sesion'
 
 const PESTANAS = ['actividad', 'amigos', 'solicitudes', 'descubrir', 'bloqueados']
 
-// Página Social: lo que hacen tus amigos, tus amigos, las solicitudes, gente nueva y los
-// bloqueados. Reutiliza la estructura del perfil (pestañas a la izquierda y paneles a la
-// derecha, con el mismo cambio animado).
+// Página Social: "tu sala". Arriba, quién está en tu grupo; debajo, cinco pestañas en una
+// barra: lo que hacen tus amigos, tus amigos, las solicitudes, gente nueva y los bloqueados.
 //  - Todo se pide junto al entrar y se vuelve a pedir tras cada acción (aceptar, eliminar...):
 //    así lo que se ve es siempre lo que hay en el servidor.
 //  - La pestaña activa va en la URL (?tab=solicitudes).
@@ -99,7 +102,7 @@ function Social({ setToken }) {
   }))
 
   const cargando = !datos && !error
-  const recibidas = datos?.recibidas.length ?? 0
+  const recibidas = datos?.recibidas ?? []
   const jugandoAhora = datos ? datos.amigos.filter((a) => a.playing).length : 0
 
   // Los amigos filtrados por lo que se escribe en el filtro de la pestaña
@@ -107,19 +110,18 @@ function Social({ setToken }) {
     ? datos.amigos.filter((a) => a.username.includes(filtro.trim().toLowerCase()))
     : []
 
-  const cifras = [
-    { etiqueta: t('social.cifra.amigos'), valor: datos ? datos.amigos.length : "–" },
-    { etiqueta: t('social.cifra.jugando'), valor: datos ? jugandoAhora : "–" },
-    { etiqueta: t('social.cifra.solicitudes'), valor: datos ? recibidas : "–" },
-  ]
-
   const contenido = {
     actividad: datos && (
-      <Actividad amigos={datos.amigos} actividad={datos.actividad} onIrADescubrir={() => irA('descubrir')} />
+      <div className={datos.amigos.length > 0 ? "sala-dos-columnas" : undefined}>
+        <Actividad amigos={datos.amigos} actividad={datos.actividad} onIrADescubrir={() => irA('descubrir')} />
+        {datos.amigos.length > 0 && (
+          <LateralSala amigos={datos.amigos} recibidas={recibidas} sugerencias={datos.sugerencias} irA={irA} />
+        )}
+      </div>
     ),
     amigos: datos && (
       datos.amigos.length === 0 ? (
-        <div className="estado-vacio">
+        <div className="sala-vacia">
           <p>{t('social.vacio')}</p>
           <button type="button" className="btn btn--primario" onClick={() => irA('descubrir')}>
             {t('social.irDescubrir')}
@@ -140,7 +142,7 @@ function Social({ setToken }) {
             />
           </label>
           {filtrados.length === 0 ? (
-            <p className="estado">{t('social.filtroSinResultados', { q: filtro.trim() })}</p>
+            <p className="sala-vacio">{t('social.filtroSinResultados', { q: filtro.trim() })}</p>
           ) : (
             <RejillaPersonas
               personas={comoRelacion(filtrados, 'amigos')}
@@ -152,91 +154,104 @@ function Social({ setToken }) {
       )
     ),
     solicitudes: datos && (
-      <div className="solicitudes">
-        <section>
-          <h3 className="estadisticas__subtitulo">{t('social.recibidas')}</h3>
-          {datos.recibidas.length === 0
-            ? <p className="estado">{t('social.sinRecibidas')}</p>
-            : <RejillaPersonas personas={comoRelacion(datos.recibidas, 'recibida')} onCambio={alCambiar} cerrarSesion={cerrarSesion} />}
-        </section>
-        <section>
-          <h3 className="estadisticas__subtitulo">{t('social.enviadas')}</h3>
-          {datos.enviadas.length === 0
-            ? <p className="estado">{t('social.sinEnviadas')}</p>
-            : <RejillaPersonas personas={comoRelacion(datos.enviadas, 'enviada')} onCambio={alCambiar} cerrarSesion={cerrarSesion} />}
-        </section>
-      </div>
+      <Invitaciones
+        recibidas={comoRelacion(datos.recibidas, 'recibida')}
+        enviadas={comoRelacion(datos.enviadas, 'enviada')}
+        onCambio={alCambiar}
+        cerrarSesion={cerrarSesion}
+      />
     ),
     descubrir: datos && (
       <Descubrir sugerencias={datos.sugerencias} onCambio={alCambiar} cerrarSesion={cerrarSesion} />
     ),
     bloqueados: datos && (
       datos.bloqueados.length === 0
-        ? <p className="estado">{t('social.sinBloqueados')}</p>
-        : <RejillaPersonas personas={comoRelacion(datos.bloqueados, 'bloqueado')} onCambio={alCambiar} cerrarSesion={cerrarSesion} />
+        ? <p className="sala-vacio">{t('social.sinBloqueados')}</p>
+        : (
+          <ul className="filas">
+            {comoRelacion(datos.bloqueados, 'bloqueado').map((p, i) => (
+              <FilaPersona key={p.username} persona={p} orden={i} onCambio={alCambiar} cerrarSesion={cerrarSesion} />
+            ))}
+          </ul>
+        )
     ),
   }
 
-  const paneles = PESTANAS.map((id) => ({
+  const pestanas = PESTANAS.map((id) => ({
     id,
-    etiqueta: id === 'solicitudes' && recibidas > 0
-      ? `${t('social.tab.solicitudes')} (${recibidas})`
-      : t(`social.tab.${id}`),
-    ayuda: t(`social.ayuda.${id}`),
+    etiqueta: t(`social.tab.${id}`),
+    contador: id === 'solicitudes' ? recibidas.length : id === 'amigos' ? (datos?.amigos.length ?? 0) : 0,
   }))
 
+  // El grupo de la cabecera: hasta 6 fotos, las de quienes juegan primero
+  const grupo = datos
+    ? [...datos.amigos].sort((a, b) => Number(Boolean(b.playing)) - Number(Boolean(a.playing))).slice(0, 6)
+    : []
+
   return (
-    <div className="perfil social">
-      <header className="banner-perfil banner-social">
+    <div className="sala">
+      <header className="banner-perfil sala-cabecera">
         <div className="banner-perfil__fondo" aria-hidden="true" />
-        <div className="banner-perfil__contenido">
-          <div className="banner-social__titulo">
-            <h1 className="titulo-pagina">{t('social.titulo')}</h1>
-            <p className="banner-perfil__meta">{t('social.subtitulo')}</p>
+        <div className="sala-cabecera__contenido">
+          <div className="sala-cabecera__texto">
+            <span className="sala-cabecera__sobre">{t('social.sobretitulo')}</span>
+            <h1 className="sala-cabecera__titulo">{t('social.titulo')}</h1>
+            <p>{t('social.subtitulo')}</p>
           </div>
 
-          <dl className="banner-perfil__cifras">
-            {cifras.map(({ etiqueta, valor }, i) => (
-              <div key={etiqueta} className="cifra" style={{ '--orden': i }}>
-                <dt className="cifra__etiqueta">{etiqueta}</dt>
-                <dd className="cifra__valor">{valor}</dd>
-              </div>
-            ))}
-          </dl>
+          <div className="sala-cabecera__grupo">
+            {grupo.length > 0 && (
+              <ul className="grupo-fotos" aria-hidden="true">
+                {grupo.map((a) => (
+                  <li key={a.username}><AvatarTono usuario={a} tamano="normal" vivo={Boolean(a.playing)} /></li>
+                ))}
+              </ul>
+            )}
+            <p className="sala-cabecera__resumen">
+              {datos
+                ? (
+                  <>
+                    <strong>{datos.amigos.length}</strong> {datos.amigos.length === 1 ? t('social.amigoUno') : t('social.amigos')}
+                    {jugandoAhora > 0 && (
+                      <span className="sala-cabecera__jugando">
+                        <span className="sala-titulo__punto" aria-hidden="true" />
+                        {t('social.jugandoN', { n: jugandoAhora })}
+                      </span>
+                    )}
+                  </>
+                )
+                : "…"}
+            </p>
+          </div>
         </div>
       </header>
 
-      <div className="perfil__cuerpo">
-        <PestanasPerfil
-          pestanas={paneles.map(({ id, etiqueta }) => ({ id, etiqueta }))}
-          activa={seleccion}
-          onCambiar={irA}
-          etiqueta={t('social.secciones')}
-        />
+      <PestanasPerfil
+        variante="barra"
+        pestanas={pestanas}
+        activa={seleccion}
+        onCambiar={irA}
+        etiqueta={t('social.secciones')}
+      />
 
-        <div className="perfil__paneles">
-          {paneles.map(({ id, etiqueta, ayuda }) => {
-            const activo = mostrada === id
-            return (
-              <section
-                key={id}
-                id={`panel-${id}`}
-                role="tabpanel"
-                aria-labelledby={`pestana-${id}`}
-                hidden={!activo}
-                className={activo ? (saliendo ? "panel-perfil vista vista--saliendo" : "panel-perfil vista") : "panel-perfil"}
-              >
-                <header className="panel-perfil__cabecera">
-                  <h2 className="titulo-seccion">{etiqueta}</h2>
-                  <p>{ayuda}</p>
-                </header>
-                <Mensaje texto={activo ? error : ""} />
-                {cargando && <Cargando texto={t('social.cargando')} centrado />}
-                {contenido[id]}
-              </section>
-            )
-          })}
-        </div>
+      <div className="sala-paneles">
+        {PESTANAS.map((id) => {
+          const activo = mostrada === id
+          return (
+            <section
+              key={id}
+              id={`panel-${id}`}
+              role="tabpanel"
+              aria-labelledby={`pestana-${id}`}
+              hidden={!activo}
+              className={activo ? (saliendo ? "sala-panel vista vista--saliendo" : "sala-panel vista") : "sala-panel"}
+            >
+              <Mensaje texto={activo ? error : ""} />
+              {cargando && activo && <Cargando texto={t('social.cargando')} centrado />}
+              {contenido[id]}
+            </section>
+          )
+        })}
       </div>
     </div>
   )
