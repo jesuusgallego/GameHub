@@ -7,9 +7,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ### Cambiado
 - **La parte social, rediseñada.** Social pasa a ser "tu sala", con una cabecera de lobby y
   pestañas en barra, centrada y con el número de amigos y de solicitudes pendientes:
-  - **Cabecera:** un mosaico con las portadas de lo que juegan tus amigos, una frase con
-    nombres ("Beto y Eva están jugando ahora mismo") y tus amigos como huecos de jugador:
-    se iluminan los que están jugando y el último hueco, con un "+", sirve para invitar.
+  - **Cabecera:** un mosaico con las portadas de lo que juegan tus amigos, y una pastilla bajo
+    el título con nombres ("Beto y Eva están jugando ahora mismo"). A la derecha, tus amigos en
+    una fila de círculos con su color: los que están jugando llevan la portada de su juego en
+    la esquina, y el último círculo, con un "+", sirve para invitar a alguien.
   - **Actividad:** "Jugando ahora" con la portada de cada juego de fondo y los últimos
     movimientos en una línea del tiempo (hoy, ayer, esta semana...).
   - **Columna lateral**, sustituyendo a "Tu grupo": las solicitudes con *Aceptar* y *Rechazar*

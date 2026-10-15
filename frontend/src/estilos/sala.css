@@ -173,22 +173,29 @@
 }
 
 .sala-cabecera__frase {
-  max-width: 30rem;
-  padding-left: 0.85rem;
-  font-size: 1.05rem;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.45rem 1rem 0.45rem 0.85rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1.35;
   color: var(--banner-texto);
-  border-left: 3px solid var(--acento);
+  background: var(--banner-cristal);
+  border: 1px solid var(--banner-cristal-borde);
+  border-radius: 1.2rem;
+  backdrop-filter: blur(10px);
 }
 
-/* ---- Los huecos de tus amigos, como al elegir personaje ---- */
+/* ---- Tus amigos en la cabecera: una fila de círculos ---- */
 .huecos {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.65rem;
-  max-width: 40rem;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -196,94 +203,95 @@
 
 .hueco {
   animation: sala-entrada 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  animation-delay: calc(0.1s + var(--orden, 0) * 0.07s);
+  animation-delay: calc(0.1s + var(--orden, 0) * 0.06s);
 }
 
 .hueco__enlace {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.3rem;
-  width: 6.4rem;
-  height: 100%;
-  padding: 0.75rem 0.4rem 0.65rem;
+  gap: 0.4rem;
+  width: 5rem;
+  padding: 0.3rem 0 0;
   font: inherit;
   text-align: center;
   color: var(--banner-texto);
   text-decoration: none;
-  background: var(--banner-cristal);
-  border: 1px solid var(--banner-cristal-borde);
-  border-radius: var(--radio-grande);
-  backdrop-filter: blur(10px);
-  transition: transform var(--transicion), background-color var(--transicion),
-    border-color var(--transicion), box-shadow var(--transicion);
+  background: none;
+  border: 0;
+  transition: transform var(--transicion);
 }
 
 .hueco__enlace:hover {
   color: var(--banner-texto);
-  background: var(--banner-cristal-hover);
   transform: translateY(-4px);
 }
 
 .hueco__enlace:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
 }
 
-/* Está jugando: el hueco se ilumina con el color de la persona */
-.hueco--vivo .hueco__enlace {
-  background: linear-gradient(180deg, hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.28), var(--banner-cristal));
-  border-color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.85);
-  box-shadow: 0 0 24px hsl(var(--tono, 220) 80% 55% / 0.35);
+/* El círculo y, en su esquina, la portada de lo que está jugando */
+.hueco__foto {
+  position: relative;
+  display: inline-grid;
+}
+
+.hueco__juego {
+  position: absolute;
+  right: -0.35rem;
+  bottom: -0.15rem;
+  width: 1.55rem;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border: 2px solid var(--anillo-hueco);
+  border-radius: 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+  transform: rotate(6deg);
+  transition: transform var(--transicion);
+}
+
+.hueco__enlace:hover .hueco__juego {
+  transform: rotate(0) scale(1.15);
 }
 
 .hueco__nombre {
   max-width: 100%;
   overflow: hidden;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* Un halo del color del fondo para que se lea sobre las portadas del mosaico */
+  text-shadow: 0 1px 6px rgba(8, 13, 22, 0.9), 0 0 2px rgba(8, 13, 22, 0.8);
 }
 
-.hueco__estado {
-  max-width: 100%;
-  overflow: hidden;
-  font-size: 0.7rem;
-  color: var(--banner-texto-suave);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+:root[data-tema="claro"] .hueco__nombre {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.95), 0 0 2px rgba(255, 255, 255, 0.9);
 }
 
-.hueco--vivo .hueco__estado {
-  font-weight: 700;
+.hueco--vivo .hueco__nombre {
   color: var(--estado-jugando);
 }
 
-/* Los huecos que no son una persona: el punteado dice "aquí cabe alguien" */
-.hueco--invitar .hueco__enlace,
-.hueco--vacio .hueco__enlace {
-  justify-content: center;
-  background: transparent;
-  border-style: dashed;
-  border-color: var(--banner-boton-borde);
-}
-
-.hueco--invitar .hueco__enlace:hover,
-.hueco--vacio .hueco__enlace:hover {
-  background: var(--banner-cristal);
-  border-color: var(--banner-boton-borde-hover);
-}
-
+/* Los círculos que no son una persona: el punteado dice "aquí cabe alguien" */
 .hueco__mas {
   display: grid;
   place-items: center;
   width: 3.9rem;
   height: 3.9rem;
   font-family: var(--display);
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   font-weight: 600;
+  background: var(--banner-cristal);
   border: 2px dashed var(--banner-boton-borde);
   border-radius: 50%;
+  transition: background-color var(--transicion), border-color var(--transicion);
+}
+
+.hueco__enlace:hover .hueco__mas {
+  background: var(--banner-cristal-hover);
+  border-color: var(--banner-boton-borde-hover);
 }
 
 /* ---- Pestañas en barra (variante de PestanasPerfil) ---- */
@@ -2001,12 +2009,8 @@
   }
 
   .huecos {
+    flex-wrap: wrap;
     justify-content: flex-start;
-    gap: 0.5rem;
-  }
-
-  .hueco__enlace {
-    width: 5.4rem;
   }
 
   .rejilla-personas,

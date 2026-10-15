@@ -3,12 +3,13 @@ import AvatarTono from './AvatarTono'
 import { useIdioma } from './IdiomaContext'
 import { estiloTono } from './tono'
 
-const MAX_HUECOS = 5
+const MAX_HUECOS = 6
 
 // La cabecera de Social, como la pantalla de un lobby: de fondo un mosaico con las portadas
-// de lo que juegan tus amigos, el título grande y una frase que dice, con nombres, quién está
-// jugando ahora. A la derecha, los "huecos" de tus amigos (como al elegir personaje): se
-// iluminan los que están jugando y, al final, un hueco con "+" para invitar a alguien.
+// de lo que juegan tus amigos, el título grande y, debajo, una pastilla de estado que dice con
+// nombres quién está jugando ahora. A la derecha, tus amigos en una sola fila de círculos con
+// su anillo de color: los que están jugando llevan la portada de su juego en la esquina y,
+// al final, un círculo punteado con "+" para invitar a alguien.
 //  - amigos: GET /friends (cada uno trae `playing`); null mientras carga
 //  - actividad: GET /friends/activity (solo para sacar portadas del mosaico)
 //  - onInvitar(): lleva a Descubrir
@@ -54,12 +55,12 @@ function SalaCabecera({ amigos, actividad = [], onInvitar, onVerAmigos }) {
 
       <div className="sala-cabecera__contenido">
         <div className="sala-cabecera__texto">
-          <span className="sala-cabecera__sobre">
-            <span className="sala-titulo__punto" aria-hidden="true" />
-            {t('social.sobretitulo')}
-          </span>
-          <h1 className="sala-cabecera__titulo" data-texto={t('social.titulo')}>{t('social.titulo')}</h1>
-          <p className="sala-cabecera__frase">{frase}</p>
+          <span className="sala-cabecera__sobre">{t('social.sobretitulo')}</span>
+          <h1 className="sala-cabecera__titulo">{t('social.titulo')}</h1>
+          <p className="sala-cabecera__frase">
+            {jugando.length > 0 && <span className="sala-titulo__punto" aria-hidden="true" />}
+            {frase}
+          </p>
         </div>
 
         {amigos && (
@@ -67,30 +68,39 @@ function SalaCabecera({ amigos, actividad = [], onInvitar, onVerAmigos }) {
             {huecos.map((a, i) => (
               <li key={a.username} className={a.playing ? "hueco hueco--vivo" : "hueco"}
                 style={{ ...estiloTono(a.username), '--orden': i }}>
-                <Link to={`/usuarios/${a.username}`} className="hueco__enlace">
-                  <AvatarTono usuario={a} tamano="normal" vivo={Boolean(a.playing)} />
+                <Link
+                  to={`/usuarios/${a.username}`}
+                  className="hueco__enlace"
+                  title={a.playing ? t('social.huecoJugando', { usuario: a.username, juego: a.playing.name }) : undefined}
+                >
+                  <span className="hueco__foto">
+                    <AvatarTono usuario={a} tamano="normal" vivo={Boolean(a.playing)} />
+                    {a.playing?.cover_url && <img className="hueco__juego" src={a.playing.cover_url} alt="" />}
+                  </span>
                   <span className="hueco__nombre">{a.username}</span>
-                  <span className="hueco__estado">{a.playing ? a.playing.name : t('social.libre')}</span>
                 </Link>
               </li>
             ))}
             {sobran > 0 && (
               <li className="hueco hueco--vacio" style={{ '--orden': huecos.length }}>
                 <button type="button" className="hueco__enlace" onClick={onVerAmigos}>
-                  <span className="hueco__mas">+{sobran + 1}</span>
+                  <span className="hueco__foto">
+                    <span className="hueco__mas">+{sobran + 1}</span>
+                  </span>
                   <span className="hueco__nombre">{t('social.masAmigos')}</span>
                 </button>
               </li>
             )}
             <li className="hueco hueco--invitar" style={{ '--orden': huecos.length + (sobran > 0 ? 1 : 0) }}>
               <button type="button" className="hueco__enlace" onClick={onInvitar}>
-                <span className="hueco__mas" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
+                <span className="hueco__foto">
+                  <span className="hueco__mas" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </span>
                 </span>
                 <span className="hueco__nombre">{t('social.invitar')}</span>
-                <span className="hueco__estado">{t('social.invitarAyuda')}</span>
               </button>
             </li>
           </ul>

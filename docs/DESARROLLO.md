@@ -679,7 +679,7 @@ Epic se descartaron), por eso es la única que se puede vincular.
   `controllers/userController.js` (buscar, perfil, biblioteca, amigos y foto de otra persona) y
   `controllers/friendController.js` (amistades, solicitudes, bloqueos, actividad y
   sugerencias). Frontend: `Social.jsx` ("la sala": cabecera con tu grupo, pestañas en barra y
-  paneles), `SalaCabecera.jsx` (el lobby: mosaico, frase y huecos), `Actividad.jsx` (+ `EnDirecto.jsx` y
+  paneles), `SalaCabecera.jsx` (el lobby: mosaico, pastilla de estado y círculos de amigos), `Actividad.jsx` (+ `EnDirecto.jsx` y
   la línea del tiempo por días) y `LateralSala.jsx` (solicitudes, `ParaJugarJuntos.jsx` y
   sugerencias, cada una con su botón),
   `Carnet.jsx` (la persona como carnet de jugador; lo pintan `RejillaPersonas.jsx` y las listas),
