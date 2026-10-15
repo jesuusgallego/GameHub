@@ -1,6 +1,6 @@
 const pool = require('../config/db');
 const { USERNAME_REGEX } = require('../config/validacion');
-const { amigosDe, hayAmigosEnComun, sinBloqueos } = require('../services/amistades');
+const { amigosDe, hayAmigosEnComun, amigosEnComun, sinBloqueos } = require('../services/amistades');
 
 // Una persona tal como la enseñan las listas
 const PERSONA = `u.username, (u.avatar IS NOT NULL) AS has_avatar, u.bio`;
@@ -29,20 +29,33 @@ function errorInterno(res, nombre, err) {
 }
 
 // GET /friends — mis amigos, por orden alfabético
-// Cada uno trae, si deja ver su biblioteca a sus amigos, cuántos juegos tiene y a qué está
-// jugando ahora (su juego "jugando" más reciente). Como ya somos amigos, la regla es
-// que su nivel sea 'amigos' o 'todos'.
+// Cada uno trae, si deja ver su biblioteca a sus amigos: cuántos juegos tiene, cuántos ha
+// completado, su nota media, cuántos juegos tenemos en común y a qué está jugando ahora (su
+// juego "jugando" más reciente, y desde cuándo). Como ya somos amigos, la regla es que su
+// nivel sea 'amigos' o 'todos'. `mutual` son los amigos que compartimos.
 async function listFriends(req, res) {
   try {
     const result = await pool.query(
       `SELECT ${PERSONA}, f.responded_at AS since,
+              s.n AS games_count, s.completed AS completed_count, s.avg_rating,
               CASE WHEN u.visibility_library IN ('amigos', 'todos')
-                   THEN (SELECT COUNT(*)::int FROM user_games c WHERE c.user_id = u.id) END AS games_count,
-              p.name AS playing_name, p.cover_url AS playing_cover
+                   THEN (SELECT COUNT(*)::int FROM user_games a
+                           JOIN user_games b ON b.igdb_id = a.igdb_id
+                          WHERE a.user_id = $1 AND b.user_id = u.id) END AS games_in_common,
+              ${amigosEnComun('$1', 'u.id')} AS mutual,
+              p.igdb_id AS playing_id, p.name AS playing_name, p.cover_url AS playing_cover,
+              p.updated_at AS playing_since
          FROM friendships f
          JOIN users u ON u.id = CASE WHEN f.requester_id = $1 THEN f.addressee_id ELSE f.requester_id END
          LEFT JOIN LATERAL (
-           SELECT g.name, g.cover_url FROM user_games g
+           SELECT COUNT(*)::int AS n,
+                  COUNT(*) FILTER (WHERE c.status = 'completado')::int AS completed,
+                  ROUND(AVG(c.rating)::numeric, 1)::float AS avg_rating
+             FROM user_games c
+            WHERE c.user_id = u.id AND u.visibility_library IN ('amigos', 'todos')
+         ) s ON u.visibility_library IN ('amigos', 'todos')
+         LEFT JOIN LATERAL (
+           SELECT g.igdb_id, g.name, g.cover_url, g.updated_at FROM user_games g
             WHERE g.user_id = u.id AND g.status = 'jugando'
               AND u.visibility_library IN ('amigos', 'todos')
             ORDER BY g.updated_at DESC LIMIT 1
@@ -53,9 +66,11 @@ async function listFriends(req, res) {
     );
 
     res.json({
-      friends: result.rows.map(({ playing_name, playing_cover, ...amigo }) => ({
+      friends: result.rows.map(({ playing_id, playing_name, playing_cover, playing_since, ...amigo }) => ({
         ...amigo,
-        playing: playing_name ? { name: playing_name, cover_url: playing_cover } : null,
+        playing: playing_name
+          ? { igdb_id: playing_id, name: playing_name, cover_url: playing_cover, since: playing_since }
+          : null,
       })),
     });
   } catch (err) {

@@ -99,3 +99,26 @@ test('contar solicitudes: una sola consulta que devuelve solo el número de las 
   assert.deepStrictEqual(ultimaConsulta.valores, [1]);
   assert.match(ultimaConsulta.sql, /addressee_id = \$1/);
 });
+
+test('logros de un juego ajeno: un id que no es un entero positivo es 404 y un idioma raro es 400, sin consultar', async () => {
+  consultas = 0;
+  for (const igdbId of ['abc', '-1', '0', '1.5', '', '1e3', undefined]) {
+    const r = await llamar(U.getUserGameAchievements, { params: { username: 'ana', igdbId } });
+    assert.strictEqual(r.codigo, 404, String(igdbId));
+  }
+  for (const lang of ['fr', '', ['es'], { a: 1 }]) {
+    const r = await llamar(U.getUserGameAchievements, { params: { username: 'ana', igdbId: '7346' }, query: { lang } });
+    assert.strictEqual(r.codigo, 400, JSON.stringify(lang));
+  }
+  assert.strictEqual(consultas, 0);
+});
+
+test('en común y logros con un nombre que no puede existir responden 404 sin consultar', async () => {
+  consultas = 0;
+  for (const username of ['ANA', 'a', 'an a', '../etc', 'x'.repeat(21)]) {
+    assert.strictEqual((await llamar(U.getCommon, { params: { username } })).codigo, 404, username);
+    const r = await llamar(U.getUserGameAchievements, { params: { username, igdbId: '7346' } });
+    assert.strictEqual(r.codigo, 404, username);
+  }
+  assert.strictEqual(consultas, 0);
+});

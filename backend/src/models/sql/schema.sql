@@ -233,6 +233,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(16)
 --  - visibility_library: los juegos de la biblioteca y sus estadísticas
 --  - visibility_reviews: el texto de las reseñas (aparte, porque es lo más personal)
 --  - visibility_friends: la lista de amigos
+--  - visibility_achievements: las horas jugadas y los logros de Steam de cada juego (solo se
+--    ven si también se ve la biblioteca)
 -- Y dos ajustes de contacto:
 --  - request_policy: quién puede enviarme solicitudes de amistad: 'todos',
 --    'amigos_de_amigos' (solo quien tiene algún amigo en común conmigo) o 'nadie'
@@ -251,6 +253,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_reviews VARCHAR(10) NOT NU
     CHECK (visibility_reviews IN ('nadie', 'amigos', 'todos'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_friends VARCHAR(10) NOT NULL DEFAULT 'amigos'
     CHECK (visibility_friends IN ('nadie', 'amigos', 'todos'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_achievements VARCHAR(10) NOT NULL DEFAULT 'amigos'
+    CHECK (visibility_achievements IN ('nadie', 'amigos', 'todos'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS request_policy VARCHAR(20) NOT NULL DEFAULT 'todos'
     CHECK (request_policy IN ('todos', 'amigos_de_amigos', 'nadie'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS searchable BOOLEAN NOT NULL DEFAULT TRUE;

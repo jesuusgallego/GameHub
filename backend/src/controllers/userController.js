@@ -3,6 +3,8 @@ const { USERNAME_REGEX } = require('../config/validacion');
 const { relacionEntre, puedeVer, datosPersonalesVisibles } = require('../services/privacidad');
 const { estadisticasDe } = require('../services/estadisticas');
 const { amigosDe, amigosEnComun, puedeSolicitar, sinBloqueos } = require('../services/amistades');
+const { ErrorSteam, getLogrosDetallados } = require('../services/steamService');
+const { IDIOMAS, IDIOMA_ORIGINAL } = require('../services/traduccionService');
 
 // Quien busca o mira un perfil: las consultas devuelven, de cada persona, cómo se
 // relaciona con quien pregunta ($1). Este trozo de SQL se repite en la búsqueda y en el
@@ -77,7 +79,8 @@ async function personaYRelacion(nombre, yo) {
             u.first_name, u.last_name, u.gender, u.location, u.country,
             EXTRACT(YEAR FROM age(u.birth_date))::int AS age,
             u.visibility_name, u.visibility_age, u.visibility_gender, u.visibility_location,
-            u.visibility_library, u.visibility_reviews, u.visibility_friends, u.request_policy,
+            u.visibility_library, u.visibility_reviews, u.visibility_friends, u.visibility_achievements,
+            u.request_policy,
             f.id AS friendship_id, f.status, f.requester_id,
             ${puedeSolicitar('$1', 'u.id', 'u.request_policy')} AS can_request,
             EXISTS (SELECT 1 FROM blocks WHERE blocker_id = $1 AND blocked_id = u.id) AS blocked_by_me,
@@ -145,6 +148,7 @@ async function getUserProfile(req, res) {
         library_level: u.visibility_library,
         friends_level: u.visibility_friends,
         reviews_visible: puedeVer(u.visibility_reviews, relation),
+        achievements_visible: verBiblioteca && puedeVer(u.visibility_achievements, relation),
         friends_count: nAmigos,
         mutual_friends: enComun,
         games_in_common: juegosEnComun,
@@ -212,23 +216,168 @@ async function getUserGames(req, res) {
     }
 
     const verResenas = puedeVer(u.visibility_reviews, relation);
+    const verLogros = puedeVer(u.visibility_achievements, relation);
 
+    // Las horas y los logros solo salen si esa persona los deja ver (visibility_achievements).
+    // Lo mío (my_*) es mío: sale siempre, para comparar.
     const result = await pool.query(
       `SELECT g.igdb_id, g.name, g.cover_url, g.status, g.rating, g.platform, g.updated_at,
               CASE WHEN $3 THEN g.review ELSE NULL END AS review,
               (g.review IS NOT NULL AND g.review <> '') AS has_review,
-              (m.id IS NOT NULL) AS in_common, m.status AS my_status, m.rating AS my_rating
+              CASE WHEN $4 THEN g.playtime_minutes END AS playtime_minutes,
+              CASE WHEN $4 THEN g.achievements_unlocked END AS achievements_unlocked,
+              CASE WHEN $4 THEN g.achievements_total END AS achievements_total,
+              (m.id IS NOT NULL) AS in_common, m.status AS my_status, m.rating AS my_rating,
+              m.playtime_minutes AS my_playtime_minutes,
+              m.achievements_unlocked AS my_achievements_unlocked,
+              m.achievements_total AS my_achievements_total
          FROM user_games g
          LEFT JOIN user_games m ON m.igdb_id = g.igdb_id AND m.user_id = $1 AND g.user_id <> $1
         WHERE g.user_id = $2
         ORDER BY g.updated_at DESC
         LIMIT 500`,
-      [yo, u.id, verResenas]
+      [yo, u.id, verResenas, verLogros]
     );
 
-    res.json({ games: result.rows, reviews_visible: verResenas });
+    res.json({ games: result.rows, reviews_visible: verResenas, achievements_visible: verLogros });
   } catch (err) {
     console.error('Error en getUserGames:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+// GET /users/:username/common — lo que tengo en común con otra persona: los juegos que
+// tenemos los dos (con el estado y la nota de cada uno) y los amigos que compartimos.
+//  - Los juegos solo salen si esa persona me deja ver su biblioteca (si no, `games` es null).
+//  - Los amigos en común salen siempre, salvo los que esconden su propia lista de amigos
+//    (igual que el contador del perfil: no se deduce una amistad de que aparezca aquí).
+async function getCommon(req, res) {
+  const yo = req.user.id;
+
+  try {
+    const { error, u, relation, bloqueadoPorMi } = await personaYRelacion(req.params.username, yo);
+
+    if (error || bloqueadoPorMi) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (relation === 'self') return res.status(400).json({ error: 'Es tu propio perfil' });
+
+    const verBiblioteca = puedeVer(u.visibility_library, relation);
+    const verLogros = verBiblioteca && puedeVer(u.visibility_achievements, relation);
+    const verResenas = verBiblioteca && puedeVer(u.visibility_reviews, relation);
+
+    const [juegos, amigos] = await Promise.all([
+      verBiblioteca
+        ? pool.query(
+          `SELECT t.igdb_id, t.name, t.cover_url,
+                  m.status AS my_status, m.rating AS my_rating,
+                  t.status AS their_status, t.rating AS their_rating,
+                  m.platform AS my_platform, t.platform AS their_platform,
+                  m.playtime_minutes AS my_playtime_minutes,
+                  m.achievements_unlocked AS my_achievements_unlocked,
+                  m.achievements_total AS my_achievements_total,
+                  CASE WHEN $3 THEN t.playtime_minutes END AS their_playtime_minutes,
+                  CASE WHEN $3 THEN t.achievements_unlocked END AS their_achievements_unlocked,
+                  CASE WHEN $3 THEN t.achievements_total END AS their_achievements_total,
+                  CASE WHEN $4 THEN t.review END AS their_review,
+                  (t.review IS NOT NULL AND t.review <> '') AS their_has_review
+             FROM user_games t
+             JOIN user_games m ON m.igdb_id = t.igdb_id AND m.user_id = $1
+            WHERE t.user_id = $2
+            ORDER BY t.name`,
+          [yo, u.id, verLogros, verResenas]
+        )
+        : null,
+      pool.query(
+        `SELECT u.username, (u.avatar IS NOT NULL) AS has_avatar, u.bio,
+                f.id AS friendship_id, f.status, f.requester_id,
+                COUNT(*) OVER ()::int AS total,
+                CASE WHEN u.visibility_library IN ('amigos', 'todos')
+                     THEN (SELECT COUNT(*)::int FROM user_games c WHERE c.user_id = u.id) END AS games_count
+           FROM users u
+           ${UNIR_AMISTAD}
+          WHERE u.id IN (${amigosDe('$1')}) AND u.id IN (${amigosDe('$2')})
+            AND u.visibility_friends <> 'nadie'
+            AND ${sinBloqueos('$1')}
+          ORDER BY u.username`,
+        [yo, u.id]
+      ),
+    ]);
+
+    res.json({
+      games: juegos ? juegos.rows : null,
+      achievements_visible: verLogros,
+      reviews_visible: verResenas,
+      friends: amigos.rows.map((p) => ({
+        username: p.username,
+        has_avatar: p.has_avatar,
+        bio: p.bio,
+        games_count: p.games_count,
+        relation: relacionEntre({ esYo: false, amistad: p.status ? p : null, yo }),
+        friendship_id: p.friendship_id,
+        can_request: true,
+      })),
+    });
+  } catch (err) {
+    console.error('Error en getCommon:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+// GET /users/:username/games/:igdbId/achievements?lang=es — los logros de Steam de un juego
+// de otra persona (los que ha conseguido y los que no), si me deja verlos.
+// Hay que poder ver su biblioteca Y sus logros (visibility_achievements). La lista se pide a
+// Steam con el SteamID de esa persona, igual que en mi propia ficha: no se guarda.
+async function getUserGameAchievements(req, res) {
+  const yo = req.user.id;
+
+  // El id llega por la URL: solo dígitos, sin ceros delante y hasta 9 (cabe en un INTEGER).
+  // Number('1e3') daría 1000, por eso compruebo el texto y no el número.
+  const texto = req.params.igdbId;
+  if (typeof texto !== 'string' || !/^[1-9][0-9]{0,8}$/.test(texto)) {
+    return res.status(404).json({ error: 'Juego no encontrado' });
+  }
+  const igdbId = Number(texto);
+
+  const lang = req.query.lang ?? IDIOMA_ORIGINAL;
+  if (typeof lang !== 'string' || !IDIOMAS.includes(lang)) {
+    return res.status(400).json({ error: `lang debe ser uno de: ${IDIOMAS.join(', ')}` });
+  }
+
+  try {
+    const { error, u, relation, bloqueadoPorMi } = await personaYRelacion(req.params.username, yo);
+
+    if (error || bloqueadoPorMi) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (!puedeVer(u.visibility_library, relation) || !puedeVer(u.visibility_achievements, relation)) {
+      return res.status(403).json({ error: 'Esta persona no comparte sus logros contigo' });
+    }
+
+    const result = await pool.query(
+      `SELECT g.steam_appid, a.external_id
+         FROM user_games g
+         LEFT JOIN linked_accounts a ON a.user_id = g.user_id AND a.platform = 'steam'
+        WHERE g.user_id = $1 AND g.igdb_id = $2`,
+      [u.id, igdbId]
+    );
+
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Juego no encontrado' });
+
+    const { steam_appid: appid, external_id: steamId } = result.rows[0];
+    if (!appid || !steamId) {
+      return res.status(404).json({ error: 'Este juego no está vinculado con Steam' });
+    }
+
+    try {
+      res.json({ achievements: await getLogrosDetallados(steamId, appid, lang) });
+    } catch (err) {
+      if (!(err instanceof ErrorSteam)) throw err;
+      // Con "Detalles del juego" en privado, Steam no da los logros de esa cuenta. El mensaje
+      // del servicio habla en segunda persona ("tu perfil"): aquí el perfil es de otra persona.
+      if (err.status === 422) {
+        return res.status(422).json({ error: 'Esta persona tiene privados sus detalles de juego en Steam' });
+      }
+      res.status(err.status).json({ error: err.message });
+    }
+  } catch (err) {
+    console.error('Error en getUserGameAchievements:', err.response?.data || err.message);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
@@ -307,4 +456,6 @@ async function getAvatar(req, res) {
   }
 }
 
-module.exports = { searchUsers, getUserProfile, getUserGames, getUserFriends, getAvatar };
+module.exports = {
+  searchUsers, getUserProfile, getUserGames, getUserFriends, getCommon, getUserGameAchievements, getAvatar,
+};

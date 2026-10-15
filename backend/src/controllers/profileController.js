@@ -21,7 +21,8 @@ const AVATAR_MAX_CARACTERES = 200000;
 const COLUMNAS_PUBLICAS = `id, username, email, bio, avatar, created_at,
   first_name, last_name, birth_date, gender, location, country, phone,
   visibility_name, visibility_age, visibility_gender, visibility_location,
-  visibility_library, visibility_reviews, visibility_friends, request_policy, searchable,
+  visibility_library, visibility_reviews, visibility_friends, visibility_achievements,
+  request_policy, searchable,
   EXTRACT(YEAR FROM age(birth_date))::int AS age`;
 
 // Comparo la contraseña enviada con el hash guardado. Si la contraseña es

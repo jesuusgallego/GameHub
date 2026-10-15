@@ -40,7 +40,7 @@ const VISIBILIDADES = ['nadie', 'amigos', 'todos'];
 // Los ajustes de privacidad que llevan uno de esos niveles, uno por dato
 const CAMPOS_VISIBILIDAD = [
   'visibility_name', 'visibility_age', 'visibility_gender', 'visibility_location',
-  'visibility_library', 'visibility_reviews', 'visibility_friends',
+  'visibility_library', 'visibility_reviews', 'visibility_friends', 'visibility_achievements',
 ];
 
 // Quién puede enviarme solicitudes de amistad

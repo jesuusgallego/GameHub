@@ -43,11 +43,15 @@ const limitadorBusqueda = limitador({ ventanaMinutos: 5, maximo: 60 });
 // solicitudes a todo el que encuentre.
 const limitadorSolicitudes = limitador({ ventanaMinutos: 60, maximo: 30 });
 
+// Logros de un juego de otra persona: 40 cada 10 minutos por IP. Cada petición hace dos
+// consultas a Steam, y la clave de la app tiene un tope diario para todos los usuarios.
+const limitadorLogros = limitador({ ventanaMinutos: 10, maximo: 40 });
+
 // Tope general para todo lo demás. Es alto a propósito (un uso normal ni se acerca);
 // solo corta a quien automatiza peticiones sin parar.
 const limitadorGeneral = limitador({ ventanaMinutos: 15, maximo: 1000 });
 
 module.exports = {
   limitadorLogin, limitadorRegistro, limitadorPedirCodigo, limitadorUsarCodigo, limitadorGeneral,
-  limitadorBusqueda, limitadorSolicitudes,
+  limitadorBusqueda, limitadorSolicitudes, limitadorLogros,
 };
