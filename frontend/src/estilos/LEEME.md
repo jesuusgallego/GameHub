@@ -27,7 +27,7 @@ a su vez importa el resto de archivos con `@import`.
 | `cuentas-vinculadas.css` | Tarjeta de plataforma (Steam), botón `.btn--steam`, escena animada de conexión | `CuentaSteam`, `ConexionSteam` |
 | `perfil-movil.css` | Perfil en pantallas estrechas | `Perfil` y sus piezas |
 | `progreso-steam.css` | Horas y barra de logros de Steam, y la lista de logros de la ficha | `ProgresoSteam`, `LogrosSteam` |
-| `amigos.css` | Listas de personas, botones de la amistad, insignia de solicitudes y los botones del perfil de otra persona | `Amigos`, `ListaPersonas`, `AccionAmistad`, `PerfilPublico` |
+| `social.css` | Página Social (tarjetas de personas, actividad), perfil de otra persona (etiquetas, biblioteca ajena, avisos), insignia de solicitudes y la sección Privacidad del perfil (tabla, ajustes, interruptor) | `Social`, `TarjetaPersona`, `Actividad`, `Descubrir`, `PerfilPublico`, `BibliotecaAjena`, `PanelPrivacidad`, `Interruptor` |
 | `movil.css` | Ajustes generales para pantallas estrechas | varios |
 
 ## Reglas para trabajar aquí

@@ -417,16 +417,20 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | DELETE | `/games/:id` | Bearer token | Elimina un juego de tu biblioteca |
 | GET | `/profile` | Bearer token | Tus datos: usuario, email, bio, foto, fecha de alta y datos personales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, `country`, `phone`, y `age`, que se calcula con la fecha de nacimiento) |
 | GET | `/profile/stats` | Bearer token | Estadísticas de tu biblioteca (juegos por estado, nota media) y tus 5 juegos mejor valorados |
-| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) y/o los datos personales, todos opcionales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años), `gender` (`hombre`, `mujer` u `otro`), `country` (código ISO 3166-1 de dos letras en mayúsculas, de la lista de `config/paises.js`) y `phone` (internacional y válido: el servidor quita espacios, guiones y paréntesis, cambia un `00` inicial por `+` y lo comprueba con libphonenumber; se guarda como `+34600123456`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username`. 409 si el usuario ya existe |
+| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) los datos personales (todos opcionales) y la privacidad (`visibility_name`, `visibility_age`, `visibility_gender`, `visibility_location`, `visibility_library`, `visibility_reviews` y `visibility_friends`, cada una `nadie`/`amigos`/`todos`; `request_policy`: `todos`/`amigos_de_amigos`/`nadie`; `searchable`: booleano). Datos personales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años), `gender` (`hombre`, `mujer` u `otro`), `country` (código ISO 3166-1 de dos letras en mayúsculas, de la lista de `config/paises.js`) y `phone` (internacional y válido: el servidor quita espacios, guiones y paréntesis, cambia un `00` inicial por `+` y lo comprueba con libphonenumber; se guarda como `+34600123456`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username`. 409 si el usuario ya existe |
 | PATCH | `/profile/email` | Bearer token | Cambia el email (`email` + `current_password`). 403 si la contraseña es incorrecta |
 | PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`). Cierra todas las demás sesiones abiertas y devuelve un `token` nuevo para la actual |
 | DELETE | `/profile` | Bearer token | Borra tu cuenta y toda tu biblioteca (`password`) |
-| GET | `/users/search?q=` | Bearer token | Personas cuyo nombre empieza por `q` (2 a 20 caracteres, hasta 20 resultados), con su relación contigo. No salen tú, quien te ha bloqueado ni a quien has bloqueado. 60 búsquedas cada 5 minutos |
-| GET | `/users/:username` | Bearer token | El perfil de otra persona con solo lo que puedes ver (`personal` y `library` van `null` si no). 404 si no existe **o te ha bloqueado**; si la has bloqueado tú, solo lo mínimo con `relation: "bloqueado"` |
+| GET | `/users/search?q=` | Bearer token | Personas cuyo nombre empieza por `q` (2 a 20 caracteres, hasta 20 resultados), con su relación contigo, `can_request` y amigos en común. No salen tú, quien te ha bloqueado, a quien has bloqueado ni quien ha desactivado `searchable` (salvo sus amigos). 60 búsquedas cada 5 minutos |
+| GET | `/users/:username` | Bearer token | El perfil de otra persona con solo lo que puedes ver: `personal` solo lleva los datos permitidos, `library` va `null` si no, y trae amigos y juegos en común. 404 si no existe **o te ha bloqueado**; si la has bloqueado tú, solo lo mínimo con `relation: "bloqueado"` |
+| GET | `/users/:username/games` | Bearer token | Su biblioteca (hasta 500 juegos, con `in_common` y tu estado y nota) si te la deja ver; 403 si no. El texto de la reseña solo sale si `visibility_reviews` lo permite |
+| GET | `/users/:username/friends` | Bearer token | Su lista de amigos si te la deja ver (403 si no), con tu relación con cada uno |
 | GET | `/users/:username/avatar` | No | La foto como imagen (`ETag`, `Cache-Control: no-cache`). Sin sesión porque un `<img>` no puede mandar `Authorization` |
-| GET | `/friends` | Bearer token | Tus amigos |
+| GET | `/friends` | Bearer token | Tus amigos, con `playing` (su juego "jugando" más reciente) y `games_count` si comparten su biblioteca con amigos |
+| GET | `/friends/activity` | Bearer token | Los últimos 30 movimientos en la biblioteca de tus amigos (no cuenta lo importado de Steam sin tocar) |
+| GET | `/friends/suggestions` | Bearer token | Amigos de tus amigos, por número de amigos en común (hasta 12) |
 | GET | `/friends/requests` | Bearer token | Solicitudes: `received` y `sent` |
-| POST | `/friends/requests` | Bearer token | Envía una solicitud (`username`). Si esa persona ya te había enviado una, se acepta. 409 si ya sois amigos, ya la enviaste o la has bloqueado; 30 por hora |
+| POST | `/friends/requests` | Bearer token | Envía una solicitud (`username`). Si esa persona ya te había enviado una, se acepta. 409 si ya sois amigos, ya la enviaste o la has bloqueado; 403 si su `request_policy` no te deja; 30 por hora |
 | POST | `/friends/requests/:id/accept` | Bearer token | Acepta una solicitud recibida (solo quien la recibió) |
 | DELETE | `/friends/requests/:id` | Bearer token | Rechaza una recibida o cancela una enviada |
 | DELETE | `/friends/:username` | Bearer token | Deja de ser amigo |
@@ -472,10 +476,11 @@ dependencias extra. Cubren la lógica que no necesita navegador ni servidor:
 
 - **Backend:** lectura de logros de Steam (con Steam simulado), recuperación de contraseña
   (código y correo), validación de sesiones, validación del registro, inicio de sesión con
-  email o nombre de usuario, edición del perfil (datos personales), reglas de privacidad y
-  validación de las rutas de amigos.
+  email o nombre de usuario, edición del perfil (datos personales y privacidad), reglas de
+  privacidad y validación de las rutas sociales.
 - **Frontend:** búsqueda, filtros y orden de la biblioteca, traducción de géneros y modos de
-  IGDB, y reglas de validación (comprueba que coinciden con las del backend).
+  IGDB, reglas de validación y de privacidad (comprueban que coinciden con las del backend),
+  tiempo relativo, teléfonos y países, y que todos los textos que usa el código existan.
 - **Escritorio:** avisos de actualización, que el instalador incluya los archivos que carga
   `main.js` y la construcción de las notas de cada Release.
 
@@ -650,33 +655,52 @@ Epic se descartaron), por eso es la única que se puede vincular.
 - Al vincular Steam, `ConexionSteam.jsx` anima la conexión y avisa con `animationend` (no con
   temporizadores) cuando termina.
 
-### Amigos y perfiles públicos
+### Social y perfiles públicos
 
 - **Dónde está cada cosa.** Backend: `services/privacidad.js` (la regla de qué ve cada persona,
-  sin base de datos), `controllers/userController.js` (buscar, perfil público y foto) y
-  `controllers/friendController.js` (amistades, solicitudes y bloqueos). Frontend: `Amigos.jsx`
-  (la página, con las pestañas del perfil), `PerfilPublico.jsx`, `AccionAmistad.jsx` (los
-  botones según la relación; los usan el perfil de otra persona y todas las listas),
-  `ListaPersonas.jsx` y `BuscarPersonas.jsx`.
+  sin base de datos), `services/amistades.js` (trozos de SQL que se repiten: amigos de una
+  persona, amigos en común, si puede enviarle solicitud, sin bloqueos),
+  `controllers/userController.js` (buscar, perfil, biblioteca, amigos y foto de otra persona) y
+  `controllers/friendController.js` (amistades, solicitudes, bloqueos, actividad y
+  sugerencias). Frontend: `Social.jsx` (la página, con las pestañas del perfil),
+  `Actividad.jsx`, `Descubrir.jsx`, `RejillaPersonas.jsx` + `TarjetaPersona.jsx`,
+  `AccionAmistad.jsx` (los botones según la relación; los usan el perfil de otra persona y
+  todas las listas), `PerfilPublico.jsx` (con `BibliotecaAjena.jsx`, `AmigosAjenos.jsx` y
+  `AvisoPrivado.jsx`) y `PanelPrivacidad.jsx` (la pestaña *Perfil → Privacidad*).
 - **Relación.** Entre dos personas puede ser `self`, `amigos`, `enviada`, `recibida` o `ninguna`;
-  el bloqueo va aparte. Cada parte del perfil tiene un nivel (`nadie`, `amigos`, `todos`) y
-  `puedeVer(nivel, relacion)` decide. Ante un nivel que no conoce, no enseña.
+  el bloqueo va aparte. Cada dato tiene un nivel (`nadie`, `amigos`, `todos`) y
+  `puedeVer(nivel, relacion)` decide. Ante un nivel que no conoce, no enseña. Los datos
+  personales se deciden uno a uno (`datosPersonalesVisibles`): el que no se ve ni aparece en
+  el objeto, para que ni se sepa que está relleno.
 - **Qué no sale nunca de la API de otras personas:** email, teléfono y fecha de nacimiento
   (de la fecha solo se calcula la edad). Hay una prueba contra Postgres real que lo comprueba.
 - **Defensa en las consultas.** Cuando una persona te ha bloqueado, `GET /users/:username`,
   la búsqueda y las solicitudes responden como si no existiera (404): no revelan que tiene
   cuenta. La búsqueda usa `starts_with` y no `LIKE`, porque en un `LIKE` el guion bajo (que
   un nombre puede llevar) es un comodín.
+- **Lista de amigos y amigos en común.** Cada persona decide quién ve *su* lista. Un amigo en
+  común solo cuenta si ese amigo no tiene su lista en "nadie" (si no, se deduciría su amistad
+  con otra persona). Las sugerencias usan solo amigos que no esconden su lista.
+- **Actividad.** No hay tabla de eventos: salen de `user_games`. `updated_at` solo cambia cuando
+  la persona edita un juego (la sincronización de Steam no lo toca), así que sirve de reloj.
+  Un juego es un movimiento si lo añadió ella (`imported_from IS NULL`) o lo editó después de
+  importarlo; los que entran de golpe al importar Steam no cuentan.
+- **Privacidad en el cliente.** `privacidad.js` repite la regla `puedeVer` solo para pintar la
+  tabla "quién ve qué" con lo elegido; el servidor es el que manda y no envía lo que no se
+  puede ver. Una prueba comprueba que las dos coinciden en todas las combinaciones. Los
+  ajustes se guardan al cambiarlos (con actualización optimista: si el servidor lo rechaza,
+  vuelve al valor anterior).
 - **Fotos.** Las listas no llevan la foto dentro (hasta 200 KB en base64 cada una): llevan
   `has_avatar` y `Avatar.jsx` pide la imagen a `GET /users/:username/avatar`.
 - **Insignia de solicitudes.** `Layout.jsx` pide `/friends/requests` al entrar y en cada
   cambio de página y reparte el número con el contexto del `<Outlet />`. No hay actualización
   en directo: llega al navegar o recargar.
-- **Cómo se probó.** Las pruebas del repositorio (`privacidad.test.js`, `social.test.js`)
-  cubren la tabla de privacidad y las validaciones sin base de datos. La lógica con SQL
-  (solicitudes cruzadas, bloqueos, privacidad por relación, la búsqueda con `_`) se comprobó
-  contra un Postgres real en memoria (PGlite) con tres usuarios; si tocas esas consultas,
-  vuelve a comprobarlas contra una base de datos de verdad.
+- **Cómo se probó.** Las pruebas del repositorio (`privacidad.test.js`, `social.test.js` en
+  backend y `social.test.js` en frontend) cubren la tabla de privacidad, las validaciones y los
+  textos sin base de datos. La lógica con SQL (solicitudes cruzadas, bloqueos, privacidad por
+  dato, políticas, sugerencias, actividad, la búsqueda con `_`) se comprobó contra un Postgres
+  real en memoria (PGlite) con varios usuarios; si tocas esas consultas, vuelve a comprobarlas
+  contra una base de datos de verdad.
 
 ### Tarjetas de la biblioteca
 

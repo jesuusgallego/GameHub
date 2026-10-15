@@ -29,4 +29,25 @@ function puedeVer(nivel, relacion) {
   return false;
 }
 
-module.exports = { relacionEntre, puedeVer };
+// Los datos personales de una persona que `relacion` puede ver: cada uno con su propio nivel
+// (nombre y apellidos, edad, sexo, y localización con país). Los que no se ven no salen en
+// el objeto: ni como null, para que ni se sepa que están rellenos.
+//  - u: { first_name, last_name, age, gender, location, country, visibility_name, ... }
+function datosPersonalesVisibles(u, relacion) {
+  const datos = {};
+
+  if (puedeVer(u.visibility_name, relacion)) {
+    datos.first_name = u.first_name;
+    datos.last_name = u.last_name;
+  }
+  if (puedeVer(u.visibility_age, relacion)) datos.age = u.age;
+  if (puedeVer(u.visibility_gender, relacion)) datos.gender = u.gender;
+  if (puedeVer(u.visibility_location, relacion)) {
+    datos.location = u.location;
+    datos.country = u.country;
+  }
+
+  return datos;
+}
+
+module.exports = { relacionEntre, puedeVer, datosPersonalesVisibles };

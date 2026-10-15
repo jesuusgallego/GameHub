@@ -9,7 +9,7 @@ import Mensaje from './Mensaje'
 import { useIdioma } from './IdiomaContext'
 import Desplegable from './Desplegable'
 import {
-  usernameRegex, normalizarUsername, USERNAME_MAX, SEXOS, VISIBILIDADES, LIMITES_PERFIL, limitesFechaNacimiento,
+  usernameRegex, normalizarUsername, USERNAME_MAX, SEXOS, LIMITES_PERFIL, limitesFechaNacimiento,
 } from './validacion'
 import CampoTelefono from './CampoTelefono'
 import {
@@ -38,9 +38,6 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   const [sexo, setSexo] = useState(perfil.gender ?? "") // "" = sin indicar
   const [localizacion, setLocalizacion] = useState(perfil.location ?? "")
   const [pais, setPais] = useState(perfil.country ?? "") // código ISO ("ES") o "" = sin indicar
-  // Quién ve cada parte del perfil: "nadie", "amigos" o "todos"
-  const [visPersonal, setVisPersonal] = useState(perfil.visibility_personal ?? "nadie")
-  const [visBiblioteca, setVisBiblioteca] = useState(perfil.visibility_library ?? "amigos")
   // El teléfono se edita en dos partes: el prefijo (código del país, "ES") y el número
   const [telefono, setTelefono] = useState(() => {
     const { pais: prefijo, numero } = descomponerTelefono(perfil.phone, perfil.country)
@@ -83,7 +80,6 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
     () => [{ valor: "", etiqueta: t('editarPerfil.paisSinIndicar') }, ...opcionesPaises(idioma)],
     [idioma, t]
   )
-  const opcionesVisibilidad = VISIBILIDADES.map((valor) => ({ valor, etiqueta: t(`privacidad.${valor}`) }))
   const opcionesSexo = [
     { valor: "", etiqueta: t('sexo.sinIndicar') },
     ...SEXOS.map((valor) => ({ valor, etiqueta: t(`sexo.${valor}`) })),
@@ -101,8 +97,6 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   if (sexo !== (perfil.gender ?? "")) cambios.gender = sexo || null
   if (localizacion.trim() !== (perfil.location ?? "")) cambios.location = localizacion.trim() || null
   if (pais !== (perfil.country ?? "")) cambios.country = pais || null
-  if (visPersonal !== perfil.visibility_personal) cambios.visibility_personal = visPersonal
-  if (visBiblioteca !== perfil.visibility_library) cambios.visibility_library = visBiblioteca
   // Comparo y envío el teléfono ya compuesto en formato internacional (el servidor lo
   // guarda así): si no, "600 12 34 56" frente a "+34600123456" parecería un cambio
   // pendiente para siempre
@@ -377,20 +371,6 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
         preferido={pais}
         onChange={setTelefono}
       />
-
-      <h2 className="subtitulo-formulario">{t('privacidad.titulo')}</h2>
-      <p className="ayuda-formulario">{t('privacidad.ayuda')}</p>
-
-      <div className="formulario__pareja">
-        <label className="campo">
-          <span>{t('privacidad.personal')}</span>
-          <Desplegable opciones={opcionesVisibilidad} valor={visPersonal} onChange={setVisPersonal} />
-        </label>
-        <label className="campo">
-          <span>{t('privacidad.biblioteca')}</span>
-          <Desplegable opciones={opcionesVisibilidad} valor={visBiblioteca} onChange={setVisBiblioteca} />
-        </label>
-      </div>
 
       <Mensaje texto={error} />
       <Mensaje tipo="ok" texto={guardado && !hayCambios ? t('editarPerfil.actualizado') : ""} />

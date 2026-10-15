@@ -1,7 +1,8 @@
 const pool = require('../config/db');
 const { USERNAME_REGEX } = require('../config/validacion');
-const { relacionEntre, puedeVer } = require('../services/privacidad');
+const { relacionEntre, puedeVer, datosPersonalesVisibles } = require('../services/privacidad');
 const { estadisticasDe } = require('../services/estadisticas');
+const { amigosDe, amigosEnComun, puedeSolicitar, sinBloqueos } = require('../services/amistades');
 
 // Quien busca o mira un perfil: las consultas devuelven, de cada persona, cómo se
 // relaciona con quien pregunta ($1). Este trozo de SQL se repite en la búsqueda y en el
@@ -11,10 +12,13 @@ const UNIR_AMISTAD = `
     ON (f.requester_id = $1 AND f.addressee_id = u.id)
     OR (f.requester_id = u.id AND f.addressee_id = $1)`;
 
+
+
 // GET /users/search?q=ana — personas cuyo nombre de usuario empieza por `q`
 // Solo busco por el comienzo del nombre (no "contiene"): así no se puede recorrer a toda
 // la gente con una letra suelta, y q tiene que tener al menos 2 caracteres. No salen ni
-// yo mismo, ni quien me ha bloqueado, ni a quien yo he bloqueado (esos están en su lista).
+// yo mismo, ni quien me ha bloqueado, ni a quien yo he bloqueado (esos están en su lista),
+// ni quien ha elegido no aparecer en las búsquedas (a no ser que ya sea mi amigo).
 async function searchUsers(req, res) {
   const q = typeof req.query.q === 'string' ? req.query.q.trim().toLowerCase() : '';
 
@@ -29,16 +33,15 @@ async function searchUsers(req, res) {
     // usuario puede llevarlo
     const result = await pool.query(
       `SELECT u.username, (u.avatar IS NOT NULL) AS has_avatar, u.bio,
-              f.id AS friendship_id, f.status, f.requester_id
+              f.id AS friendship_id, f.status, f.requester_id,
+              ${puedeSolicitar('$1', 'u.id', 'u.request_policy')} AS can_request,
+              ${amigosEnComun('$1', 'u.id')} AS mutual
          FROM users u
          ${UNIR_AMISTAD}
         WHERE starts_with(u.username, $2)
           AND u.id <> $1
-          AND NOT EXISTS (
-            SELECT 1 FROM blocks b
-             WHERE (b.blocker_id = u.id AND b.blocked_id = $1)
-                OR (b.blocker_id = $1 AND b.blocked_id = u.id)
-          )
+          AND (u.searchable OR f.status = 'aceptada')
+          AND ${sinBloqueos('$1')}
         ORDER BY u.username
         LIMIT 20`,
       [yo, q]
@@ -51,6 +54,8 @@ async function searchUsers(req, res) {
         bio: u.bio,
         relation: relacionEntre({ esYo: false, amistad: u.status ? u : null, yo }),
         friendship_id: u.friendship_id,
+        can_request: u.can_request,
+        mutual: u.mutual,
       })),
     });
   } catch (err) {
@@ -59,65 +64,72 @@ async function searchUsers(req, res) {
   }
 }
 
+// Busca a una persona por su nombre y calcula cómo se relaciona con quien pregunta.
+// Lo usan el perfil, su biblioteca y su lista de amigos, que empiezan igual. Devuelve:
+//  - { error: 404 } si no existe o si ella me ha bloqueado (para mí no existe)
+//  - { u, relation, bloqueadoPorMi } en el resto de casos
+async function personaYRelacion(nombre, yo) {
+  // Un nombre que no cumple la regla no puede existir: ni lo busco
+  if (!USERNAME_REGEX.test(nombre)) return { error: 404 };
+
+  const result = await pool.query(
+    `SELECT u.id, u.username, u.bio, u.created_at, (u.avatar IS NOT NULL) AS has_avatar,
+            u.first_name, u.last_name, u.gender, u.location, u.country,
+            EXTRACT(YEAR FROM age(u.birth_date))::int AS age,
+            u.visibility_name, u.visibility_age, u.visibility_gender, u.visibility_location,
+            u.visibility_library, u.visibility_reviews, u.visibility_friends, u.request_policy,
+            f.id AS friendship_id, f.status, f.requester_id,
+            ${puedeSolicitar('$1', 'u.id', 'u.request_policy')} AS can_request,
+            EXISTS (SELECT 1 FROM blocks WHERE blocker_id = $1 AND blocked_id = u.id) AS blocked_by_me,
+            EXISTS (SELECT 1 FROM blocks WHERE blocker_id = u.id AND blocked_id = $1) AS blocked_me
+       FROM users u
+       ${UNIR_AMISTAD}
+      WHERE u.username = $2`,
+    [yo, nombre]
+  );
+
+  const u = result.rows[0];
+  if (!u || u.blocked_me) return { error: 404 };
+
+  return {
+    u,
+    bloqueadoPorMi: u.blocked_by_me,
+    relation: relacionEntre({ esYo: u.id === yo, amistad: u.status ? u : null, yo }),
+  };
+}
+
 // GET /users/:username — el perfil de otra persona, con solo lo que yo puedo ver
 //  - Nombre de usuario, foto y bio: los ve cualquiera con sesión.
-//  - Datos personales y biblioteca: según lo que haya elegido esa persona (ver
-//    services/privacidad.js). El teléfono, la fecha de nacimiento y el email no salen NUNCA.
+//  - Cada dato personal, la biblioteca, las reseñas y la lista de amigos: según lo que haya
+//    elegido esa persona (ver services/privacidad.js). El teléfono, la fecha de nacimiento
+//    y el email no salen NUNCA.
 //  - Si esa persona me ha bloqueado, respondo como si no existiera (404): así no sé ni
 //    que tiene cuenta. Si la he bloqueado yo, solo enseño lo mínimo para poder desbloquearla.
 async function getUserProfile(req, res) {
-  const nombre = req.params.username;
-
-  // Un nombre que no cumple la regla no puede existir: ni lo busco
-  if (!USERNAME_REGEX.test(nombre)) {
-    return res.status(404).json({ error: 'Usuario no encontrado' });
-  }
-
   const yo = req.user.id;
 
   try {
-    const result = await pool.query(
-      `SELECT u.id, u.username, u.bio, u.created_at, (u.avatar IS NOT NULL) AS has_avatar,
-              u.first_name, u.last_name, u.gender, u.location, u.country,
-              EXTRACT(YEAR FROM age(u.birth_date))::int AS age,
-              u.visibility_personal, u.visibility_library,
-              f.id AS friendship_id, f.status, f.requester_id,
-              EXISTS (SELECT 1 FROM blocks WHERE blocker_id = $1 AND blocked_id = u.id) AS blocked_by_me,
-              EXISTS (SELECT 1 FROM blocks WHERE blocker_id = u.id AND blocked_id = $1) AS blocked_me
-         FROM users u
-         ${UNIR_AMISTAD}
-        WHERE u.username = $2`,
-      [yo, nombre]
-    );
+    const { error, u, relation, bloqueadoPorMi } = await personaYRelacion(req.params.username, yo);
 
-    const u = result.rows[0];
+    if (error) return res.status(error).json({ error: 'Usuario no encontrado' });
 
-    if (!u || u.blocked_me) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
-
-    if (u.blocked_by_me) {
+    if (bloqueadoPorMi) {
       return res.json({
-        user: { username: u.username, has_avatar: u.has_avatar, relation: 'bloqueado', personal: null, library: null },
+        user: { username: u.username, has_avatar: u.has_avatar, relation: 'bloqueado', personal: {}, library: null },
       });
     }
 
-    const relation = relacionEntre({ esYo: u.id === yo, amistad: u.status ? u : null, yo });
+    const verBiblioteca = puedeVer(u.visibility_library, relation);
+    const verAmigos = puedeVer(u.visibility_friends, relation);
+    const esYo = relation === 'self';
 
-    // Solo mando lo que se puede ver; lo demás va como null y el cliente sabe por
-    // `*_level` cuál es la razón ("solo con sus amigos", "es privada")
-    const personal = puedeVer(u.visibility_personal, relation)
-      ? {
-          first_name: u.first_name,
-          last_name: u.last_name,
-          age: u.age,
-          gender: u.gender,
-          location: u.location,
-          country: u.country,
-        }
-      : null;
-
-    const library = puedeVer(u.visibility_library, relation) ? await estadisticasDe(u.id) : null;
+    // Lo que depende de la relación con quien mira se calcula solo si hay algo que contar
+    const [biblioteca, enComun, juegosEnComun, nAmigos] = await Promise.all([
+      verBiblioteca ? estadisticasDe(u.id) : null,
+      esYo ? null : amigosEnComunDe(yo, u.id),
+      !esYo && verBiblioteca ? juegosEnComunCon(yo, u.id) : null,
+      verAmigos ? contarAmigos(u.id, yo) : null,
+    ]);
 
     res.json({
       user: {
@@ -127,14 +139,141 @@ async function getUserProfile(req, res) {
         created_at: u.created_at,
         relation,
         friendship_id: u.friendship_id,
-        personal,
-        personal_level: u.visibility_personal,
-        library,
+        can_request: u.can_request,
+        personal: datosPersonalesVisibles(u, relation),
+        library: biblioteca,
         library_level: u.visibility_library,
+        friends_level: u.visibility_friends,
+        reviews_visible: puedeVer(u.visibility_reviews, relation),
+        friends_count: nAmigos,
+        mutual_friends: enComun,
+        games_in_common: juegosEnComun,
       },
     });
   } catch (err) {
     console.error('Error en getUserProfile:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+// Los amigos en común de dos personas, hasta 8 con su foto y el total. Solo cuentan los
+// que no esconden su lista de amigos (ver amigosEnComun en services/amistades.js).
+async function amigosEnComunDe(yo, otro) {
+  const result = await pool.query(
+    `SELECT m.username, (m.avatar IS NOT NULL) AS has_avatar, COUNT(*) OVER ()::int AS total
+       FROM users m
+      WHERE m.id IN (${amigosDe('$1')}) AND m.id IN (${amigosDe('$2')})
+        AND m.visibility_friends <> 'nadie'
+      ORDER BY m.username
+      LIMIT 8`,
+    [yo, otro]
+  );
+
+  return {
+    total: result.rows[0]?.total ?? 0,
+    people: result.rows.map(({ username, has_avatar }) => ({ username, has_avatar })),
+  };
+}
+
+// Cuántos juegos de su biblioteca tengo yo también (mismo igdb_id)
+async function juegosEnComunCon(yo, otro) {
+  const result = await pool.query(
+    `SELECT COUNT(*)::int AS n
+       FROM user_games a JOIN user_games b ON b.igdb_id = a.igdb_id
+      WHERE a.user_id = $1 AND b.user_id = $2`,
+    [yo, otro]
+  );
+  return result.rows[0].n;
+}
+
+// Cuántos amigos tiene una persona, sin contar a quien me ha bloqueado ni a quien he
+// bloqueado yo (esos no los veré en su lista)
+async function contarAmigos(persona, yo) {
+  const result = await pool.query(
+    `SELECT COUNT(*)::int AS n FROM users u
+      WHERE u.id IN (${amigosDe('$1')}) AND ${sinBloqueos('$2')}`,
+    [persona, yo]
+  );
+  return result.rows[0].n;
+}
+
+// GET /users/:username/games — la biblioteca de otra persona, si me deja verla
+// Cada juego trae, si yo también lo tengo, mi estado y mi nota ("en común"): sirve para
+// compararnos. El texto de la reseña solo sale si esa persona deja ver sus reseñas.
+async function getUserGames(req, res) {
+  const yo = req.user.id;
+
+  try {
+    const { error, u, relation, bloqueadoPorMi } = await personaYRelacion(req.params.username, yo);
+
+    if (error || bloqueadoPorMi) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (!puedeVer(u.visibility_library, relation)) {
+      return res.status(403).json({ error: 'Esta persona no comparte su biblioteca contigo' });
+    }
+
+    const verResenas = puedeVer(u.visibility_reviews, relation);
+
+    const result = await pool.query(
+      `SELECT g.igdb_id, g.name, g.cover_url, g.status, g.rating, g.platform, g.updated_at,
+              CASE WHEN $3 THEN g.review ELSE NULL END AS review,
+              (g.review IS NOT NULL AND g.review <> '') AS has_review,
+              (m.id IS NOT NULL) AS in_common, m.status AS my_status, m.rating AS my_rating
+         FROM user_games g
+         LEFT JOIN user_games m ON m.igdb_id = g.igdb_id AND m.user_id = $1 AND g.user_id <> $1
+        WHERE g.user_id = $2
+        ORDER BY g.updated_at DESC
+        LIMIT 500`,
+      [yo, u.id, verResenas]
+    );
+
+    res.json({ games: result.rows, reviews_visible: verResenas });
+  } catch (err) {
+    console.error('Error en getUserGames:', err);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+// GET /users/:username/friends — la lista de amigos de otra persona, si me deja verla
+// Cada amigo sale con mi relación con él (para poder añadirle desde ahí). No salen quienes
+// me han bloqueado ni a quienes he bloqueado yo.
+async function getUserFriends(req, res) {
+  const yo = req.user.id;
+
+  try {
+    const { error, u, relation, bloqueadoPorMi } = await personaYRelacion(req.params.username, yo);
+
+    if (error || bloqueadoPorMi) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (!puedeVer(u.visibility_friends, relation)) {
+      return res.status(403).json({ error: 'Esta persona no comparte su lista de amigos contigo' });
+    }
+
+    const result = await pool.query(
+      `SELECT u.username, (u.avatar IS NOT NULL) AS has_avatar, u.bio,
+              f.id AS friendship_id, f.status, f.requester_id,
+              ${puedeSolicitar('$1', 'u.id', 'u.request_policy')} AS can_request,
+              (u.id = $1) AS is_me,
+              (u.id IN (${amigosDe('$1')})) AS mutual
+         FROM users u
+         ${UNIR_AMISTAD}
+        WHERE u.id IN (${amigosDe('$2')})
+          AND ${sinBloqueos('$1')}
+        ORDER BY u.username`,
+      [yo, u.id]
+    );
+
+    res.json({
+      friends: result.rows.map((p) => ({
+        username: p.username,
+        has_avatar: p.has_avatar,
+        bio: p.bio,
+        relation: relacionEntre({ esYo: p.is_me, amistad: p.status ? p : null, yo }),
+        friendship_id: p.friendship_id,
+        can_request: p.can_request,
+        mutual: p.mutual,
+      })),
+    });
+  } catch (err) {
+    console.error('Error en getUserFriends:', err);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
@@ -168,4 +307,4 @@ async function getAvatar(req, res) {
   }
 }
 
-module.exports = { searchUsers, getUserProfile, getAvatar };
+module.exports = { searchUsers, getUserProfile, getUserGames, getUserFriends, getAvatar };

@@ -1,14 +1,15 @@
 const pool = require('../config/db');
 const { USERNAME_REGEX } = require('../config/validacion');
+const { amigosDe, hayAmigosEnComun, sinBloqueos } = require('../services/amistades');
 
 // Una persona tal como la enseñan las listas
 const PERSONA = `u.username, (u.avatar IS NOT NULL) AS has_avatar, u.bio`;
 
-// Devuelve { id, username } del usuario con ese nombre, o null. Si el nombre no cumple
+// Devuelve { id, username, request_policy } del usuario con ese nombre, o null. Si el nombre no cumple
 // la regla ni consulto.
 async function buscarUsuario(nombre) {
   if (typeof nombre !== 'string' || !USERNAME_REGEX.test(nombre)) return null;
-  const result = await pool.query('SELECT id, username FROM users WHERE username = $1', [nombre]);
+  const result = await pool.query('SELECT id, username, request_policy FROM users WHERE username = $1', [nombre]);
   return result.rows[0] ?? null;
 }
 
@@ -28,19 +29,98 @@ function errorInterno(res, nombre, err) {
 }
 
 // GET /friends — mis amigos, por orden alfabético
+// Cada uno trae, si deja ver su biblioteca a sus amigos, cuántos juegos tiene y a qué está
+// jugando ahora (su juego "jugando" más reciente). Como ya somos amigos, la regla es
+// que su nivel sea 'amigos' o 'todos'.
 async function listFriends(req, res) {
   try {
     const result = await pool.query(
-      `SELECT ${PERSONA}, f.responded_at AS since
+      `SELECT ${PERSONA}, f.responded_at AS since,
+              CASE WHEN u.visibility_library IN ('amigos', 'todos')
+                   THEN (SELECT COUNT(*)::int FROM user_games c WHERE c.user_id = u.id) END AS games_count,
+              p.name AS playing_name, p.cover_url AS playing_cover
          FROM friendships f
          JOIN users u ON u.id = CASE WHEN f.requester_id = $1 THEN f.addressee_id ELSE f.requester_id END
+         LEFT JOIN LATERAL (
+           SELECT g.name, g.cover_url FROM user_games g
+            WHERE g.user_id = u.id AND g.status = 'jugando'
+              AND u.visibility_library IN ('amigos', 'todos')
+            ORDER BY g.updated_at DESC LIMIT 1
+         ) p ON TRUE
         WHERE f.status = 'aceptada' AND (f.requester_id = $1 OR f.addressee_id = $1)
         ORDER BY u.username`,
       [req.user.id]
     );
-    res.json({ friends: result.rows });
+
+    res.json({
+      friends: result.rows.map(({ playing_name, playing_cover, ...amigo }) => ({
+        ...amigo,
+        playing: playing_name ? { name: playing_name, cover_url: playing_cover } : null,
+      })),
+    });
   } catch (err) {
     errorInterno(res, 'listFriends', err);
+  }
+}
+
+// GET /friends/activity — lo último que han hecho mis amigos en su biblioteca
+// No hay una tabla de eventos: salen de los propios juegos. Un juego es un movimiento
+// cuando lo añadió la persona o lo editó después; los que entraron de golpe al importar
+// Steam no cuentan (serían cientos de "ha añadido..." de una vez). Solo salen amigos que
+// dejan ver su biblioteca.
+async function listActivity(req, res) {
+  try {
+    const result = await pool.query(
+      `SELECT u.username, (u.avatar IS NOT NULL) AS has_avatar,
+              g.igdb_id, g.name, g.cover_url, g.status, g.rating, g.updated_at,
+              (g.updated_at = g.created_at) AS added
+         FROM user_games g
+         JOIN users u ON u.id = g.user_id
+        WHERE u.id IN (${amigosDe('$1')})
+          AND u.visibility_library IN ('amigos', 'todos')
+          AND (g.imported_from IS NULL OR g.updated_at > g.created_at)
+        ORDER BY g.updated_at DESC
+        LIMIT 30`,
+      [req.user.id]
+    );
+    res.json({ activity: result.rows });
+  } catch (err) {
+    errorInterno(res, 'listActivity', err);
+  }
+}
+
+// GET /friends/suggestions — personas que quizá conozcas: amigos de mis amigos
+// Ordenadas por cuántos amigos tenemos en común. No salen: yo, mis amigos, quien ya tiene
+// una solicitud conmigo (en un sentido u otro), bloqueos, quien no quiere aparecer en las
+// búsquedas ni quien no acepta solicitudes. Y un amigo mío solo cuenta como "puente" si no
+// esconde su lista de amigos.
+async function listSuggestions(req, res) {
+  try {
+    const result = await pool.query(
+      `WITH mis(id) AS (${amigosDe('$1')})
+       SELECT u.username, (u.avatar IS NOT NULL) AS has_avatar, u.bio, COUNT(*)::int AS mutual
+         FROM mis
+         JOIN users x ON x.id = mis.id AND x.visibility_friends <> 'nadie'
+         JOIN friendships f ON f.status = 'aceptada' AND (f.requester_id = x.id OR f.addressee_id = x.id)
+         JOIN users u ON u.id = CASE WHEN f.requester_id = x.id THEN f.addressee_id ELSE f.requester_id END
+        WHERE u.id <> $1
+          AND u.id NOT IN (SELECT id FROM mis)
+          AND u.searchable
+          AND u.request_policy <> 'nadie'
+          AND NOT EXISTS (
+            SELECT 1 FROM friendships y
+             WHERE (y.requester_id = $1 AND y.addressee_id = u.id)
+                OR (y.requester_id = u.id AND y.addressee_id = $1)
+          )
+          AND ${sinBloqueos('$1')}
+        GROUP BY u.id
+        ORDER BY mutual DESC, u.username
+        LIMIT 12`,
+      [req.user.id]
+    );
+    res.json({ suggestions: result.rows });
+  } catch (err) {
+    errorInterno(res, 'listSuggestions', err);
   }
 }
 
@@ -98,6 +178,8 @@ async function sendRequest(req, res) {
     }
 
     const existente = await amistadEntre(yo, otro.id);
+    // (la política de solicitudes se mira más abajo: si esa persona ya me había pedido
+    // amistad a mí, da igual lo que tenga elegido: ya ha dicho que sí)
 
     if (existente) {
       if (existente.status === 'aceptada') {
@@ -113,6 +195,17 @@ async function sendRequest(req, res) {
         [existente.id]
       );
       return res.json({ relation: 'amigos', friendship_id: existente.id });
+    }
+
+    // Quién puede enviarme solicitudes: lo elige cada persona en su privacidad
+    if (otro.request_policy === 'nadie') {
+      return res.status(403).json({ error: 'Esta persona no acepta solicitudes de amistad' });
+    }
+    if (otro.request_policy === 'amigos_de_amigos') {
+      const comun = await pool.query(`SELECT ${hayAmigosEnComun('$1', '$2')} AS ok`, [yo, otro.id]);
+      if (!comun.rows[0].ok) {
+        return res.status(403).json({ error: 'Esta persona solo acepta solicitudes de amigos de sus amigos' });
+      }
     }
 
     const creada = await pool.query(
@@ -255,6 +348,6 @@ async function unblockUser(req, res) {
 }
 
 module.exports = {
-  listFriends, listRequests, sendRequest, acceptRequest, deleteRequest, removeFriend,
-  listBlocks, blockUser, unblockUser,
+  listFriends, listActivity, listSuggestions, listRequests, sendRequest, acceptRequest, deleteRequest,
+  removeFriend, listBlocks, blockUser, unblockUser,
 };

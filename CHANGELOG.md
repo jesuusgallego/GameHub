@@ -4,20 +4,35 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
-Amigos y perfiles públicos, inicio de sesión con nombre de usuario y datos personales.
+Social (amigos, actividad y perfiles públicos), privacidad por dato, inicio de sesión con
+nombre de usuario y datos personales.
 
 ### Añadido
-- **Amigos.** Nueva página *Amigos* con cuatro pestañas: tus amigos, las solicitudes
-  (recibidas y enviadas), buscar personas por el principio de su nombre de usuario y los
-  bloqueados. Las solicitudes pendientes salen como un número en la barra. Si dos personas se
-  envían solicitud a la vez, se aceptan solas.
-- **Perfil de otras personas** (`/usuarios/nombre`): el mismo banner que el tuyo, con los
-  botones de la amistad. Se ven siempre el nombre, la foto y la descripción; el resto
-  depende de lo que haya elegido cada persona.
-- **Privacidad del perfil** (en *Perfil → Editar perfil*): eliges quién ve tus datos
-  personales y quién ve tu biblioteca (solo yo, mis amigos o todo el mundo). Por defecto, los
-  datos personales no los ve nadie y la biblioteca solo los amigos. El email, el teléfono y la
-  fecha de nacimiento no los ve nadie, con ninguna opción.
+- **Social.** Una página nueva en la barra, con cinco pestañas:
+  - **Actividad:** quién está jugando a qué ahora mismo entre tus amigos y sus últimos
+    movimientos (juegos añadidos, empezados, completados o abandonados, con la nota y "hace 2
+    horas").
+  - **Amigos:** tus amigos en tarjetas, con a qué juegan y cuántos juegos tienen, y un filtro
+    por nombre.
+  - **Solicitudes:** las recibidas y las enviadas, con su número en la barra y en la pestaña.
+  - **Descubrir:** un buscador por el principio del nombre de usuario y, debajo, "personas que
+    quizá conozcas" (amigos de tus amigos, ordenadas por los amigos que tenéis en común).
+  - **Bloqueados.**
+  Si dos personas se envían solicitud a la vez, se aceptan solas.
+- **Perfil de otras personas** (`/usuarios/nombre`): el mismo banner que el tuyo y tres
+  pestañas: resumen, **biblioteca** (con filtros por estado y por "en común", y tu nota al lado
+  de la suya en los juegos que tenéis los dos) y **amigos**. Debajo del banner, los amigos y
+  juegos que tenéis en común.
+- **Privacidad**, una sección nueva del perfil (*Perfil → Privacidad*):
+  - Una tabla que enseña, en vivo, qué ve cada tipo de persona (tú, tus amigos, cualquiera)
+    con lo que tienes elegido.
+  - Un ajuste por dato (solo yo, mis amigos o todo el mundo): nombre y apellidos, edad, sexo,
+    localización y país, biblioteca, texto de las reseñas y lista de amigos.
+  - **Quién puede enviarte solicitudes:** cualquiera, amigos de mis amigos o nadie.
+  - **Aparecer en las búsquedas** (y en las sugerencias), con un interruptor.
+  Los cambios se guardan solos. Por defecto, los datos personales no los ve nadie y la
+  biblioteca, las reseñas y los amigos, solo los amigos. El email, el teléfono y la fecha de
+  nacimiento no los ve nadie, con ninguna opción.
 - **Bloquear** a una persona: deja de ser tu amiga, no puede ver tu perfil, encontrarte ni
   enviarte solicitudes (para ella, tu cuenta es como si no existiera).
 - **Inicio de sesión con email o con nombre de usuario.** El campo de la pantalla de entrada
@@ -48,16 +63,20 @@ Amigos y perfiles públicos, inicio de sesión con nombre de usuario y datos per
   de los títulos lo pasaba a mayúsculas).
 
 ### Interno
-- Nuevas rutas: `GET /users/search`, `GET /users/:username` y `GET /users/:username/avatar`;
-  `GET|POST /friends/requests`, `POST /friends/requests/:id/accept`, `DELETE
-  /friends/requests/:id`, `GET /friends`, `DELETE /friends/:username` y `GET|POST|DELETE
-  /friends/blocks`. Tablas nuevas `friendships` y `blocks`, y dos columnas de privacidad en
-  `users`. La regla de qué ve cada persona está en un solo sitio (`services/privacidad.js`) y
+- Nuevas rutas: `GET /users/search`, `GET /users/:username` (con `/games`, `/friends` y
+  `/avatar`); `GET|POST /friends/requests`, `POST /friends/requests/:id/accept`, `DELETE
+  /friends/requests/:id`, `GET /friends` (con `/activity` y `/suggestions`), `DELETE
+  /friends/:username` y `GET|POST|DELETE /friends/blocks`. Tablas nuevas `friendships` y
+  `blocks`, y nueve columnas de privacidad en `users` (una por dato, `request_policy` y
+  `searchable`). La regla de qué ve cada persona está en un solo sitio (`services/privacidad.js`) y
   tiene su prueba con toda la tabla.
 - Las fotos de las listas de personas no viajan dentro del JSON: la API devuelve `has_avatar`
   y la imagen se pide a `GET /users/:username/avatar` (público, con `ETag`).
-- Una prueba nueva comprueba que cada mensaje de error fijo del backend esté traducido en
-  `en.js`.
+- Dos pruebas nuevas vigilan los textos: que cada mensaje de error fijo del backend esté
+  traducido en `en.js` y que toda clave `t('...')` que usa el código exista en los dos
+  diccionarios.
+- Las reglas de privacidad del cliente (`privacidad.js`, para la tabla de quién ve qué) tienen
+  una prueba que comprueba que dan lo mismo que las del servidor en todas las combinaciones.
 - `POST /auth/login` recibe `identifier` (email o nombre). Sigue aceptando `email` para que las
   apps de escritorio ya instaladas puedan entrar. **Hay que desplegar el backend antes de
   publicar la app**: una interfaz nueva contra un servidor antiguo no entraría con el nombre.

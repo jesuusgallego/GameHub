@@ -15,7 +15,19 @@ const ICONOS = {
       <path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" />
     </>
   ),
-  // Pestañas de Amigos
+  privacidad: (
+    <>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </>
+  ),
+  biblioteca: (
+    <>
+      <path d="M4 5h4v14H4zM10 5h4v14h-4z" />
+      <path d="m16 6 4 1-3 12-4-1" />
+    </>
+  ),
+  // Pestañas de Social
   amigos: (
     <>
       <path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20" />
@@ -29,7 +41,12 @@ const ICONOS = {
       <path d="m4 7 8 6 8-6" />
     </>
   ),
-  buscar: (
+  actividad: (
+    <>
+      <path d="M3 12h4l3-8 4 16 3-8h4" />
+    </>
+  ),
+  descubrir: (
     <>
       <circle cx="11" cy="11" r="6.5" />
       <path d="m16 16 4.5 4.5" />

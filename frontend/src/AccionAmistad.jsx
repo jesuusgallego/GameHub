@@ -6,8 +6,8 @@ import { useIdioma } from './IdiomaContext'
 
 // Los botones que corresponden a la relación con una persona: añadir, aceptar, cancelar,
 // eliminar o desbloquear. Los usan el perfil de otra persona y todas las listas de Amigos.
-//  - persona: { username, relation, friendship_id }; relation es 'ninguna', 'enviada',
-//    'recibida', 'amigos' o 'bloqueado'
+//  - persona: { username, relation, friendship_id, can_request }; relation es 'ninguna',
+//    'enviada', 'recibida', 'amigos' o 'bloqueado'
 //  - onCambio(personaNueva): se llama al terminar con la relación ya actualizada
 //  - cerrarSesion(): para un 401 (sesión caducada)
 function AccionAmistad({ persona, onCambio, cerrarSesion }) {
@@ -42,7 +42,14 @@ function AccionAmistad({ persona, onCambio, cerrarSesion }) {
 
   switch (persona.relation) {
     case 'ninguna':
-      botones = (
+      // `can_request` false: esa persona no acepta solicitudes de gente como yo (ver su
+      // privacidad). El botón se queda desactivado y explicado, en lugar de dejar pulsar
+      // para recibir un error.
+      botones = persona.can_request === false ? (
+        <button type="button" className="btn btn--secundario" disabled title={t('amistad.noAcepta.ayuda')}>
+          {t('amistad.noAcepta')}
+        </button>
+      ) : (
         <button type="button" className="btn btn--primario" disabled={ocupado} onClick={anadir}>
           {t('amistad.anadir')}
         </button>

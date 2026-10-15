@@ -32,6 +32,15 @@ const MENSAJE_USERNAME =
 // el mismo CHECK. Lo que decide qué se enseña está en services/privacidad.js.
 const VISIBILIDADES = ['nadie', 'amigos', 'todos'];
 
+// Los ajustes de privacidad que llevan uno de esos niveles, uno por dato
+const CAMPOS_VISIBILIDAD = [
+  'visibility_name', 'visibility_age', 'visibility_gender', 'visibility_location',
+  'visibility_library', 'visibility_reviews', 'visibility_friends',
+];
+
+// Quién puede enviarme solicitudes de amistad
+const POLITICAS_SOLICITUD = ['todos', 'amigos_de_amigos', 'nadie'];
+
 // Opciones de "sexo". Sin elegir se guarda NULL. La base de datos tiene el mismo CHECK.
 const SEXOS = ['hombre', 'mujer', 'otro'];
 
@@ -45,6 +54,8 @@ const TEXTOS_PERFIL = {
 
 const MENSAJE_SEXO = 'El sexo no es válido';
 const MENSAJE_VISIBILIDAD = 'La opción de privacidad no es válida';
+const MENSAJE_POLITICA = 'La opción de solicitudes de amistad no es válida';
+const MENSAJE_BUSCABLE = 'La opción de búsqueda no es válida';
 const MENSAJE_PAIS = 'El país no es válido';
 const MENSAJE_TELEFONO =
   'El teléfono no es válido: escríbelo con el prefijo del país, por ejemplo +34 600 123 456';
@@ -133,7 +144,7 @@ module.exports = {
   EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, MENSAJE_PASSWORD_REGISTRO,
   USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
   SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, EDAD_MAX,
-  VISIBILIDADES, MENSAJE_VISIBILIDAD,
+  VISIBILIDADES, MENSAJE_VISIBILIDAD, CAMPOS_VISIBILIDAD, POLITICAS_SOLICITUD, MENSAJE_POLITICA, MENSAJE_BUSCABLE,
   PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO, TELEFONO_REGEX, normalizarTelefono,
   limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida,
 };

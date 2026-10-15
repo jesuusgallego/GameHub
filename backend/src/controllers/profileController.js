@@ -5,7 +5,7 @@ const { estadisticasDe } = require('../services/estadisticas');
 const {
   EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
   SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO,
-  VISIBILIDADES, MENSAJE_VISIBILIDAD,
+  VISIBILIDADES, MENSAJE_VISIBILIDAD, CAMPOS_VISIBILIDAD, POLITICAS_SOLICITUD, MENSAJE_POLITICA, MENSAJE_BUSCABLE,
   limpiarTextoPerfil, limpiarTelefono, fechaNacimientoValida,
 } = require('../config/validacion');
 
@@ -19,7 +19,8 @@ const AVATAR_MAX_CARACTERES = 200000;
 // más que a su dueño: hoy GET /profile solo devuelve el perfil propio.
 const COLUMNAS_PUBLICAS = `id, username, email, bio, avatar, created_at,
   first_name, last_name, birth_date, gender, location, country, phone,
-  visibility_personal, visibility_library,
+  visibility_name, visibility_age, visibility_gender, visibility_location,
+  visibility_library, visibility_reviews, visibility_friends, request_policy, searchable,
   EXTRACT(YEAR FROM age(birth_date))::int AS age`;
 
 // Comparo la contraseña enviada con el hash guardado. Si la contraseña es
@@ -160,13 +161,28 @@ async function updateProfile(req, res) {
     cambios.phone = limpio;
   }
 
-  // Quién ve cada parte del perfil. No pueden ser null: siempre hay una opción elegida
-  for (const campo of ['visibility_personal', 'visibility_library']) {
+  // Quién ve cada dato. No pueden ser null: siempre hay una opción elegida
+  for (const campo of CAMPOS_VISIBILIDAD) {
     if (!has(campo)) continue;
     if (!VISIBILIDADES.includes(req.body[campo])) {
       return res.status(400).json({ error: MENSAJE_VISIBILIDAD });
     }
     cambios[campo] = req.body[campo];
+  }
+
+  if (has('request_policy')) {
+    if (!POLITICAS_SOLICITUD.includes(req.body.request_policy)) {
+      return res.status(400).json({ error: MENSAJE_POLITICA });
+    }
+    cambios.request_policy = req.body.request_policy;
+  }
+
+  // Tiene que ser un booleano de verdad: "false" o 0 no valen
+  if (has('searchable')) {
+    if (typeof req.body.searchable !== 'boolean') {
+      return res.status(400).json({ error: MENSAJE_BUSCABLE });
+    }
+    cambios.searchable = req.body.searchable;
   }
 
   try {

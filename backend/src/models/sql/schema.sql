@@ -237,15 +237,56 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(2)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(16)
     CHECK (phone ~ '^\+[1-9][0-9]{6,14}$');
 
--- Privacidad del perfil: quién puede ver cada parte. 'nadie' (solo yo), 'amigos' o
--- 'todos' (cualquiera con sesión iniciada). Los datos personales (nombre, edad, sexo,
--- localización y país) empiezan en 'nadie': nadie los comparte sin haberlo decidido. La
--- biblioteca empieza en 'amigos'. El teléfono y la fecha de nacimiento no se enseñan
--- nunca, con ninguna de las opciones. Nombre de usuario, foto y bio son siempre públicos.
-ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_personal VARCHAR(10) NOT NULL DEFAULT 'nadie'
-    CHECK (visibility_personal IN ('nadie', 'amigos', 'todos'));
+-- Privacidad del perfil. Cada dato tiene su propio nivel: 'nadie' (solo yo), 'amigos' o
+-- 'todos' (cualquiera con sesión iniciada). Los datos personales (nombre, edad, sexo y
+-- localización) empiezan en 'nadie': nadie los comparte sin haberlo decidido. La biblioteca,
+-- las reseñas y la lista de amigos empiezan en 'amigos'. El email, el teléfono y la fecha de
+-- nacimiento no se enseñan nunca, con ninguna opción. Nombre de usuario, foto y bio son
+-- siempre públicos.
+--  - visibility_name: nombre y apellidos      - visibility_age: la edad
+--  - visibility_gender: el sexo               - visibility_location: localización y país
+--  - visibility_library: los juegos de la biblioteca y sus estadísticas
+--  - visibility_reviews: el texto de las reseñas (aparte, porque es lo más personal)
+--  - visibility_friends: la lista de amigos
+-- Y dos ajustes de contacto:
+--  - request_policy: quién puede enviarme solicitudes de amistad: 'todos',
+--    'amigos_de_amigos' (solo quien tiene algún amigo en común conmigo) o 'nadie'
+--  - searchable: si aparezco en las búsquedas de personas (y en las sugerencias)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_name VARCHAR(10) NOT NULL DEFAULT 'nadie'
+    CHECK (visibility_name IN ('nadie', 'amigos', 'todos'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_age VARCHAR(10) NOT NULL DEFAULT 'nadie'
+    CHECK (visibility_age IN ('nadie', 'amigos', 'todos'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_gender VARCHAR(10) NOT NULL DEFAULT 'nadie'
+    CHECK (visibility_gender IN ('nadie', 'amigos', 'todos'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_location VARCHAR(10) NOT NULL DEFAULT 'nadie'
+    CHECK (visibility_location IN ('nadie', 'amigos', 'todos'));
 ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_library VARCHAR(10) NOT NULL DEFAULT 'amigos'
     CHECK (visibility_library IN ('nadie', 'amigos', 'todos'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_reviews VARCHAR(10) NOT NULL DEFAULT 'amigos'
+    CHECK (visibility_reviews IN ('nadie', 'amigos', 'todos'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS visibility_friends VARCHAR(10) NOT NULL DEFAULT 'amigos'
+    CHECK (visibility_friends IN ('nadie', 'amigos', 'todos'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS request_policy VARCHAR(20) NOT NULL DEFAULT 'todos'
+    CHECK (request_policy IN ('todos', 'amigos_de_amigos', 'nadie'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS searchable BOOLEAN NOT NULL DEFAULT TRUE;
+
+-- Una versión anterior tenía un único nivel para los datos personales (visibility_personal).
+-- Si la columna todavía existe, su valor pasa a los cuatro datos y se borra. Solo se ejecuta
+-- esa vez: después la columna ya no está.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_name = 'users' AND column_name = 'visibility_personal'
+  ) THEN
+    UPDATE users
+       SET visibility_name = visibility_personal,
+           visibility_age = visibility_personal,
+           visibility_gender = visibility_personal,
+           visibility_location = visibility_personal;
+    ALTER TABLE users DROP COLUMN visibility_personal;
+  END IF;
+END $$;
 
 -- Amistades y solicitudes. Una fila por pareja de personas, sin importar quién la pidió:
 --  - 'pendiente': requester_id envió la solicitud y addressee_id aún no ha respondido

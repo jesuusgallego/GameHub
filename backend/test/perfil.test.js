@@ -21,6 +21,7 @@ require.cache[rutaDb] = {
 const { updateProfile } = require('../src/controllers/profileController');
 const {
   MENSAJE_USERNAME, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, MENSAJE_PAIS, MENSAJE_TELEFONO, TEXTOS_PERFIL,
+  MENSAJE_VISIBILIDAD, MENSAJE_POLITICA, MENSAJE_BUSCABLE, CAMPOS_VISIBILIDAD,
 } = require('../src/config/validacion');
 
 beforeEach(() => { consultas.length = 0; filas = [{ id: 1, username: 'ana' }]; fallo = null; });
@@ -111,6 +112,43 @@ test('rechaza datos personales que no valen, sin consultar la base de datos', as
     assert.strictEqual(r.cuerpo.error, error, JSON.stringify(body));
   }
   assert.strictEqual(consultas.length, 0);
+});
+
+test('privacidad: cada dato con su nivel, la política de solicitudes y aparecer en búsquedas', async () => {
+  const r = await editar({
+    visibility_name: 'todos', visibility_age: 'amigos', visibility_gender: 'nadie',
+    request_policy: 'amigos_de_amigos', searchable: false,
+  });
+  assert.strictEqual(r.status, 200);
+  const { sql, params } = consultas[0];
+  assert.match(sql, /SET visibility_name = \$1, visibility_age = \$2, visibility_gender = \$3, request_policy = \$4, searchable = \$5 WHERE id = \$6/);
+  assert.deepStrictEqual(params, ['todos', 'amigos', 'nadie', 'amigos_de_amigos', false, 7]);
+});
+
+test('privacidad: rechaza niveles y políticas que no existen, sin consultar', async () => {
+  for (const campo of CAMPOS_VISIBILIDAD) {
+    for (const malo of ['publico', 'TODOS', '', null, 5, true]) {
+      const r = await editar({ [campo]: malo });
+      assert.strictEqual(r.status, 400, `${campo} = ${JSON.stringify(malo)}`);
+      assert.strictEqual(r.cuerpo.error, MENSAJE_VISIBILIDAD);
+    }
+  }
+  for (const malo of ['todo', '', null, 'AMIGOS_DE_AMIGOS', 1]) {
+    const r = await editar({ request_policy: malo });
+    assert.strictEqual(r.status, 400, JSON.stringify(malo));
+    assert.strictEqual(r.cuerpo.error, MENSAJE_POLITICA);
+  }
+  for (const malo of ['true', 'false', 0, 1, null, 'si']) {
+    const r = await editar({ searchable: malo });
+    assert.strictEqual(r.status, 400, JSON.stringify(malo));
+    assert.strictEqual(r.cuerpo.error, MENSAJE_BUSCABLE);
+  }
+  assert.strictEqual(consultas.length, 0);
+});
+
+test('el antiguo visibility_personal ya no existe: se ignora y no llega al SQL', async () => {
+  await editar({ visibility_personal: 'todos', first_name: 'Ana' });
+  assert.match(consultas[0].sql, /SET first_name = \$1 WHERE id = \$2/);
 });
 
 test('un campo que no existe se ignora y nunca llega al SQL', async () => {

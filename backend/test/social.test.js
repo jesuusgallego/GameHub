@@ -46,6 +46,8 @@ test('un perfil o una foto con un nombre que no puede existir responde 404 sin c
   consultas = 0;
   for (const username of ['ANA', 'a', 'an a', 'ana!', '../etc', 'x'.repeat(21)]) {
     assert.strictEqual((await llamar(U.getUserProfile, { params: { username } })).codigo, 404, username);
+    assert.strictEqual((await llamar(U.getUserGames, { params: { username } })).codigo, 404, username);
+    assert.strictEqual((await llamar(U.getUserFriends, { params: { username } })).codigo, 404, username);
     assert.strictEqual((await llamar(U.getAvatar, { params: { username } })).codigo, 404, username);
   }
   assert.strictEqual(consultas, 0);

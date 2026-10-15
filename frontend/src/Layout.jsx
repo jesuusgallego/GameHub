@@ -15,7 +15,7 @@ import { borrarToken } from './sesion'
 // useOutletContext(), que es el "props" de <Outlet />.
 //
 // Con las solicitudes de amistad pasa lo mismo: la barra enseña cuántas hay pendientes
-// (la insignia de "Amigos") y la página Amigos las cambia al aceptarlas o rechazarlas.
+// (la insignia de "Social") y la página Social las cambia al aceptarlas o rechazarlas.
 function Layout({ setToken }) {
   const [perfil, setPerfil] = useState(null)
   // Cuántas solicitudes de amistad me han enviado y aún no he respondido

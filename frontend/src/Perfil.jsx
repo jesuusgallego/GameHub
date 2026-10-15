@@ -6,6 +6,7 @@ import CabeceraPerfil from './CabeceraPerfil'
 import PestanasPerfil from './PestanasPerfil'
 import EstadisticasPerfil from './EstadisticasPerfil'
 import EditarPerfil from './EditarPerfil'
+import PanelPrivacidad from './PanelPrivacidad'
 import CuentaPerfil from './CuentaPerfil'
 import CuentasVinculadas from './CuentasVinculadas'
 import Mensaje from './Mensaje'
@@ -13,17 +14,17 @@ import { useCambioVista } from './useCambioVista'
 import { useIdioma } from './IdiomaContext'
 import { borrarToken, escribirToken } from './sesion'
 
-const PESTANAS = ['resumen', 'editar', 'cuentas', 'seguridad']
+const PESTANAS = ['resumen', 'editar', 'privacidad', 'cuentas', 'seguridad']
 
-// Página del perfil: un banner con los datos del usuario y, debajo, cuatro pestañas
-// (estadísticas, editar perfil, cuentas vinculadas y seguridad).
+// Página del perfil: un banner con los datos del usuario y, debajo, cinco pestañas
+// (estadísticas, editar perfil, privacidad, cuentas vinculadas y seguridad).
 //  - El perfil (nombre, foto...) llega de Layout, que lo comparte con la barra
 //    para que el avatar se actualice a la vez en los dos sitios.
 //  - Las estadísticas las pido aquí, cada vez que entro (y tras sincronizar Steam),
 //    para que estén al día.
 //  - La pestaña activa va en la URL (?tab=cuentas): sobrevive a recargar la página y
 //    se puede enlazar directamente.
-//  - Los cuatro paneles están siempre montados y solo se oculta el que no toca: así
+//  - Los paneles están siempre montados y solo se oculta el que no toca: así
 //    lo que se estaba escribiendo en "Editar perfil" no se pierde al cambiar de pestaña.
 function Perfil({ setToken }) {
   const { t } = useIdioma()
@@ -110,6 +111,12 @@ function Perfil({ setToken }) {
       etiqueta: t('perfil.editar'),
       ayuda: t('perfil.editarAyuda'),
       contenido: <EditarPerfil perfil={perfil} onGuardado={setPerfil} cerrarSesion={cerrarSesion} />,
+    },
+    {
+      id: 'privacidad',
+      etiqueta: t('perfil.privacidad'),
+      ayuda: t('perfil.privacidadAyuda'),
+      contenido: <PanelPrivacidad perfil={perfil} onGuardado={setPerfil} cerrarSesion={cerrarSesion} />,
     },
     {
       id: 'cuentas',

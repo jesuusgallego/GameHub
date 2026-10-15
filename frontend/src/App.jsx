@@ -4,7 +4,7 @@ import Login from './Login'
 import Biblioteca from './Biblioteca'
 import Buscar from './Buscar'
 import Perfil from './Perfil'
-import Amigos from './Amigos'
+import Social from './Social'
 import PerfilPublico from './PerfilPublico'
 import Layout from './Layout'
 import RutaProtegida from './RutaProtegida'
@@ -39,7 +39,7 @@ function App() {
           <Route path="/biblioteca" element={<Biblioteca setToken={setToken} />} />
           <Route path="/buscar" element={<Buscar setToken={setToken} />} />
           <Route path="/perfil" element={<Perfil setToken={setToken} />} />
-          <Route path="/amigos" element={<Amigos setToken={setToken} />} />
+          <Route path="/social" element={<Social setToken={setToken} />} />
           <Route path="/usuarios/:username" element={<PerfilPublico setToken={setToken} />} />
         </Route>
       </Routes>
