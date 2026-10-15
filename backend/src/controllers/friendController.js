@@ -145,6 +145,25 @@ async function listRequests(req, res) {
   }
 }
 
+// GET /friends/requests/count — cuántas solicitudes tengo sin responder. Es la consulta de
+// la insignia de la barra, que la interfaz repite cada minuto mientras se usa la app (ver
+// frontend/src/sondeo.js): por eso es solo un número, sin las personas ni sus fotos, y usa
+// el índice (addressee_id, status).
+async function countRequests(req, res) {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT(*)::int AS received
+         FROM friendships
+        WHERE addressee_id = $1 AND status = 'pendiente'`,
+      [req.user.id]
+    );
+
+    res.json({ received: result.rows[0].received });
+  } catch (err) {
+    errorInterno(res, 'countRequests', err);
+  }
+}
+
 // POST /friends/requests { username } — enviar una solicitud de amistad
 // Si esa persona ya me había enviado una, no hay nada que esperar: las dos quieren, y se
 // acepta en el acto.
@@ -348,6 +367,6 @@ async function unblockUser(req, res) {
 }
 
 module.exports = {
-  listFriends, listActivity, listSuggestions, listRequests, sendRequest, acceptRequest, deleteRequest,
+  listFriends, listActivity, listSuggestions, listRequests, countRequests, sendRequest, acceptRequest, deleteRequest,
   removeFriend, listBlocks, blockUser, unblockUser,
 };

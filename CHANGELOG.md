@@ -4,7 +4,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
+### Añadido
+- **Las solicitudes de amistad llegan sin recargar.** La insignia de **Social** en la barra se
+  actualiza sola cada minuto mientras usas la app. Se pausa con la pestaña oculta o tras cinco
+  minutos sin tocar nada, para no mantener despiertos el servidor y la base de datos gratuitos,
+  y consulta en el acto cuando vuelves.
+
 ### Interno
+- Nuevo `GET /friends/requests/count`, que devuelve solo el número de solicitudes recibidas.
+- `src/sondeo.js` en el frontend: sondeo reutilizable, con pruebas.
 - `npm run seed:demo` (en `backend/`): crea usuarios ficticios para probar la parte social, y
   `npm run seed:demo:borrar` los quita. Solo funciona contra una base de datos local.
 

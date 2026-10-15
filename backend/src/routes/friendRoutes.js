@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middleware/authMiddleware');
 const {
-  listFriends, listActivity, listSuggestions, listRequests, sendRequest, acceptRequest, deleteRequest,
+  listFriends, listActivity, listSuggestions, listRequests, countRequests, sendRequest, acceptRequest, deleteRequest,
   removeFriend, listBlocks, blockUser, unblockUser,
 } = require('../controllers/friendController');
 const { limitadorSolicitudes } = require('../middleware/limitadores');
@@ -15,6 +15,7 @@ router.get('/activity', listActivity);
 router.get('/suggestions', listSuggestions);
 
 router.get('/requests', listRequests);
+router.get('/requests/count', countRequests);
 router.post('/requests', limitadorSolicitudes, sendRequest);
 router.post('/requests/:id/accept', acceptRequest);
 router.delete('/requests/:id', deleteRequest);

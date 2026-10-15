@@ -433,6 +433,7 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | GET | `/friends/activity` | Bearer token | Los últimos 30 movimientos en la biblioteca de tus amigos (no cuenta lo importado de Steam sin tocar) |
 | GET | `/friends/suggestions` | Bearer token | Amigos de tus amigos, por número de amigos en común (hasta 12) |
 | GET | `/friends/requests` | Bearer token | Solicitudes: `received` y `sent` |
+| GET | `/friends/requests/count` | Bearer token | Solo el número de solicitudes recibidas (`{ received }`): es lo que consulta la insignia de la barra cada minuto |
 | POST | `/friends/requests` | Bearer token | Envía una solicitud (`username`). Si esa persona ya te había enviado una, se acepta. 409 si ya sois amigos, ya la enviaste o la has bloqueado; 403 si su `request_policy` no te deja; 30 por hora |
 | POST | `/friends/requests/:id/accept` | Bearer token | Acepta una solicitud recibida (solo quien la recibió) |
 | DELETE | `/friends/requests/:id` | Bearer token | Rechaza una recibida o cancela una enviada |
@@ -704,9 +705,15 @@ Epic se descartaron), por eso es la única que se puede vincular.
   vuelve al valor anterior).
 - **Fotos.** Las listas no llevan la foto dentro (hasta 200 KB en base64 cada una): llevan
   `has_avatar` y `Avatar.jsx` pide la imagen a `GET /users/:username/avatar`.
-- **Insignia de solicitudes.** `Layout.jsx` pide `/friends/requests` al entrar y en cada
-  cambio de página y reparte el número con el contexto del `<Outlet />`. No hay actualización
-  en directo: llega al navegar o recargar.
+- **Insignia de solicitudes (con sondeo).** `Layout.jsx` pide `/friends/requests/count` al
+  entrar y en cada cambio de página, y reparte el número con el contexto del `<Outlet />`.
+  Además lo repite cada minuto con `iniciarSondeo` (`src/sondeo.js`), que **solo corre
+  mientras se usa la app**: se para con la pestaña oculta o tras 5 minutos sin ratón, teclado
+  ni pantalla táctil, y consulta en el acto al volver. Es a propósito: cada consulta mantiene
+  despiertos Render y Neon (planes gratuitos), y una ventana olvidada no debe tenerlos
+  despiertos todo el día. No apila consultas si el servidor tarda, y tampoco enseña el aviso
+  de "servidor lento" (`avisoLento: false`). Se vuelve a pedir la lista completa solo al
+  navegar. Si algún día hay chat (1.4), este mismo módulo vale para sondear mensajes.
 - **Cómo se probó.** Las pruebas del repositorio (`privacidad.test.js`, `social.test.js` en
   backend y `social.test.js` en frontend) cubren la tabla de privacidad, las validaciones y los
   textos sin base de datos. La lógica con SQL (solicitudes cruzadas, bloqueos, privacidad por

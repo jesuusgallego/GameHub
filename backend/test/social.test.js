@@ -7,10 +7,18 @@ const assert = require('node:assert');
 process.env.JWT_SECRET = 'secreto-de-prueba-secreto-de-prueba';
 
 let consultas = 0;
+let ultimaConsulta = null; // { sql, valores } de la última consulta a la base de datos
+let filas = []; // lo que devuelve la base de datos simulada
 const rutaDb = require.resolve('../src/config/db');
 require.cache[rutaDb] = {
   id: rutaDb, filename: rutaDb, loaded: true,
-  exports: { query: async () => { consultas++; return { rows: [], rowCount: 0 }; } },
+  exports: {
+    query: async (sql, valores) => {
+      consultas++;
+      ultimaConsulta = { sql, valores };
+      return { rows: filas, rowCount: filas.length };
+    },
+  },
 };
 
 const U = require('../src/controllers/userController');
@@ -78,4 +86,16 @@ test('el id de una solicitud tiene que ser un entero positivo', async () => {
     assert.strictEqual((await llamar(F.deleteRequest, { params: { id } })).codigo, 404, String(id));
   }
   assert.strictEqual(consultas, 0);
+});
+
+test('contar solicitudes: una sola consulta que devuelve solo el número de las recibidas', async () => {
+  consultas = 0;
+  filas = [{ received: 3 }];
+  const r = await llamar(F.countRequests);
+  filas = [];
+  assert.strictEqual(r.codigo, 200);
+  assert.deepStrictEqual(r.cuerpo, { received: 3 });
+  assert.strictEqual(consultas, 1);
+  assert.deepStrictEqual(ultimaConsulta.valores, [1]);
+  assert.match(ultimaConsulta.sql, /addressee_id = \$1/);
 });

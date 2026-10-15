@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Menu from './Menu'
 import { apiFetch } from './api'
 import { borrarToken } from './sesion'
+import { iniciarSondeo } from './sondeo'
 
 // Estructura común de las páginas con sesión: barra arriba y contenido centrado.
 // <Outlet /> es donde React Router pinta la página hija (Biblioteca, Buscar o
@@ -23,18 +24,25 @@ function Layout({ setToken }) {
   const { pathname } = useLocation()
 
   // Pide el número de solicitudes recibidas. Si falla no hago nada: es solo un número
-  // en la barra, y el error (si lo hay) ya saldrá en la página Social.
+  // en la barra, y el error (si lo hay) ya saldrá en la página Social. Devuelve la
+  // promesa para que el sondeo sepa cuándo ha terminado, y avisoLento: false porque aquí
+  // un servidor que tarda en despertar no merece el aviso de "servidor lento".
   const refrescarSolicitudes = useCallback(() => {
-    apiFetch('/friends/requests')
-      .then((data) => setSolicitudes(data.received.length))
+    return apiFetch('/friends/requests/count', { avisoLento: false })
+      .then((data) => setSolicitudes(data.received))
       .catch(() => {})
   }, [])
 
   // Al entrar y cada vez que cambio de página: así llegan las solicitudes nuevas sin
-  // tener que recargar (no hay actualización en directo: es una consulta barata)
+  // esperar al sondeo
   useEffect(() => {
     refrescarSolicitudes()
   }, [pathname, refrescarSolicitudes])
+
+  // Y mientras estoy en una página, sondeo cada minuto. Solo corre si la pestaña se ve y
+  // hay actividad (ver sondeo.js): así una ventana olvidada no mantiene despiertos el
+  // servidor ni la base de datos gratuitos.
+  useEffect(() => iniciarSondeo(refrescarSolicitudes), [refrescarSolicitudes])
 
   useEffect(() => {
     let cancelado = false

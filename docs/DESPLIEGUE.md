@@ -150,6 +150,9 @@ instalador.
 - **No lo mantengas despierto con pings.** Parece buena idea, pero la sincronización de Steam
   consulta la base de datos cada pocos minutos: con el servidor siempre despierto, Neon no se
   suspendería y gastaría sus horas de cómputo gratuitas mucho antes de acabar el mes.
+  La app sí consulta cada minuto (la insignia de solicitudes), pero **solo mientras alguien la
+  usa**: se pausa con la pestaña oculta o tras 5 minutos sin actividad (`frontend/src/sondeo.js`).
+  Si lo subes a 30 s o quitas la pausa por inactividad, vuelves al problema de arriba.
 - **Sin servidor despierto, no hay sincronización automática de Steam en segundo plano.** Se
   sincroniza al abrir el perfil (y el servidor se despierta con esa petición).
 - **Steam:** una sola clave tiene un tope de **100.000 consultas al día para todos los
