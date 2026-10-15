@@ -866,6 +866,14 @@ Más detalle del instalador, el aviso de "editor desconocido" y la seguridad de 
   `frontend/src/validacion.js`.
 - **Un género nuevo de IGDB:** en `GENEROS` de `frontend/src/terminosIgdb.js` y sus claves en
   `es.js` y `en.js`.
+- **Probar la parte social con gente ficticia:** `cd backend && npm run seed:demo` crea 8
+  usuarios `demo_*` (correo `@demo.gamehub.test`, contraseña `Prueba1234`) con perfiles,
+  privacidad, amistades, un bloqueo y bibliotecas con juegos reales de IGDB; cada uno prueba un
+  caso distinto (ver la tabla del script, `backend/scripts/seed-demo.js`). Opciones:
+  `npm run seed:demo -- --solicitudes-a=tu_usuario` añade 2 solicitudes pendientes hacia tu
+  cuenta, y `npm run seed:demo:borrar` los borra con todo lo suyo. Solo se ejecuta contra una
+  base de datos local (se niega con `NODE_ENV=production` o un `DATABASE_URL` remoto) y es una
+  transacción: o crea todo o no cambia nada.
 - **Ver qué sirve la base de datos de producción:** desde el panel de Neon (consola SQL), no
   desde aquí. No hagas pruebas que escriban contra producción.
 

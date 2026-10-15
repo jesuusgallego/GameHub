@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Sin publicar]
 
+### Interno
+- `npm run seed:demo` (en `backend/`): crea usuarios ficticios para probar la parte social, y
+  `npm run seed:demo:borrar` los quita. Solo funciona contra una base de datos local.
+
 ## [1.2.0] - 2026-10-15
 
 Social: amigos, actividad y perfiles públicos con privacidad por dato. Inicio de sesión con
