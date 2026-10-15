@@ -17,7 +17,7 @@ function BandaEnComun({ comun, onVer }) {
 
   return (
     <button type="button" className={nada ? "banda-comun banda-comun--vacia" : "banda-comun"} onClick={onVer}>
-      <span className="banda-comun__titulo">{t('comun.banda')}</span>
+      <span className="estadisticas__subtitulo banda-comun__titulo">{t('comun.banda')}</span>
 
       {nada ? (
         <span className="banda-comun__nada">

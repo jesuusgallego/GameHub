@@ -10,7 +10,7 @@ function ParaJugarJuntos({ juegos, onAbrir }) {
 
   return (
     <section className="lateral__bloque" aria-labelledby="juntos-titulo">
-      <h3 id="juntos-titulo" className="lateral__titulo">{t('social.juntos')}</h3>
+      <h3 id="juntos-titulo" className="titulo-seccion lateral__titulo">{t('social.juntos')}</h3>
       <p className="lateral__ayuda">{t('social.juntosAyuda')}</p>
 
       {juegos.length === 0 ? (

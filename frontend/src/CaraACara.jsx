@@ -19,7 +19,7 @@ function CaraACara({ yo, otro, misStats, susStats }) {
 
   return (
     <section className="cara" style={estiloTono(otro.username)} aria-labelledby="cara-titulo">
-      <h3 id="cara-titulo" className="sala-titulo">{t('cara.titulo')}</h3>
+      <h3 id="cara-titulo" className="titulo-seccion sala-titulo">{t('cara.titulo')}</h3>
 
       <div className="cara__nombres">
         <span className="cara__jugador cara__jugador--yo">

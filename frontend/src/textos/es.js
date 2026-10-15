@@ -418,7 +418,6 @@ export default {
   'stats.vacioOtro': 'Todavía no tiene juegos en su biblioteca.',
 
   // ---- Social: la sala, los carnets y el perfil de un amigo ----
-  'social.sobretitulo': 'Tu sala',
   'social.tramo.hoy': 'Hoy',
   'social.tramo.ayer': 'Ayer',
   'social.tramo.semana': 'Esta semana',

@@ -417,7 +417,6 @@ export default {
   'stats.vacioOtro': 'They have no games in their library yet.',
 
   // ---- Social: the lobby, player cards and a friend's profile ----
-  'social.sobretitulo': 'Your lobby',
   'social.tramo.hoy': 'Today',
   'social.tramo.ayer': 'Yesterday',
   'social.tramo.semana': 'This week',

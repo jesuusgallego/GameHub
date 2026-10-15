@@ -22,7 +22,7 @@ function LateralSala({ recibidas, sugerencias, juegos, onAbrirJuego, onCambio, c
     <aside className="lateral" aria-label={t('social.lateral')}>
       {recibidas.length > 0 && (
         <section className="lateral__bloque lateral__bloque--invitacion" aria-labelledby="invitacion-titulo">
-          <h3 id="invitacion-titulo" className="lateral__titulo">{t('social.invitaciones')}</h3>
+          <h3 id="invitacion-titulo" className="titulo-seccion lateral__titulo">{t('social.invitaciones')}</h3>
           <ul className="gente">
             {recibidas.slice(0, 3).map((p) => (
               <li key={p.username} className="gente__persona" style={estiloTono(p.username)}>
@@ -46,7 +46,7 @@ function LateralSala({ recibidas, sugerencias, juegos, onAbrirJuego, onCambio, c
 
       {sugerencias.length > 0 && (
         <section className="lateral__bloque" aria-labelledby="conozcas-titulo">
-          <h3 id="conozcas-titulo" className="lateral__titulo">{t('social.sugerencias')}</h3>
+          <h3 id="conozcas-titulo" className="titulo-seccion lateral__titulo">{t('social.sugerencias')}</h3>
           <p className="lateral__ayuda">{t('social.sugerenciasAyuda')}</p>
           <ul className="gente">
             {sugerencias.slice(0, 3).map((p) => (

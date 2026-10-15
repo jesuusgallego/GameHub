@@ -46,7 +46,7 @@ function Actividad({ amigos, actividad, onIrADescubrir }) {
       <EnDirecto amigos={amigos} />
 
       <section aria-labelledby="movimientos-titulo">
-        <h3 id="movimientos-titulo" className="sala-titulo">{t('social.actividad.movimientos')}</h3>
+        <h3 id="movimientos-titulo" className="titulo-seccion sala-titulo">{t('social.actividad.movimientos')}</h3>
 
         {actividad.length === 0 ? (
           <p className="sala-vacio">{t('social.actividad.sinMovimientos')}</p>
@@ -54,7 +54,7 @@ function Actividad({ amigos, actividad, onIrADescubrir }) {
           <div className="linea">
             {grupos.map(({ tramo, items }) => (
               <div key={tramo} className="linea__dia">
-                <h4 className="linea__titulo">{t(`social.tramo.${tramo}`)}</h4>
+                <h4 className="estadisticas__subtitulo linea__titulo">{t(`social.tramo.${tramo}`)}</h4>
                 <ol className="movimientos">
                   {items.map((m) => (
                     <li

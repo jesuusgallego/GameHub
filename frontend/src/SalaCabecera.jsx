@@ -55,8 +55,7 @@ function SalaCabecera({ amigos, actividad = [], onInvitar, onVerAmigos }) {
 
       <div className="sala-cabecera__contenido">
         <div className="sala-cabecera__texto">
-          <span className="sala-cabecera__sobre">{t('social.sobretitulo')}</span>
-          <h1 className="sala-cabecera__titulo">{t('social.titulo')}</h1>
+          <h1 className="titulo-pagina sala-cabecera__titulo">{t('social.titulo')}</h1>
           <p className="sala-cabecera__frase">
             {jugando.length > 0 && <span className="sala-titulo__punto" aria-hidden="true" />}
             {frase}

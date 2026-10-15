@@ -148,28 +148,9 @@
   min-width: 0;
 }
 
-.sala-cabecera__sobre {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--banner-texto-suave);
-}
-
-/* El título con una sombra de colores desplazada, como las letras de un arcade */
+/* El título es el de todas las páginas (.titulo-pagina, con el tamaño de .banner-perfil) */
 .sala-cabecera__titulo {
   margin: 0;
-  font-family: var(--display);
-  font-size: clamp(3.4rem, 9vw, 5.5rem);
-  font-weight: 700;
-  line-height: 0.9;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--banner-texto);
-  text-shadow: 3px 3px 0 #5b3df5, 6px 6px 0 rgba(76, 201, 240, 0.55);
 }
 
 .sala-cabecera__frase {
@@ -394,23 +375,13 @@
 }
 
 /* ---- Títulos de sección y estados vacíos ---- */
+/* La tipografía es la de la app: los títulos llevan .titulo-seccion y los rótulos pequeños
+   .estadisticas__subtitulo (en el JSX). Aquí solo está la colocación. */
 .sala-titulo {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   margin: 0 0 0.9rem;
-  font-family: var(--display);
-  font-size: 1.4rem;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--texto-h);
-}
-
-.sala-titulo--pequeno {
-  font-size: 1.05rem;
-  letter-spacing: 0.1em;
-  color: var(--texto-suave);
 }
 
 .sala-titulo__n {
@@ -612,12 +583,6 @@
   align-items: center;
   gap: 0.8rem;
   margin: 0 0 0.7rem;
-  font-family: var(--display);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--texto-suave);
 }
 
 .linea__titulo::after {
@@ -752,12 +717,6 @@
 
 .lateral__titulo {
   margin: 0 0 0.15rem;
-  font-family: var(--display);
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--texto-h);
 }
 
 .lateral__ayuda {
@@ -1083,11 +1042,9 @@
   min-width: 0;
   padding-bottom: 0.25rem;
   overflow: hidden;
-  font-family: var(--display);
-  font-size: 1.55rem;
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: 0.02em;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.2;
   color: var(--texto-h);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1237,10 +1194,8 @@
 
 .entrada__texto strong {
   overflow: hidden;
-  font-family: var(--display);
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 1.2rem;
+  font-weight: 700;
   color: var(--texto-h);
   text-overflow: ellipsis;
 }
@@ -1419,11 +1374,8 @@
 }
 
 .banda-comun__titulo {
-  font-family: var(--display);
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  margin: 0;
+  font-size: 0.85rem;
   color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
 }
 
@@ -1524,10 +1476,8 @@
   align-items: center;
   gap: 0.7rem;
   min-width: 0;
-  font-family: var(--display);
-  font-size: 1.35rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--texto-h);
 }
 
@@ -1541,10 +1491,9 @@
 .cara__vs {
   flex: none;
   font-family: var(--display);
-  font-size: 1.6rem;
-  font-weight: 700;
-  font-style: italic;
-  letter-spacing: 0.08em;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   color: transparent;
   background: linear-gradient(135deg, var(--acento), hsl(var(--tono, 220) var(--tono-s) var(--tono-l)));
   -webkit-background-clip: text;
@@ -1593,9 +1542,9 @@
 }
 
 .cara__etiqueta {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--texto-suave);
 }
@@ -1768,7 +1717,7 @@
   overflow: hidden;
   font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-overflow: ellipsis;
   text-transform: uppercase;
   color: var(--texto-suave);
@@ -2037,7 +1986,7 @@
     flex-direction: column;
     flex: 1;
     gap: 0.3rem;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
   }
 
   .cara__jugador--otro {
@@ -2063,7 +2012,7 @@
     grid-row: 1;
     text-align: center;
     font-size: 0.62rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
   }
 
   .cara__barra--yo { grid-row: 2; grid-column: 1; }

@@ -14,7 +14,7 @@ function EnDirecto({ amigos }) {
 
   return (
     <section className="directo" aria-labelledby="directo-titulo">
-      <h3 id="directo-titulo" className="sala-titulo">
+      <h3 id="directo-titulo" className="titulo-seccion sala-titulo">
         <span className="sala-titulo__punto" aria-hidden="true" />
         {t('social.actividad.jugandoAhora')}
         {jugando.length > 0 && <span className="sala-titulo__n">{jugando.length}</span>}

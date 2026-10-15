@@ -39,7 +39,7 @@ function EnComun({ nombre, comun, motivoPrivado, onAbrirJuego, onCambio, cerrarS
   return (
     <div className="en-comun">
       <section aria-labelledby="comun-juegos">
-        <h3 id="comun-juegos" className="sala-titulo">
+        <h3 id="comun-juegos" className="titulo-seccion sala-titulo">
           {t('comun.juegosTitulo')}
           {juegos && juegos.length > 0 && <span className="sala-titulo__n">{juegos.length}</span>}
         </h3>
@@ -104,7 +104,7 @@ function EnComun({ nombre, comun, motivoPrivado, onAbrirJuego, onCambio, cerrarS
       </section>
 
       <section aria-labelledby="comun-amigos">
-        <h3 id="comun-amigos" className="sala-titulo">
+        <h3 id="comun-amigos" className="titulo-seccion sala-titulo">
           {t('comun.amigosTitulo')}
           {comun.friends.length > 0 && <span className="sala-titulo__n">{comun.friends.length}</span>}
         </h3>

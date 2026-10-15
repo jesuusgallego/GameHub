@@ -16,7 +16,7 @@ function Invitaciones({ recibidas, enviadas, onCambio, cerrarSesion }) {
   return (
     <div className="invitaciones">
       <section aria-labelledby="recibidas-titulo">
-        <h3 id="recibidas-titulo" className="sala-titulo">
+        <h3 id="recibidas-titulo" className="titulo-seccion sala-titulo">
           {t('social.recibidas')}
           {recibidas.length > 0 && <span className="sala-titulo__n">{recibidas.length}</span>}
         </h3>
@@ -45,7 +45,7 @@ function Invitaciones({ recibidas, enviadas, onCambio, cerrarSesion }) {
       </section>
 
       <section aria-labelledby="enviadas-titulo">
-        <h3 id="enviadas-titulo" className="sala-titulo sala-titulo--pequeno">{t('social.enviadas')}</h3>
+        <h3 id="enviadas-titulo" className="estadisticas__subtitulo">{t('social.enviadas')}</h3>
         {enviadas.length === 0 ? (
           <p className="sala-vacio">{t('social.sinEnviadas')}</p>
         ) : (

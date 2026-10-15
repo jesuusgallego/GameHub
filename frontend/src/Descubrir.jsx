@@ -101,7 +101,7 @@ function Descubrir({ sugerencias, onCambio, cerrarSesion }) {
         </>
       ) : (
         <section>
-          <h3 className="sala-titulo">{t('social.sugerencias')}</h3>
+          <h3 className="titulo-seccion sala-titulo">{t('social.sugerencias')}</h3>
           {sugerencias.length === 0 ? (
             <p className="sala-vacio">{t('social.sinSugerencias')}</p>
           ) : (
