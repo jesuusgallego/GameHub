@@ -182,6 +182,9 @@ function PerfilPublico({ setToken }) {
   const nombre = usuario.username
   const acciones = (
     <>
+      {usuario.relation === 'amigos' && (
+        <Link to={`/chat/${nombre}`} className="btn btn--primario">{t('chat.enviarMensaje')}</Link>
+      )}
       <AccionAmistad persona={usuario} onCambio={alCambiar} cerrarSesion={cerrarSesion} />
       {!esBloqueado && (
         <button type="button" className="btn btn--secundario" onClick={() => setBloqueando(true)}>

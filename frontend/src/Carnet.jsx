@@ -78,7 +78,10 @@ function Carnet({ persona, orden = 0, onCambio, cerrarSesion }) {
 
       <div className="carnet__acciones">
         {esAmigo && (
-          <Link to={`/usuarios/${username}`} className="btn btn--secundario">{t('carnet.ver')}</Link>
+          <>
+            <Link to={`/chat/${username}`} className="btn btn--primario">{t('chat.mensaje')}</Link>
+            <Link to={`/usuarios/${username}`} className="btn btn--secundario">{t('carnet.ver')}</Link>
+          </>
         )}
         <AccionAmistad persona={persona} onCambio={onCambio} cerrarSesion={cerrarSesion} discreta={esAmigo} />
       </div>

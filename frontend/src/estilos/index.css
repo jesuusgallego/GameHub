@@ -41,6 +41,7 @@
 @import './perfil-movil.css';
 @import './social.css';
 @import './sala.css';
+@import './chat.css';
 @import './progreso-steam.css';
 
 /* Pantallas estrechas: va el último para poder sobrescribir lo anterior */

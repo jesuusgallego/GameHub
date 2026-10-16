@@ -5,6 +5,7 @@ import Biblioteca from './Biblioteca'
 import Buscar from './Buscar'
 import Perfil from './Perfil'
 import Social from './Social'
+import Chat from './Chat'
 import PerfilPublico from './PerfilPublico'
 import Layout from './Layout'
 import RutaProtegida from './RutaProtegida'
@@ -40,6 +41,9 @@ function App() {
           <Route path="/buscar" element={<Buscar setToken={setToken} />} />
           <Route path="/perfil" element={<Perfil setToken={setToken} />} />
           <Route path="/social" element={<Social setToken={setToken} />} />
+          {/* Un solo Route con el nombre opcional: así pasar de la lista a una conversación no
+              vuelve a crear la página (se conservan la lista y los borradores) */}
+          <Route path="/chat/:username?" element={<Chat setToken={setToken} />} />
           <Route path="/usuarios/:username" element={<PerfilPublico setToken={setToken} />} />
         </Route>
       </Routes>

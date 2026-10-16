@@ -16,11 +16,14 @@ import { iniciarSondeo } from './sondeo'
 // useOutletContext(), que es el "props" de <Outlet />.
 //
 // Con las solicitudes de amistad pasa lo mismo: la barra enseña cuántas hay pendientes
-// (la insignia de "Social") y la página Social las cambia al aceptarlas o rechazarlas.
+// (la insignia de "Social") y la página Social las cambia al aceptarlas o rechazarlas. Y con
+// los mensajes sin leer: la insignia de "Chat" y la página Chat, que los marca como leídos.
 function Layout({ setToken }) {
   const [perfil, setPerfil] = useState(null)
   // Cuántas solicitudes de amistad me han enviado y aún no he respondido
   const [solicitudes, setSolicitudes] = useState(0)
+  // Cuántos mensajes del chat tengo sin leer
+  const [mensajes, setMensajes] = useState(0)
   const { pathname } = useLocation()
 
   // Pide el número de solicitudes recibidas. Si falla no hago nada: es solo un número
@@ -33,16 +36,36 @@ function Layout({ setToken }) {
       .catch(() => {})
   }, [])
 
-  // Al entrar y cada vez que cambio de página: así llegan las solicitudes nuevas sin
-  // esperar al sondeo
+  // Igual con los mensajes sin leer. Dentro de la página Chat no hace falta preguntar: la lista de
+  // conversaciones ya trae cuántos hay en cada una y la página fija el total con `ponerMensajes`.
+  const refrescarMensajes = useCallback(() => {
+    return apiFetch('/chat/unread', { avisoLento: false })
+      .then((data) => setMensajes(data.unread))
+      .catch(() => {})
+  }, [])
+
+  // Las dos cuentas de la barra a la vez
+  const refrescarAvisos = useCallback(
+    () => Promise.all([refrescarSolicitudes(), refrescarMensajes()]),
+    [refrescarSolicitudes, refrescarMensajes]
+  )
+
+  // Al entrar y cada vez que cambio de página: así llegan las solicitudes y los mensajes
+  // nuevos sin esperar al sondeo
   useEffect(() => {
-    refrescarSolicitudes()
-  }, [pathname, refrescarSolicitudes])
+    refrescarAvisos()
+  }, [pathname, refrescarAvisos])
 
   // Y mientras estoy en una página, sondeo cada minuto. Solo corre si la pestaña se ve y
   // hay actividad (ver sondeo.js): así una ventana olvidada no mantiene despiertos el
   // servidor ni la base de datos gratuitos.
-  useEffect(() => iniciarSondeo(refrescarSolicitudes), [refrescarSolicitudes])
+  useEffect(() => iniciarSondeo(refrescarAvisos), [refrescarAvisos])
+
+  // Con mensajes sin leer, el título de la pestaña lo dice: "(2) GameHub"
+  useEffect(() => {
+    document.title = mensajes > 0 ? `(${mensajes > 99 ? '99+' : mensajes}) GameHub` : 'GameHub'
+    return () => { document.title = 'GameHub' }
+  }, [mensajes])
 
   useEffect(() => {
     let cancelado = false
@@ -67,9 +90,9 @@ function Layout({ setToken }) {
 
   return (
     <>
-      <Menu setToken={setToken} perfil={perfil} solicitudes={solicitudes} />
+      <Menu setToken={setToken} perfil={perfil} solicitudes={solicitudes} mensajes={mensajes} />
       <main className="contenedor">
-        <Outlet context={{ perfil, setPerfil, solicitudes, refrescarSolicitudes }} />
+        <Outlet context={{ perfil, setPerfil, solicitudes, refrescarSolicitudes, mensajes, ponerMensajes: setMensajes }} />
       </main>
     </>
   )

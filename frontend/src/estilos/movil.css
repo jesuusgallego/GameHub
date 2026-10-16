@@ -13,8 +13,15 @@
     flex: 1 0 100%;
   }
 
+  /* Con cuatro enlaces (Biblioteca, Buscar, Social, Chat) hay que apretar el hueco para que
+     "Mi biblioteca" no se parta en dos líneas ni en pantallas de 360 px */
+  .barra__nav {
+    gap: 0.9rem;
+  }
+
   .barra__nav a {
     height: 44px;
+    white-space: nowrap;
   }
 
   .barra__acciones {

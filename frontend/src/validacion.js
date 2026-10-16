@@ -40,6 +40,9 @@ export const LIMITES_PERFIL = { first_name: 50, last_name: 100, location: 100 }
 // Una fecha de nacimiento no puede ser de hace más de tantos años
 export const EDAD_MAX = 120
 
+// Chat: longitud máxima de un mensaje (la misma que en el servidor y en la base de datos)
+export const MENSAJE_MAX = 2000
+
 // "AAAA-MM-DD" con el día de hoy, en la zona horaria de quien lo mira
 function aFechaIso(fecha) {
   const mes = String(fecha.getMonth() + 1).padStart(2, '0')

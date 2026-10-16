@@ -35,7 +35,8 @@ function colocarLinea(nav, linea, conAnimacion) {
 // idioma y el tema claro/oscuro, en el de las tres líneas (MenuAjustes).
 //  - solicitudes: cuántas solicitudes de amistad esperan respuesta; se enseña como una
 //    insignia en "Social"
-function Menu({ setToken, perfil, solicitudes = 0 }) {
+//  - mensajes: cuántos mensajes del chat no he leído; insignia en "Chat"
+function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
   const { t } = useIdioma()
   const navRef = useRef(null)
   const lineaRef = useRef(null)
@@ -73,6 +74,14 @@ function Menu({ setToken, perfil, solicitudes = 0 }) {
             {solicitudes > 0 && (
               <span className="insignia" role="status" aria-label={t('menu.solicitudesPendientes', { n: solicitudes })}>
                 {solicitudes > 9 ? '9+' : solicitudes}
+              </span>
+            )}
+          </NavLink>
+          <NavLink to="/chat">
+            {t('menu.chat')}
+            {mensajes > 0 && (
+              <span className="insignia" role="status" aria-label={t('menu.mensajesSinLeer', { n: mensajes })}>
+                {mensajes > 9 ? '9+' : mensajes}
               </span>
             )}
           </NavLink>

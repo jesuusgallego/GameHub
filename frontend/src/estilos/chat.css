@@ -1,0 +1,886 @@
+/* El chat: la página (lista de conversaciones a la izquierda y la abierta a la derecha), las
+   burbujas de los mensajes y el cuadro para escribir. El color de cada persona sale de --tono
+   (ver src/tono.js), igual que en la parte social. */
+
+/* Los botones del chat usan la tipografía de la app (por defecto, un botón trae la del sistema) */
+.chat button {
+  font: inherit;
+}
+
+/* ---- Estructura: dos paneles con la altura de la pantalla ---- */
+.chat {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 1rem;
+  /* Alto de la ventana menos la barra y los márgenes: el cuadro de escribir siempre se ve y
+     solo se desplazan los mensajes */
+  height: clamp(30rem, calc(100svh - 9rem), 56rem);
+  animation: chat-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes chat-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.chat__lista,
+.chat__panel {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-grande);
+}
+
+/* ---- Lista de conversaciones ---- */
+.chat-lista {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.chat-lista__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.chat-lista__titulo {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.chat-lista__nuevo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.9rem;
+}
+
+.chat-lista__vacio,
+.chat__elegir {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 2rem 1.5rem;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+.chat-lista__vacio h2,
+.chat__elegir h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--texto-h);
+}
+
+.chat-lista__vacio p,
+.chat__elegir p {
+  max-width: 28ch;
+  margin: 0;
+}
+
+.chat__elegir {
+  flex: 1;
+  justify-content: center;
+}
+
+.chat__elegir svg {
+  margin-bottom: 0.6rem;
+  color: var(--acento);
+  opacity: 0.8;
+}
+
+.chat-lista__filas {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chat-lista__filas > li {
+  animation: chat-entrada 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--orden, 0) * 0.04s);
+}
+
+.chat-fila {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem 1rem;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--transicion);
+}
+
+.chat-fila:hover {
+  background: var(--superficie-2);
+}
+
+/* La conversación abierta: teñida con el color de la persona y una barra a un lado */
+.chat-fila--activa,
+.chat-fila--activa:hover {
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.14);
+}
+
+.chat-fila::before {
+  position: absolute;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  left: 0;
+  width: 3px;
+  content: "";
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
+  border-radius: 0 3px 3px 0;
+  transform: scaleY(0);
+  transition: transform var(--transicion);
+}
+
+.chat-fila--activa::before {
+  transform: scaleY(1);
+}
+
+.chat-fila__texto {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.chat-fila__arriba,
+.chat-fila__abajo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.chat-fila__arriba strong {
+  overflow: hidden;
+  color: var(--texto-h);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-fila__arriba time {
+  flex: none;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+}
+
+.chat-fila__previa {
+  overflow: hidden;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Con mensajes sin leer: el nombre, la hora y la vista previa se leen más fuerte */
+.chat-fila--sin-leer .chat-fila__arriba strong {
+  font-weight: 800;
+}
+
+.chat-fila--sin-leer .chat-fila__previa {
+  font-weight: 600;
+  color: var(--texto-h);
+}
+
+.chat-fila--sin-leer .chat-fila__arriba time {
+  font-weight: 700;
+  color: var(--acento);
+}
+
+.chat-fila__cuenta {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  background: var(--degradado);
+  border-radius: 999px;
+  animation: insignia-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+/* ---- Panel para escribir a un amigo nuevo ---- */
+.chat-nuevo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 22rem;
+  padding: 0.9rem 1rem;
+  overflow: hidden;
+  background: var(--superficie-2);
+  border-bottom: 1px solid var(--borde);
+  animation: chat-nuevo-entrada 0.22s ease both;
+}
+
+.chat-nuevo--saliendo {
+  pointer-events: none;
+  animation: chat-nuevo-salida 0.2s ease both;
+}
+
+@keyframes chat-nuevo-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes chat-nuevo-salida {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.chat-nuevo__titulo {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+}
+
+.chat-nuevo__lista {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+  overflow-y: auto;
+}
+
+.chat-nuevo__lista a {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.4rem 0.5rem;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radio);
+  transition: background-color var(--transicion);
+}
+
+.chat-nuevo__lista a:hover {
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.16);
+}
+
+.chat-nuevo__texto {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.chat-nuevo__texto strong {
+  color: var(--texto-h);
+}
+
+.chat-nuevo__texto small {
+  overflow: hidden;
+  color: var(--texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-nuevo__vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.chat-nuevo__vacio p {
+  margin: 0;
+}
+
+/* ---- Una conversación ---- */
+.chat-hilo {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  /* Colores de las burbujas de la otra persona: teñidas con su tono */
+  --burbuja-suya: hsl(var(--tono, 220) 28% 22%);
+  --burbuja-suya-texto: #e8eef5;
+}
+
+:root[data-tema="claro"] .chat-hilo {
+  --burbuja-suya: hsl(var(--tono, 220) 60% 92%);
+  --burbuja-suya-texto: #1a2433;
+}
+
+.chat-hilo__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  background: linear-gradient(90deg, hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.13), transparent 70%);
+  border-bottom: 1px solid var(--borde);
+}
+
+.chat-hilo__volver {
+  display: none;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--texto-h);
+  border-radius: 50%;
+}
+
+.chat-hilo__volver:hover {
+  background: var(--superficie-2);
+}
+
+.chat-hilo__persona {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.chat-hilo__texto {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.chat-hilo__texto strong {
+  color: var(--texto-h);
+  font-size: 1.05rem;
+}
+
+.chat-hilo__persona:hover strong {
+  text-decoration: underline;
+}
+
+.chat-hilo__jugando {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow: hidden;
+  color: var(--texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-hilo__pulso {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--exito);
+  border-radius: 50%;
+  animation: chat-pulso 2s ease-in-out infinite;
+}
+
+@keyframes chat-pulso {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--exito) 55%, transparent); }
+  60% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--exito) 0%, transparent); }
+}
+
+.chat-hilo__estado {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.chat-hilo__marco {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+}
+
+.chat-hilo__visor {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.chat-hilo__visor:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--acento-suave);
+}
+
+.chat-hilo__anteriores {
+  align-self: center;
+  margin-bottom: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--acento);
+  background: var(--acento-suave);
+  border: 0;
+  border-radius: 999px;
+}
+
+.chat-hilo__anteriores:disabled {
+  opacity: 0.6;
+}
+
+/* Conversación vacía: invitación a romper el hielo */
+.chat-hilo__inicio {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: var(--texto-suave);
+  text-align: center;
+  animation: chat-entrada 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.chat-hilo__inicio h2 {
+  margin: 0.5rem 0 0;
+  font-family: var(--display);
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--texto-h);
+}
+
+.chat-hilo__inicio p {
+  margin: 0;
+}
+
+.chat-hilo__sugerencias {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.chat-hilo__sugerencias li {
+  animation: chat-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(0.15s + var(--orden, 0) * 0.07s);
+}
+
+.chat-hilo__sugerencias button {
+  padding: 0.5rem 1rem;
+  color: var(--texto-h);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  transition: border-color var(--transicion), background-color var(--transicion), transform var(--transicion);
+}
+
+.chat-hilo__sugerencias button:hover {
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.16);
+  border-color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.6);
+  transform: translateY(-1px);
+}
+
+/* Aviso de mensajes nuevos cuando estás leyendo más arriba */
+.chat-hilo__nuevos {
+  position: absolute;
+  bottom: 0.8rem;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem 0.45rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--degradado);
+  border: 0;
+  border-radius: 999px;
+  box-shadow: var(--sombra);
+  transform: translateX(-50%);
+  animation: chat-nuevos-entrada 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.chat-hilo__nuevos--saliendo {
+  pointer-events: none;
+  animation: chat-nuevos-salida 0.2s ease both;
+}
+
+@keyframes chat-nuevos-entrada {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+}
+
+@keyframes chat-nuevos-salida {
+  to {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+}
+
+.chat-hilo__cuenta {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.3rem;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+
+.chat-hilo__aviso {
+  margin: 0 1rem 0.5rem;
+}
+
+.chat-hilo__ya-no-amigos {
+  margin: 0;
+  padding: 0.9rem 1.1rem;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+  text-align: center;
+  background: var(--superficie-2);
+  border-top: 1px solid var(--borde);
+}
+
+/* ---- Días, bloques y burbujas ---- */
+.chat-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.chat-dia__rotulo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0.6rem 0 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+}
+
+.chat-dia__rotulo::before,
+.chat-dia__rotulo::after {
+  height: 1px;
+  flex: 1;
+  content: "";
+  background: var(--borde);
+}
+
+.chat-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-bloque--mio {
+  align-items: flex-end;
+}
+
+.chat-bloque--suyo {
+  align-items: flex-start;
+}
+
+.chat-burbuja {
+  display: flex;
+  max-width: min(34rem, 78%);
+  flex-direction: column;
+}
+
+.chat-bloque--mio .chat-burbuja {
+  align-items: flex-end;
+}
+
+.chat-burbuja__fila {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
+}
+
+.chat-burbuja__texto {
+  min-width: 0;
+  margin: 0;
+  padding: 0.5rem 0.85rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  border-radius: 1.1rem;
+  transition: background-color var(--transicion), color var(--transicion), opacity var(--transicion);
+}
+
+.chat-burbuja--mia .chat-burbuja__texto {
+  color: #fff;
+  background: var(--degradado);
+  border-bottom-right-radius: 0.3rem;
+}
+
+.chat-burbuja--suya .chat-burbuja__texto {
+  color: var(--burbuja-suya-texto);
+  background: var(--burbuja-suya);
+  border-bottom-left-radius: 0.3rem;
+}
+
+/* Dentro de una tanda, las esquinas junto a la otra burbuja se juntan */
+.chat-bloque--mio .chat-burbuja:not(:first-child) .chat-burbuja__texto {
+  border-top-right-radius: 0.3rem;
+}
+
+.chat-bloque--suyo .chat-burbuja:not(:first-child) .chat-burbuja__texto {
+  border-top-left-radius: 0.3rem;
+}
+
+.chat-bloque--mio .chat-burbuja:not(:last-child) .chat-burbuja__texto {
+  border-bottom-right-radius: 0.3rem;
+}
+
+.chat-bloque--suyo .chat-burbuja:not(:last-child) .chat-burbuja__texto {
+  border-bottom-left-radius: 0.3rem;
+}
+
+.chat-burbuja__texto a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chat-burbuja__texto a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Mensaje borrado: un hueco discreto, sin el color de la burbuja */
+.chat-burbuja--borrada .chat-burbuja__texto {
+  color: var(--texto-suave);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--borde);
+}
+
+.chat-burbuja__eliminado {
+  font-size: 0.9rem;
+  font-style: italic;
+  animation: chat-entrada 0.3s ease both;
+}
+
+/* Los que llegan con la conversación abierta entran deslizándose desde su lado */
+.chat-burbuja--nueva {
+  animation: chat-burbuja-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.chat-bloque--mio .chat-burbuja--nueva {
+  transform-origin: bottom right;
+}
+
+.chat-bloque--suyo .chat-burbuja--nueva {
+  transform-origin: bottom left;
+}
+
+@keyframes chat-burbuja-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+}
+
+.chat-burbuja--enviando .chat-burbuja__texto {
+  opacity: 0.6;
+}
+
+.chat-burbuja--error .chat-burbuja__texto {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--peligro);
+  color: var(--texto-h);
+}
+
+.chat-burbuja__fallo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.2rem 0.7rem;
+  margin: 0.2rem 0.2rem 0;
+  font-size: 0.8rem;
+  color: var(--peligro);
+}
+
+.chat-burbuja__fallo button {
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--acento);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chat-burbuja__pie {
+  margin: 0.15rem 0.35rem 0.3rem;
+  font-size: 0.72rem;
+  color: var(--texto-suave);
+}
+
+/* El botón de borrar sale al pasar el ratón o con el teclado; en pantallas táctiles, que no
+   tienen "pasar el ratón", se ve siempre pero tenue */
+.chat-burbuja__borrar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  color: var(--texto-suave);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity var(--transicion), color var(--transicion), background-color var(--transicion);
+}
+
+.chat-burbuja:hover .chat-burbuja__borrar,
+.chat-burbuja:focus-within .chat-burbuja__borrar {
+  opacity: 1;
+}
+
+.chat-burbuja__borrar:hover {
+  color: var(--peligro);
+  background: var(--superficie-2);
+}
+
+@media (hover: none) {
+  .chat-burbuja__borrar {
+    opacity: 0.55;
+  }
+}
+
+/* ---- El cuadro para escribir ---- */
+.chat-escribir {
+  padding: 0.7rem 1rem 0.5rem;
+  border-top: 1px solid var(--borde);
+}
+
+.chat-escribir__caja {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.chat-escribir textarea {
+  min-height: 0;
+  max-height: 10rem;
+  padding: 0.6rem 1rem;
+  line-height: 1.4;
+  resize: none;
+  border-radius: 1.3rem;
+}
+
+.chat-escribir__enviar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.65rem;
+  height: 2.65rem;
+  padding: 0;
+  color: #fff;
+  background: var(--degradado);
+  border: 0;
+  border-radius: 50%;
+  transition: filter var(--transicion), transform var(--transicion), opacity var(--transicion);
+}
+
+.chat-escribir__enviar:hover:not(:disabled) {
+  filter: brightness(1.15);
+  transform: translateX(2px);
+}
+
+.chat-escribir__enviar:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.chat-escribir__ayuda {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 1.2rem;
+  margin: 0.3rem 0.4rem 0;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}
+
+.chat-escribir__contador {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.chat-escribir__contador--tope {
+  font-weight: 700;
+  color: var(--peligro);
+}
+
+/* ---- Pantallas estrechas: la lista o la conversación, no las dos ---- */
+@media (max-width: 760px) {
+  .chat {
+    display: block;
+    height: calc(100svh - 11rem);
+    min-height: 26rem;
+  }
+
+  .chat__lista,
+  .chat__panel {
+    height: 100%;
+  }
+
+  .chat--abierto .chat__lista,
+  .chat:not(.chat--abierto) .chat__panel {
+    display: none;
+  }
+
+  .chat-hilo__volver {
+    display: grid;
+  }
+
+  .chat-hilo__cabecera {
+    padding-left: 0.5rem;
+  }
+
+  .chat-burbuja {
+    max-width: 88%;
+  }
+
+  .chat-escribir__ayuda span:first-child {
+    display: none;
+  }
+}
