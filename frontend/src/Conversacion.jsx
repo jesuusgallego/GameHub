@@ -11,8 +11,9 @@ import { iniciarSondeo } from './sondeo'
 import { usePresencia } from './usePresencia'
 import { useIdioma } from './IdiomaContext'
 import { MENSAJE_MAX } from './validacion'
+import { useRutaChat } from './useRutaChat'
 import {
-  fusionar, marcarBorrados, ultimoId, hayPorLeer, mensajeVisto, agrupar, rotuloDia, sugerenciasInicio, rutaChat,
+  fusionar, marcarBorrados, ultimoId, hayPorLeer, mensajeVisto, agrupar, rotuloDia, sugerenciasInicio,
 } from './chat'
 
 // Cada cuánto se pregunta por mensajes nuevos mientras la conversación está abierta. Es más
@@ -38,6 +39,7 @@ function estaAbajo(el) {
 //  - cerrarSesion(): para un 401
 function Conversacion({ username, amigo, borradores, onCambio, cerrarSesion }) {
   const { t, locale } = useIdioma()
+  const rutaChat = useRutaChat()
   const ruta = `/chat/${encodeURIComponent(username)}`
 
   const [estado, setEstado] = useState('cargando') // 'cargando' | 'listo' | 'error'

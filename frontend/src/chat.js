@@ -104,10 +104,15 @@ export function vistaPrevia(ultimo, t) {
   return ultimo.mine ? t('chat.tu', { texto: cuerpo }) : cuerpo
 }
 
-// La dirección del chat dentro de Social: la lista (sin usuario) o una conversación. Es lo que
+// La dirección que abre el chat en Social: ?chat=ana (conversación) o ?chat= (lista). Es lo que
 // llevan todos los enlaces al chat (el botón Mensaje del perfil y del carnet, la lista...).
-export function rutaChat(usuario) {
-  return usuario ? `/social?tab=chat&con=${encodeURIComponent(usuario)}` : '/social?tab=chat'
+//  - ubicacion: { pathname, search } de donde se está. Si ya se está en Social, se conservan sus
+//    demás parámetros (la pestaña): el botón Mensaje de un carnet abre el chat SIN cambiarte de
+//    pestaña. Desde cualquier otra página se va a Social tal cual.
+export function rutaChat(usuario, ubicacion) {
+  const params = new URLSearchParams(ubicacion?.pathname === '/social' ? ubicacion.search : '')
+  params.set('chat', usuario ?? '')
+  return `/social?${params.toString()}`
 }
 
 // Cuánto hace de una fecha para la lista de conversaciones: 'hoy', 'ayer', 'semana' (los 5

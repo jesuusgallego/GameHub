@@ -79,17 +79,6 @@
   gap: 1.25rem;
 }
 
-/* En Social la cabecera se pliega al entrar en el chat (Plegable): el espacio entre bloques va
-   dentro de cada uno (el de la cabecera, en su Plegable; el de las pestañas, aquí), porque un
-   `gap` no se puede animar y el hueco desaparecería de golpe al quitar la cabecera. */
-.sala {
-  gap: 0;
-}
-
-.sala > .pestanas--barra {
-  margin-bottom: 1.25rem;
-}
-
 /* Los bloques de la sala caen al sitio de uno en uno al entrar */
 @keyframes sala-entrada {
   from {
@@ -405,8 +394,7 @@
 }
 
 /* Las solicitudes pendientes llaman la atención, igual que la insignia de la barra */
-#pestana-solicitudes:not(.pestana--activa) .pestana__contador,
-#pestana-chat:not(.pestana--activa) .pestana__contador {
+#pestana-solicitudes:not(.pestana--activa) .pestana__contador {
   color: var(--sobre-peligro);
   background: var(--peligro);
 }
@@ -2120,8 +2108,8 @@
     padding: 0.6rem 0.7rem;
   }
 
-  /* Para que quepan las seis: solo se queda el número de lo que avisa (solicitudes y mensajes) */
-  .pestanas--barra .pestana:not(.pestana--activa):not(#pestana-solicitudes):not(#pestana-chat) .pestana__contador {
+  /* Para que quepan las cinco: solo se queda el número de las solicitudes (el que avisa) */
+  .pestanas--barra .pestana:not(.pestana--activa):not(#pestana-solicitudes) .pestana__contador {
     display: none;
   }
 

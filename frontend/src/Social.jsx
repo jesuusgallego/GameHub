@@ -10,8 +10,7 @@ import Actividad from './Actividad'
 import LateralSala from './LateralSala'
 import Invitaciones from './Invitaciones'
 import Descubrir from './Descubrir'
-import Chat from './Chat'
-import Plegable from './Plegable'
+import ChatDock from './ChatDock'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
 import { useCambioVista } from './useCambioVista'
@@ -19,18 +18,20 @@ import { useIdioma } from './IdiomaContext'
 import { borrarToken } from './sesion'
 import { usernameRegex } from './validacion'
 
-const PESTANAS = ['actividad', 'amigos', 'chat', 'solicitudes', 'descubrir', 'bloqueados']
+const PESTANAS = ['actividad', 'amigos', 'solicitudes', 'descubrir', 'bloqueados']
 
 // Página Social: "tu sala". Arriba, la cabecera con tus amigos como huecos de un lobby; debajo,
-// seis pestañas en una barra: lo que hacen tus amigos, tus amigos, el chat, las solicitudes, gente
-// nueva y los bloqueados.
+// cinco pestañas en una barra: lo que hacen tus amigos, tus amigos, las solicitudes, gente
+// nueva y los bloqueados. Y, abajo a la derecha, el chat: un botón discreto que despliega el
+// panel hacia arriba (ChatDock), sin ser una pestaña más.
 //  - Todo se pide junto al entrar y se vuelve a pedir tras cada acción (aceptar, eliminar...):
 //    así lo que se ve es siempre lo que hay en el servidor.
 //  - La pestaña activa va en la URL (?tab=solicitudes) y es la ÚNICA fuente de verdad: cualquier
-//    enlace a otra pestaña (el botón Mensaje de un carnet, por ejemplo) funciona sin más. En el
-//    chat, la conversación abierta va también (?tab=chat&con=ana).
-//  - El chat solo se monta mientras se ve su pestaña (sondea el servidor cada pocos segundos);
-//    en ella, la cabecera se pliega para dejarle la altura de la pantalla.
+//    enlace a otra pestaña funciona sin más.
+//  - El chat también: ?chat=ana es el panel abierto en la conversación con ana, ?chat= (vacío) el
+//    panel abierto en la lista, y sin el parámetro, cerrado. Es independiente de la pestaña: el
+//    botón Mensaje de un carnet abre el chat sin sacarte de donde estás. El chat solo se monta
+//    mientras está abierto (sondea el servidor cada pocos segundos).
 function Social({ setToken }) {
   const { t } = useIdioma()
   const { refrescarSolicitudes, mensajes } = useOutletContext()
@@ -53,18 +54,30 @@ function Social({ setToken }) {
     if (tab !== mostrada) cambiar(() => setMostrada(tab))
   }, [tab, mostrada, cambiar])
 
-  // La conversación abierta del chat (?con=ana). Se recuerda al salir de la pestaña: al volver
-  // está donde la dejaste, y mientras el panel del chat se desvanece no salta a la lista.
-  const conParam = params.get('con')
-  const con = tab === 'chat' && conParam && usernameRegex.test(conParam) ? conParam : null
+  // El chat: ?chat=ana (conversación), ?chat= (lista) o ausente (cerrado)
+  const chatParam = params.get('chat')
+  const chatAbierto = chatParam !== null
+  const con = chatParam && usernameRegex.test(chatParam) ? chatParam : null
+  // La última conversación abierta: al cerrar el panel y volver a abrirlo sigue donde estaba, y
+  // mientras el panel se pliega no salta a la lista
   const [conChat, setConChat] = useState(con)
-  if (tab === 'chat' && con !== conChat) setConChat(con)
-  // Lo que había escrito a medias en cada conversación; sobrevive a cambiar de pestaña
+  if (chatAbierto && con !== conChat) setConChat(con)
+  // Lo que había escrito a medias en cada conversación; sobrevive a cerrar el panel
   const borradores = useRef(new Map())
 
+  // Cambia un parámetro de la dirección sin tocar los demás (la pestaña y el chat son
+  // independientes)
+  function cambiarParam(clave, valor) {
+    setParams((previos) => {
+      const nuevos = new URLSearchParams(previos)
+      if (valor === null) nuevos.delete(clave)
+      else nuevos.set(clave, valor)
+      return nuevos
+    }, { replace: true })
+  }
+
   function irA(id) {
-    if (id === tab) return
-    setParams(id === 'chat' && conChat ? { tab: id, con: conChat } : { tab: id }, { replace: true })
+    if (id !== tab) cambiarParam('tab', id)
   }
 
   const cerrarSesion = useCallback(() => {
@@ -145,7 +158,6 @@ function Social({ setToken }) {
     : []
 
   const contenido = {
-    chat: mostrada === 'chat' && <Chat setToken={setToken} username={conChat} borradores={borradores} />,
     actividad: datos && (
       <div className={datos.amigos.length > 0 ? "sala-dos-columnas" : undefined}>
         <Actividad amigos={datos.amigos} actividad={datos.actividad} onIrADescubrir={() => irA('descubrir')} />
@@ -223,23 +235,17 @@ function Social({ setToken }) {
   const pestanas = PESTANAS.map((id) => ({
     id,
     etiqueta: t(`social.tab.${id}`),
-    contador: id === 'solicitudes' ? recibidas.length
-      : id === 'amigos' ? (datos?.amigos.length ?? 0)
-      : id === 'chat' ? mensajes
-      : 0,
+    contador: id === 'solicitudes' ? recibidas.length : id === 'amigos' ? (datos?.amigos.length ?? 0) : 0,
   }))
 
   return (
     <div className="sala">
-      {/* En el chat la cabecera se pliega para dejarle sitio; vuelve al salir */}
-      <Plegable abierto={tab !== 'chat'} hueco="1.25rem">
-        <SalaCabecera
-          amigos={datos?.amigos ?? null}
-          actividad={datos?.actividad}
-          onInvitar={() => irA('descubrir')}
-          onVerAmigos={() => irA('amigos')}
-        />
-      </Plegable>
+      <SalaCabecera
+        amigos={datos?.amigos ?? null}
+        actividad={datos?.actividad}
+        onInvitar={() => irA('descubrir')}
+        onVerAmigos={() => irA('amigos')}
+      />
 
       <PestanasPerfil
         variante="barra"
@@ -261,14 +267,23 @@ function Social({ setToken }) {
               hidden={!activo}
               className={activo ? (saliendo ? "sala-panel vista vista--saliendo" : "sala-panel vista") : "sala-panel"}
             >
-              {/* El chat pide lo suyo y no depende de las listas de Social */}
-              <Mensaje texto={activo && id !== 'chat' ? error : ""} />
-              {cargando && activo && id !== 'chat' && <Cargando texto={t('social.cargando')} centrado />}
+              <Mensaje texto={activo ? error : ""} />
+              {cargando && activo && <Cargando texto={t('social.cargando')} centrado />}
               {contenido[id]}
             </section>
           )
         })}
       </div>
+
+      <ChatDock
+        abierto={chatAbierto}
+        sinLeer={mensajes}
+        username={conChat}
+        borradores={borradores}
+        setToken={setToken}
+        onAbrir={() => cambiarParam('chat', conChat ?? '')}
+        onCerrar={() => cambiarParam('chat', null)}
+      />
 
       {ficha && (
         <DetalleJuego

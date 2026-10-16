@@ -353,7 +353,6 @@ export default {
   'social.cargando': 'Loading...',
   'social.tab.actividad': 'Activity',
   'social.tab.amigos': 'Friends',
-  'social.tab.chat': 'Chat',
   'social.tab.solicitudes': 'Requests',
   'social.tab.descubrir': 'Discover',
   'social.tab.bloqueados': 'Blocked',
@@ -534,6 +533,8 @@ export default {
 
   // ---- Chat ----
   'chat.titulo': 'Chat',
+  'chat.abrir': 'Open chat',
+  'chat.cerrar': 'Close chat',
   'chat.lista': 'Conversations',
   'chat.panel': 'Conversation with {usuario}',
   'chat.nuevo': 'New message',

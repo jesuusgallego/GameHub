@@ -32,7 +32,7 @@ Necesita el backend en marcha: la URL se toma de `VITE_API_URL` (por defecto
 | `src/tono.js` | El color de cada persona, calculado a partir de su nombre de usuario (anillo de la foto, carnet, banner) |
 | `src/comparar.js`, `src/juegoAjeno.js` | Las filas del "cara a cara" y la conversión de un juego "en común" a la forma de uno de su biblioteca |
 | `src/sondeo.js` | Consulta repetida solo mientras se usa la app (la insignia de solicitudes de la barra y el chat); ver la guía de desarrollo |
-| `src/Chat.jsx`, `src/ListaChats.jsx`, `src/Conversacion.jsx`, `src/Burbuja.jsx` | El chat entre amigos, en la pestaña Chat de Social: la lista de conversaciones y el panel, la lista con "Nuevo mensaje", una conversación (carga, sondeo, envío, borrado) y un mensaje |
+| `src/ChatDock.jsx`, `src/Chat.jsx`, `src/ListaChats.jsx`, `src/Conversacion.jsx`, `src/Burbuja.jsx` | El chat entre amigos: el botón y el panel flotante de Social (abajo a la derecha), su contenido (lista o conversación), la lista con "Nuevo mensaje", una conversación (carga, sondeo, envío, borrado) y un mensaje |
 | `src/useAnimacionLista.js`, `src/Plegable.jsx`, `src/ImagenSuave.jsx`, `src/cacheBiblioteca.js`, `src/cacheBusquedas.js` | La fluidez de Mi biblioteca: tarjetas que se deslizan, entran y salen al filtrar; la fila "Jugando ahora" que se despliega; portadas con fundido; y la copia en memoria de la lista para no volver a ver el spinner |
 | `src/chat.js` | La lógica del chat sin React (fusionar mensajes, agrupar por días y tandas, "visto", enlaces), con pruebas |
 | `src/PanelPrivacidad.jsx` | La pestaña *Perfil → Privacidad* |

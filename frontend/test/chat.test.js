@@ -5,7 +5,7 @@ import assert from 'node:assert'
 import { createRequire } from 'node:module'
 import {
   fusionar, marcarBorrados, ultimoId, hayPorLeer, mensajeVisto, agrupar, claveDia, rotuloDia,
-  tramoLista, partirEnlaces, totalSinLeer, vistaPrevia, HUECO_BLOQUE_MS,
+  tramoLista, partirEnlaces, totalSinLeer, vistaPrevia, rutaChat, HUECO_BLOQUE_MS,
 } from '../src/chat.js'
 import { MENSAJE_MAX } from '../src/validacion.js'
 
@@ -119,4 +119,15 @@ test('totalSinLeer y vistaPrevia', () => {
   assert.strictEqual(vistaPrevia({ mine: true, deleted: false, body: 'vale' }, t), 'chat.tu:vale')
   assert.strictEqual(vistaPrevia({ mine: true, deleted: true, body: '' }, t), 'chat.mensajeEliminado')
   assert.strictEqual(vistaPrevia(null, t), '')
+})
+
+test('rutaChat: abre el chat en Social y, si ya estás allí, conserva la pestaña', () => {
+  // Desde cualquier otra página: a Social tal cual
+  assert.strictEqual(rutaChat('ana'), '/social?chat=ana')
+  assert.strictEqual(rutaChat(null), '/social?chat=')
+  assert.strictEqual(rutaChat('ana', { pathname: '/usuarios/beto', search: '?tab=comun' }), '/social?chat=ana')
+  // Desde Social: se queda en la pestaña en la que estabas
+  assert.strictEqual(rutaChat('ana', { pathname: '/social', search: '?tab=amigos' }), '/social?tab=amigos&chat=ana')
+  assert.strictEqual(rutaChat(undefined, { pathname: '/social', search: '?tab=amigos&chat=ana' }), '/social?tab=amigos&chat=')
+  assert.strictEqual(rutaChat('beto', { pathname: '/social', search: '?tab=amigos&chat=ana' }), '/social?tab=amigos&chat=beto')
 })

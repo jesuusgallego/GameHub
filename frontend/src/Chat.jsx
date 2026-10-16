@@ -14,16 +14,16 @@ const LISTA_CADA_MS = 12_000
 // Los amigos (para saber quién está jugando) se piden cada tantas vueltas de la lista
 const AMIGOS_CADA = 5
 
-// El chat, que vive en la pestaña "Chat" de Social: a la izquierda tus conversaciones y a la
-// derecha la que tengas abierta. La conversación va en la dirección (/social?tab=chat&con=ana),
-// así que se puede enlazar y el botón de atrás vuelve a la lista. En pantallas estrechas se ve
-// una u otra, nunca las dos.
+// El contenido del chat, dentro del panel flotante de Social (ChatDock): se ve la lista de
+// conversaciones o la que tengas abierta, una u otra (el panel es estrecho). La conversación va
+// en la dirección (/social?chat=ana), así que se puede enlazar y el botón de atrás vuelve a la
+// lista.
 //  - Solo se puede hablar con amigos; la lista incluye también a quien lo fue, para poder
 //    seguir leyendo lo que os dijisteis.
 //  - setToken: para cerrar sesión si caduca
 //  - username: con quién se habla (viene de la dirección), o null si no hay ninguna abierta
 //  - borradores: { current: Map } con lo que había a medio escribir en cada conversación; lo
-//    guarda Social para que sobreviva a cambiar de pestaña
+//    guarda Social para que sobreviva a cerrar el panel
 function Chat({ setToken, username, borradores }) {
   const { t } = useIdioma()
   const { ponerMensajes } = useOutletContext()
@@ -83,7 +83,7 @@ function Chat({ setToken, username, borradores }) {
   const amigo = amigos?.find((a) => a.username === username)
 
   return (
-    <div className={username ? 'chat chat--abierto' : 'chat'}>
+    <div className={username ? 'chat chat--dock chat--abierto' : 'chat chat--dock'}>
       <aside className="chat__lista">
         <ListaChats conversaciones={conversaciones} amigos={amigos} error={error} activo={username} />
       </aside>

@@ -19,7 +19,7 @@ import { rutaChat } from './chat'
 // y siempre se sirve el mismo archivo. Se elige al compilar (VITE_DESKTOP=1).
 const Router = import.meta.env.VITE_DESKTOP ? HashRouter : BrowserRouter
 
-// /chat y /chat/ana (el chat tuvo página propia) llevan a la pestaña Chat de Social
+// /chat y /chat/ana (el chat tuvo página propia) abren el chat en Social
 function RedirigirChat() {
   const { username } = useParams()
   return <Navigate to={rutaChat(username)} replace />

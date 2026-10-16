@@ -6,7 +6,8 @@ import Mensaje from './Mensaje'
 import { estiloTono } from './tono'
 import { usePresencia } from './usePresencia'
 import { useIdioma } from './IdiomaContext'
-import { tramoLista, vistaPrevia, rutaChat } from './chat'
+import { tramoLista, vistaPrevia } from './chat'
+import { useRutaChat } from './useRutaChat'
 
 // La hora de la última actividad en la lista: la hora si fue hoy, "Ayer", el día de la semana
 // si fue esta semana y la fecha corta si fue antes
@@ -30,6 +31,7 @@ function useEtiquetaFecha() {
 // El panel para empezar una conversación nueva: tus amigos, con un filtro por nombre.
 function ElegirAmigo({ amigos, saliendo, onElegir }) {
   const { t } = useIdioma()
+  const rutaChat = useRutaChat()
   const [filtro, setFiltro] = useState('')
   const texto = filtro.trim().toLowerCase()
   const visibles = (amigos ?? []).filter((a) => a.username.includes(texto))
@@ -88,6 +90,7 @@ function ElegirAmigo({ amigos, saliendo, onElegir }) {
 //  - activo: el usuario de la conversación abierta (o null)
 function ListaChats({ conversaciones, amigos, error, activo }) {
   const { t } = useIdioma()
+  const rutaChat = useRutaChat()
   const etiquetaFecha = useEtiquetaFecha()
   const [eligiendo, setEligiendo] = useState(false)
   const { montado, saliendo } = usePresencia(eligiendo)
