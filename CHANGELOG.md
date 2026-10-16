@@ -28,6 +28,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   un enlace) para probar el chat con `demo_ana`.
 
 ### Cambiado
+- **La entrada a Social ya no da saltos cuando llegan los datos.** La barra de pestañas
+  (Actividad, Amigos, Solicitudes…) se pintaba antes de tener los datos y, al llegar, le salían los
+  contadores y se ensanchaba de golpe, y la frase de la cabecera cambiaba de texto y de ancho en
+  un fotograma. Ahora los contadores entran y salen ocupando su hueco poco a poco, el indicador de
+  la pestaña activa los sigue al instante (y solo se desliza cuando pulsas otra pestaña), y la
+  frase de la cabecera tiene su sitio reservado desde el principio y entra con un fundido.
 - **La barra de navegación y la entrada a Social, más fluidas.** Al aparecer la insignia de
   solicitudes o de mensajes (por ejemplo, al abrir la app), el enlace saltaba de golpe y empujaba al
   siguiente; ahora la insignia ocupa su hueco poco a poco y la línea la sigue. La línea de debajo

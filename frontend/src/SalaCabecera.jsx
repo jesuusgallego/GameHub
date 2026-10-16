@@ -56,7 +56,11 @@ function SalaCabecera({ amigos, actividad = [], onInvitar, onVerAmigos }) {
       <div className="sala-cabecera__contenido">
         <div className="sala-cabecera__texto">
           <h1 className="titulo-pagina sala-cabecera__titulo">{t('social.titulo')}</h1>
-          <p className="sala-cabecera__frase">
+          {/* Con la key, la pastilla se vuelve a crear al llegar los datos y entra con su animación */}
+          <p
+            key={amigos ? 'lista' : 'cargando'}
+            className={amigos ? "sala-cabecera__frase" : "sala-cabecera__frase sala-cabecera__frase--cargando"}
+          >
             {jugando.length > 0 && <span className="sala-titulo__punto" aria-hidden="true" />}
             {frase}
           </p>

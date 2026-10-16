@@ -1,4 +1,5 @@
 import { useRef, useLayoutEffect, useState } from 'react'
+import { usePresencia } from './usePresencia'
 
 // Dibujos de las pestañas (trazos de un viewBox de 24x24)
 const ICONOS = {
@@ -72,6 +73,23 @@ const ICONOS = {
   ),
 }
 
+// El número que sale junto a una pestaña (solicitudes, amigos...). Entra y sale animado: va
+// ocupando o dejando su hueco poco a poco, para que la barra no pegue un salto de golpe cuando
+// llegan los datos y aparecen los números (ver .pestana__contador en sala.css).
+function ContadorPestana({ valor }) {
+  const { montado, saliendo } = usePresencia(valor > 0, 250)
+  // Al salir, el número que se desvanece sigue siendo el último que hubo
+  const [ultimo, setUltimo] = useState(valor)
+  if (valor > 0 && valor !== ultimo) setUltimo(valor)
+
+  if (!montado) return null
+  return (
+    <span className={saliendo ? "pestana__contador pestana__contador--saliendo" : "pestana__contador"}>
+      {valor > 0 ? valor : ultimo}
+    </span>
+  )
+}
+
 // Barra de pestañas del perfil. Es una columna a la izquierda en pantallas anchas y
 // una fila con scroll en las estrechas (lo decide el CSS). Un indicador de fondo se
 // desliza hasta la pestaña activa.
@@ -89,16 +107,31 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lat
   const botonesRef = useRef({})
   // Posición y tamaño del indicador (null hasta la primera medida)
   const [indicador, setIndicador] = useState(null)
-  // El indicador no se anima en la primera medida (saldría volando desde la
-  // esquina); solo en los cambios posteriores
-  const [listo, setListo] = useState(false)
+  // Si el indicador se desliza (con transición) o se coloca al instante. Se desliza SOLO al
+  // cambiar de pestaña. Cuando lo único que cambia es el tamaño de los botones (llegan los
+  // contadores, cambia el idioma, se redimensiona la ventana) tiene que seguirlos al momento: con
+  // transición iría siempre unos pasos por detrás de ellos y la barra se vería descuadrada.
+  const [deslizar, setDeslizar] = useState(false)
+  // Cuándo se cambió de pestaña por última vez (0 = aún no), para saber de qué viene una medida
+  const ultimoCambioRef = useRef(0)
+  const primeraRef = useRef(true)
 
   // Mido el botón activo antes de pintar. Lo repito si cambia el tamaño de la barra
-  // o de algún botón (por ejemplo, al cambiar de idioma los textos miden otra cosa).
+  // o de algún botón.
   useLayoutEffect(() => {
-    function medir() {
+    // Este efecto corre al montar y cada vez que cambia la pestaña activa
+    if (primeraRef.current) primeraRef.current = false
+    else {
+      ultimoCambioRef.current = performance.now()
+      setDeslizar(true)
+    }
+
+    function medir(delObservador) {
       const boton = botonesRef.current[activa]
       if (!boton) return
+      // Los ajustes de tamaño que llegan justo tras un clic forman parte del cambio de pestaña
+      // (en móvil, la pestaña nueva enseña su texto y la vieja lo esconde)
+      if (delObservador && performance.now() - ultimoCambioRef.current > 450) setDeslizar(false)
       const nuevo = { x: boton.offsetLeft, y: boton.offsetTop, w: boton.offsetWidth, h: boton.offsetHeight }
       setIndicador((previo) => (
         previo && previo.x === nuevo.x && previo.y === nuevo.y && previo.w === nuevo.w && previo.h === nuevo.h
@@ -107,16 +140,12 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lat
       ))
     }
 
-    medir()
-    const observador = new ResizeObserver(medir)
+    medir(false)
+    const observador = new ResizeObserver(() => medir(true))
     observador.observe(navRef.current)
     Object.values(botonesRef.current).forEach((boton) => boton && observador.observe(boton))
 
-    const fotograma = requestAnimationFrame(() => setListo(true))
-    return () => {
-      observador.disconnect()
-      cancelAnimationFrame(fotograma)
-    }
+    return () => observador.disconnect()
   }, [activa])
 
   function alPulsarTecla(e) {
@@ -138,7 +167,7 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lat
     <div ref={navRef} className={variante === 'barra' ? "pestanas pestanas--barra" : "pestanas"} role="tablist" aria-label={etiqueta} onKeyDown={alPulsarTecla}>
       {indicador && (
         <span
-          className={listo ? "pestanas__indicador pestanas__indicador--lista" : "pestanas__indicador"}
+          className={deslizar ? "pestanas__indicador pestanas__indicador--lista" : "pestanas__indicador"}
           style={{
             width: indicador.w,
             height: indicador.h,
@@ -165,7 +194,7 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lat
             {ICONOS[id]}
           </svg>
           <span>{texto}</span>
-          {contador > 0 && <span className="pestana__contador">{contador}</span>}
+          <ContadorPestana valor={contador ?? 0} />
         </button>
       ))}
     </div>

@@ -166,8 +166,16 @@
   margin: 0;
 }
 
+.sala-cabecera__frase.sala-cabecera__frase--cargando {
+  /* Mientras llegan los datos la pastilla ya ocupa su sitio pero no se ve: así no cambia de
+     texto y de ancho de golpe, ni la cabecera crece, cuando llega la frase de verdad */
+  visibility: hidden;
+  animation: none;
+}
+
 .sala-cabecera__frase {
   align-self: flex-start;
+  animation: sala-entrada 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
@@ -318,8 +326,9 @@
 }
 
 .pestanas--barra .pestana {
+  --hueco: 0.5rem;
   flex: none;
-  gap: 0.5rem;
+  gap: var(--hueco);
   padding: 0.6rem 1.05rem;
   white-space: nowrap;
   border-radius: 999px;
@@ -334,8 +343,11 @@
   display: inline-grid;
   place-items: center;
   min-width: 1.3rem;
+  /* Tope para poder animar el ancho al entrar y salir (con "none" no se podría) */
+  max-width: 2.6rem;
   height: 1.3rem;
   padding: 0 0.4rem;
+  overflow: hidden;
   font-size: 0.72rem;
   font-weight: 800;
   line-height: 1;
@@ -343,6 +355,37 @@
   background: var(--acento-suave);
   border-radius: 999px;
   transition: background-color var(--transicion), color var(--transicion);
+  animation: contador-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+/* Entra ocupando su hueco poco a poco (el margen negativo cancela el espacio entre el texto y
+   el número mientras mide 0), y sale igual al revés. Así la barra, que está centrada, se
+   ensancha con suavidad y el indicador y los botones la siguen fotograma a fotograma. */
+@keyframes contador-entrada {
+  from {
+    min-width: 0;
+    max-width: 0;
+    margin-left: calc(var(--hueco, 0.7rem) * -1);
+    padding-inline: 0;
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+.pestana__contador--saliendo {
+  pointer-events: none;
+  animation: contador-salida 0.25s ease-in both;
+}
+
+@keyframes contador-salida {
+  to {
+    min-width: 0;
+    max-width: 0;
+    margin-left: calc(var(--hueco, 0.7rem) * -1);
+    padding-inline: 0;
+    opacity: 0;
+    transform: scale(0.4);
+  }
 }
 
 .pestana--activa .pestana__contador {
@@ -2061,7 +2104,7 @@
   }
 
   .pestanas--barra .pestana {
-    gap: 0.4rem;
+    --hueco: 0.4rem;
     padding: 0.6rem 0.7rem;
   }
 
