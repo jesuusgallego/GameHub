@@ -33,17 +33,7 @@ mantiene fuera del repositorio, en un documento privado; su `bundle.css` se gene
 | [1.0.0](../CHANGELOG.md) | 2026-10-10 | Primera versión pública: app de escritorio para Windows con actualización automática, biblioteca personal (estados, nota, reseña), búsqueda en IGDB, vinculación con Steam (juegos, horas y logros), perfil, e interfaz en español e inglés con tema claro y oscuro |
 | [1.1.0](../CHANGELOG.md) | 2026-10-12 | Recuperación de contraseña por correo, sesiones más seguras y mejoras en el perfil y en los avisos de actualización |
 | [1.2.0](../CHANGELOG.md) | 2026-10-15 | Social: amigos, solicitudes, bloqueos, actividad y perfiles públicos con privacidad dato a dato; inicio de sesión con nombre de usuario y datos personales en el perfil |
-
-**Hecho, pero sin publicar** (en `main`, pendiente de versión; ver [`[Sin publicar]`](../CHANGELOG.md)):
-
-- Social rediseñado ("la sala"): cabecera de lobby, pestañas en barra, carnets de persona con
-  un color propio, invitaciones, y una columna lateral con acciones directas.
-- En el perfil de un amigo: juegos y amigos en común, cara a cara, y la ficha de uno de sus
-  juegos con su partida y sus logros de Steam.
-- Nuevo ajuste de privacidad "Horas y logros".
-- La insignia de solicitudes se actualiza sola (sondeo cada minuto, solo mientras se usa).
-- Para que lo vea la gente: redesplegar el backend en Render y publicar una versión
-  ([cómo](DESARROLLO.md#11-publicar-una-versión)). **El servidor va antes que la app.**
+| [1.3.0](../CHANGELOG.md) | 2026-10-16 | Social rediseñado ("la sala"); en el perfil de un amigo, lo que tenéis en común, un cara a cara y la ficha de sus juegos con su partida y sus logros de Steam; ajuste de privacidad "Horas y logros"; la insignia de solicitudes se actualiza sola |
 
 ## 3. Qué falta
 
@@ -51,13 +41,12 @@ mantiene fuera del repositorio, en un documento privado; su `bundle.css` se gene
 
 El orden es el acordado; cada fase es una versión con su entrada en el CHANGELOG.
 
-1. **Publicar lo social rediseñado** (versión por decidir).
-2. **Noticias por RSS**: una sección con noticias de portales de videojuegos, con la
+1. **Noticias por RSS (1.4)**: una sección con noticias de portales de videojuegos, con la
    posibilidad de seguir portales. Solo titular, extracto y enlace al original; no se copian
    artículos.
-3. **Chat** entre amigos. Empezar con consultas periódicas (`sondeo.js` ya sirve de base), porque
+2. **Chat entre amigos (1.5)**. Empezar con consultas periódicas (`sondeo.js` ya sirve de base), porque
    el servidor gratuito se duerme y no mantiene conexiones abiertas. Reutiliza amigos y bloqueos.
-4. **Versión móvil (2.0)**: la misma interfaz React empaquetada con Capacitor, con una PWA como
+3. **Versión móvil (2.0)**: la misma interfaz React empaquetada con Capacitor, con una PWA como
    paso intermedio. Android primero; iOS cuesta una cuenta de pago y un Mac o un servicio de
    compilación, así que se decide aparte.
 

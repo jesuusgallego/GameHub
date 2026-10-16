@@ -2,27 +2,10 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.3.0] - 2026-10-16
 
-### Cambiado
-- **La parte social, rediseñada.** Social pasa a ser "tu sala", con una cabecera de lobby y
-  pestañas en barra, centrada y con el número de amigos y de solicitudes pendientes:
-  - **Cabecera:** un mosaico con las portadas de lo que juegan tus amigos, y una pastilla bajo
-    el título con nombres ("Beto y Eva están jugando ahora mismo"). A la derecha, tus amigos en
-    una fila de círculos con su color: los que están jugando llevan la portada de su juego en
-    la esquina, y el último círculo, con un "+", sirve para invitar a alguien.
-  - **Actividad:** "Jugando ahora" con la portada de cada juego de fondo y los últimos
-    movimientos en una línea del tiempo (hoy, ayer, esta semana...).
-  - **Columna lateral:** las solicitudes con *Aceptar* y *Rechazar*
-    ahí mismo, **Para jugar juntos** (los juegos que juegan o tienen varios de tus amigos, si
-    tú ya lo tienes y un botón para abrir su ficha y añadirlo) y a quién quizá conozcas, con
-    *Añadir amigo* ahí mismo. En el móvil, las solicitudes suben al principio.
-  - **Amigos:** cada persona es un carnet con su color, lo que está jugando, sus cifras (juegos,
-    completados y nota) y los juegos y amigos que tenéis en común.
-  - **Solicitudes:** las recibidas como invitaciones. **Descubrir** y **Bloqueados** con el
-    mismo estilo.
-  - Cada persona tiene un color propio (sale de su nombre) que se ve en su foto, su carnet y su
-    perfil.
+Social rediseñado: tu sala con lo que juegan tus amigos, y en su perfil, lo que tenéis en común
+y su partida con los logros.
 
 ### Añadido
 - **En el perfil de un amigo ves lo que tenéis en común:**
@@ -42,16 +25,50 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   minutos sin tocar nada, para no mantener despiertos el servidor y la base de datos gratuitos,
   y consulta en el acto cuando vuelves.
 
+### Cambiado
+- **La parte social, rediseñada.** Social pasa a ser "tu sala", con una cabecera de lobby y
+  pestañas en barra, centrada y con el número de amigos y de solicitudes pendientes:
+  - **Cabecera:** un mosaico con las portadas de lo que juegan tus amigos, y una pastilla bajo
+    el título con nombres ("Beto y Eva están jugando ahora mismo"). A la derecha, tus amigos en
+    una fila de círculos con su color: los que están jugando llevan la portada de su juego en
+    la esquina, y el último círculo, con un "+", sirve para invitar a alguien.
+  - **Actividad:** "Jugando ahora" con la portada de cada juego de fondo y los últimos
+    movimientos en una línea del tiempo (hoy, ayer, esta semana...).
+  - **Columna lateral:** las solicitudes con *Aceptar* y *Rechazar* ahí mismo, **Para jugar
+    juntos** (los juegos que juegan o tienen varios de tus amigos, si tú ya lo tienes y un botón
+    para abrir su ficha y añadirlo) y a quién quizá conozcas, con *Añadir amigo* ahí mismo. En el
+    móvil, las solicitudes suben al principio.
+  - **Amigos:** cada persona es un carnet con su color, lo que está jugando, sus cifras (juegos,
+    completados y nota) y los juegos y amigos que tenéis en común.
+  - **Solicitudes:** las recibidas como invitaciones. **Descubrir** y **Bloqueados** con el
+    mismo estilo.
+  - Cada persona tiene un color propio (sale de su nombre) que se ve en su foto, su carnet y su
+    perfil.
+
 ### Interno
-- Nuevo `GET /friends/games` (juegos de tus amigos para jugar juntos).
-- Nuevos `GET /users/:username/common` y `GET /users/:username/games/:igdbId/achievements`;
-  `GET /friends` trae además juegos y amigos en común, completados y nota media.
-- `seed:demo` crea también juegos de Steam con horas y logros, un amigo que los oculta y más
-  juegos en común (`--steam-id=` para una lista real de logros).
-- Nuevo `GET /friends/requests/count`, que devuelve solo el número de solicitudes recibidas.
-- `src/sondeo.js` en el frontend: sondeo reutilizable, con pruebas.
-- `npm run seed:demo` (en `backend/`): crea usuarios ficticios para probar la parte social, y
-  `npm run seed:demo:borrar` los quita. Solo funciona contra una base de datos local.
+- Nuevos `GET /friends/games` (juegos de tus amigos para jugar juntos), `GET /friends/requests/count`
+  (solo el número de solicitudes recibidas), `GET /users/:username/common` y
+  `GET /users/:username/games/:igdbId/achievements`. `GET /friends` trae además juegos y amigos
+  en común, completados y nota media.
+- Nueva columna `users.visibility_achievements` (la crea `schema.sql` al arrancar el servidor).
+  **El servidor hay que desplegarlo antes que la app.**
+- `src/sondeo.js` en el frontend: sondeo reutilizable (la base para el chat), con pruebas.
+- `npm run seed:demo` (en `backend/`): crea usuarios ficticios para probar la parte social, con
+  juegos de Steam, horas y logros (`--steam-id=` para una lista real), y `npm run seed:demo:borrar`
+  los quita. Solo funciona contra una base de datos local.
+- Documentación: nuevo [índice y estado del proyecto](docs/INDICE.md), y la guía explica cómo
+  probar el SQL de lo social sin Docker.
+
+### Limitaciones conocidas
+- La insignia de solicitudes se actualiza sola, pero la lista de la pestaña *Solicitudes* y la
+  actividad se ponen al día al navegar o recargar.
+- "Jugando ahora" se basa en el estado "jugando" de cada juego, no en si la persona está
+  conectada.
+- Los logros que consigue un amigo no salen en la actividad: se ven abriendo la ficha del juego.
+- El teléfono no se verifica (no hay SMS).
+- Solo se puede bloquear: todavía no hay forma de reportar a un usuario.
+- No hay edad mínima para registrarse.
+- El instalador sigue sin firmar: Windows SmartScreen avisará de "editor desconocido".
 
 ## [1.2.0] - 2026-10-15
 

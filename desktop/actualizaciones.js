@@ -11,6 +11,22 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.3.0': {
+    es: [
+      'Social rediseñado: tu sala con lo que juegan tus amigos, sus carnets y las solicitudes a mano.',
+      'En el perfil de un amigo ves los juegos y los amigos que tenéis en común, y un cara a cara.',
+      'Abre uno de sus juegos para ver su partida y los logros que ha conseguido.',
+      'Nuevo ajuste de privacidad: elige quién ve tus horas y tus logros.',
+      'Las solicitudes de amistad llegan solas, sin recargar.',
+    ],
+    en: [
+      'Redesigned Social: your lobby with what your friends are playing, their cards and your requests at hand.',
+      'On a friend\'s profile you see the games and friends you have in common, and a head to head.',
+      'Open one of their games to see their progress and the achievements they have earned.',
+      'New privacy setting: choose who sees your hours and achievements.',
+      'Friend requests show up on their own, without reloading.',
+    ],
+  },
   '1.2.0': {
     es: [
       'Social: mira a qué juegan tus amigos, añade gente y descubre personas que quizá conozcas.',
