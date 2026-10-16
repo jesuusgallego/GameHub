@@ -1,4 +1,4 @@
-import { partirEnlaces } from './chat'
+import { partirEnlaces } from './logicaChat'
 import { useIdioma } from './IdiomaContext'
 
 // Un mensaje del chat. Con el texto, los enlaces como enlaces y, debajo, la hora y el "Visto".

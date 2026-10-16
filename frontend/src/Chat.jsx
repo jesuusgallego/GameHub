@@ -3,7 +3,7 @@ import { apiFetch } from './api'
 import ListaChats from './ListaChats'
 import Conversacion from './Conversacion'
 import { iniciarSondeo } from './sondeo'
-import { totalSinLeer } from './chat'
+import { totalSinLeer } from './logicaChat'
 import { useIdioma } from './IdiomaContext'
 import { borrarToken } from './sesion'
 

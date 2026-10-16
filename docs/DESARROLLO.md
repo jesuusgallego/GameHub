@@ -75,7 +75,7 @@ GameHub/
 ├── frontend/                # Interfaz React, para web y escritorio
 │   ├── src/                     # Componentes .jsx, y sesion.js / validacion.js / telefono.js /
 │   │                            # paises.js / privacidad.js / tiempo.js / terminosIgdb.js /
-│   │                            # tono.js / comparar.js / juegoAjeno.js / sondeo.js / chat.js
+│   │                            # tono.js / comparar.js / juegoAjeno.js / sondeo.js / logicaChat.js
 │   │   ├── estilos/             # CSS por zonas (ver estilos/LEEME.md)
 │   │   └── textos/              # Traducciones es/en
 │   └── test/                    # Pruebas (npm test)
@@ -811,7 +811,7 @@ y `routes/chatRoutes.js`. Frontend: `ChatDock.jsx` (el botón y el panel flotant
 `Chat.jsx` (su contenido: lista o conversación), `ListaChats.jsx` (conversaciones y el panel
 "Nuevo mensaje"),
 `Conversacion.jsx` (una conversación: carga, sondeo, envío, borrado, scroll), `Burbuja.jsx` (un
-mensaje) y `chat.js` (la lógica sin React, con pruebas). Estilos en `estilos/chat.css`.
+mensaje) y `logicaChat.js` (la lógica sin React, con pruebas). Estilos en `estilos/chat.css`.
 
 - **El botón y el panel (`ChatDock.jsx`).** Lo monta `Layout.jsx`, así que está en **todas** las
   páginas con sesión y sigue abierto al navegar. El botón (`.chat-lanzador`) es una pastilla de
@@ -922,6 +922,11 @@ Mayús + clic derecho deja el menú del navegador) y dentro de la **ficha** que 
   `schema.sql` con `IF NOT EXISTS`.
 - **Validación:** nunca te fíes solo del formulario; el servidor valida lo mismo
   (`config/validacion.js`).
+- **Nombres de archivo en `frontend/src/`:** dos archivos no pueden llamarse igual salvo por las
+  mayúsculas o la extensión (`Chat.jsx` y `chat.js`). En Linux conviven, pero el instalador de
+  escritorio se compila en un runner de **Windows**, que no distingue mayúsculas y, al resolver
+  `import Chat from './Chat'`, prueba `.js` antes que `.jsx`: se quedó con `chat.js` y la
+  publicación de la 1.4.0 falló. Lo vigila `frontend/test/archivos.test.js`.
 - **Secretos:** no van en el código ni en el repositorio. `.env` está en `.gitignore`.
 - Las credenciales de `docker-compose.yml` son solo para desarrollo; cámbialas en cualquier otro
   entorno.

@@ -6,7 +6,7 @@ import Mensaje from './Mensaje'
 import { estiloTono } from './tono'
 import { usePresencia } from './usePresencia'
 import { useIdioma } from './IdiomaContext'
-import { tramoLista, vistaPrevia } from './chat'
+import { tramoLista, vistaPrevia } from './logicaChat'
 
 // La hora de la última actividad en la lista: la hora si fue hoy, "Ayer", el día de la semana
 // si fue esta semana y la fecha corta si fue antes

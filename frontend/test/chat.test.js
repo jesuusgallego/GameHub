@@ -6,7 +6,7 @@ import { createRequire } from 'node:module'
 import {
   fusionar, marcarBorrados, ultimoId, hayPorLeer, mensajeVisto, agrupar, claveDia, rotuloDia,
   tramoLista, partirEnlaces, totalSinLeer, vistaPrevia, HUECO_BLOQUE_MS,
-} from '../src/chat.js'
+} from '../src/logicaChat.js'
 import { MENSAJE_MAX } from '../src/validacion.js'
 
 const require = createRequire(import.meta.url)

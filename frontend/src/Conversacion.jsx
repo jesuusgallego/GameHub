@@ -13,7 +13,7 @@ import { useIdioma } from './IdiomaContext'
 import { MENSAJE_MAX } from './validacion'
 import {
   fusionar, marcarBorrados, ultimoId, hayPorLeer, mensajeVisto, agrupar, rotuloDia, sugerenciasInicio,
-} from './chat'
+} from './logicaChat'
 
 // Cada cuánto se pregunta por mensajes nuevos mientras la conversación está abierta. Es más
 // seguido que el resto de la app porque aquí la gente espera una respuesta; el sondeo se
