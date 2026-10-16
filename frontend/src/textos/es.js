@@ -424,7 +424,7 @@ export default {
   'social.tramo.mes': 'Este mes',
   'social.tramo.antes': 'Antes',
   'social.abrirFicha': 'Abrir la ficha de {juego}',
-  'social.lateral': 'Tu grupo y novedades',
+  'social.lateral': 'Solicitudes, juegos para jugar juntos y sugerencias',
   'social.invitaciones': 'Quieren ser tus amigos',
   'social.masGente': 'Descubrir más gente',
   'social.fraseSinAmigos': 'Tu sala está vacía. Añade a alguien y empieza a jugar en compañía.',

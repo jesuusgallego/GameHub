@@ -423,7 +423,7 @@ export default {
   'social.tramo.mes': 'This month',
   'social.tramo.antes': 'Earlier',
   'social.abrirFicha': 'Open the page for {juego}',
-  'social.lateral': 'Your party and news',
+  'social.lateral': 'Requests, games to play together and suggestions',
   'social.invitaciones': 'Want to be your friends',
   'social.masGente': 'Discover more people',
   'social.fraseSinAmigos': 'Your lobby is empty. Add someone and start playing together.',

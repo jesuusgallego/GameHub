@@ -13,7 +13,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
     la esquina, y el último círculo, con un "+", sirve para invitar a alguien.
   - **Actividad:** "Jugando ahora" con la portada de cada juego de fondo y los últimos
     movimientos en una línea del tiempo (hoy, ayer, esta semana...).
-  - **Columna lateral**, sustituyendo a "Tu grupo": las solicitudes con *Aceptar* y *Rechazar*
+  - **Columna lateral:** las solicitudes con *Aceptar* y *Rechazar*
     ahí mismo, **Para jugar juntos** (los juegos que juegan o tienen varios de tus amigos, si
     tú ya lo tienes y un botón para abrir su ficha y añadirlo) y a quién quizá conozcas, con
     *Añadir amigo* ahí mismo. En el móvil, las solicitudes suben al principio.
