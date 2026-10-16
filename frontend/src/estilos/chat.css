@@ -787,7 +787,7 @@
 
 /* ---- El cuadro para escribir ---- */
 .chat-escribir {
-  padding: 0.7rem 1rem 0.5rem;
+  padding: 0.7rem 1rem;
   border-top: 1px solid var(--borde);
 }
 
@@ -804,6 +804,7 @@
   line-height: 1.4;
   resize: none;
   border-radius: 1.3rem;
+  scrollbar-width: thin;
 }
 
 .chat-escribir__enviar {
@@ -830,18 +831,11 @@
   cursor: not-allowed;
 }
 
-.chat-escribir__ayuda {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  min-height: 1.2rem;
+.chat-escribir__contador {
   margin: 0.3rem 0.4rem 0;
   font-size: 0.75rem;
   color: var(--texto-suave);
-}
-
-.chat-escribir__contador {
-  margin-left: auto;
+  text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
@@ -880,7 +874,4 @@
     max-width: 88%;
   }
 
-  .chat-escribir__ayuda span:first-child {
-    display: none;
-  }
 }

@@ -568,7 +568,6 @@ export default {
   'chat.dia.ayer': 'Yesterday',
   'chat.escribir': 'Write a message',
   'chat.enviar': 'Send',
-  'chat.ayudaTeclas': 'Enter sends · Shift + Enter, new line',
   'chat.contador': '{n} of {max}',
   'chat.enviando': 'Sending...',
   'chat.noEnviado': 'Not sent',

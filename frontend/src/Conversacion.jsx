@@ -285,6 +285,9 @@ function Conversacion({ username, amigo, borradores, onCambio, cerrarSesion }) {
     caja.style.height = 'auto'
     // Vacío, una sola línea: el placeholder no debe estirarlo
     if (texto) caja.style.height = `${Math.min(caja.scrollHeight, ALTO_MAX_CAJA)}px`
+    // La barra de desplazamiento solo aparece al llegar al tope; antes, el redondeo de la
+    // altura la dejaba asomar al escribir
+    caja.style.overflowY = caja.scrollHeight > ALTO_MAX_CAJA ? 'auto' : 'hidden'
   }, [texto, estado, esAmigo])
 
   // Al abrir una conversación el cursor ya está en el cuadro, salvo en pantallas táctiles:
@@ -489,14 +492,11 @@ function Conversacion({ username, amigo, borradores, onCambio, cerrarSesion }) {
                   </svg>
                 </button>
               </div>
-              <p className="chat-escribir__ayuda">
-                <span>{t('chat.ayudaTeclas')}</span>
-                {texto.length >= AVISO_CONTADOR && (
-                  <span className={texto.length >= MENSAJE_MAX ? 'chat-escribir__contador chat-escribir__contador--tope' : 'chat-escribir__contador'}>
-                    {t('chat.contador', { n: texto.length, max: MENSAJE_MAX })}
-                  </span>
-                )}
-              </p>
+              {texto.length >= AVISO_CONTADOR && (
+                <p className={texto.length >= MENSAJE_MAX ? 'chat-escribir__contador chat-escribir__contador--tope' : 'chat-escribir__contador'}>
+                  {t('chat.contador', { n: texto.length, max: MENSAJE_MAX })}
+                </p>
+              )}
             </form>
           ) : (
             <p className="chat-hilo__ya-no-amigos">{t('chat.noAmigos')}</p>
