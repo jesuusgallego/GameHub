@@ -131,7 +131,9 @@ Lo que guarda GameHub de ti:
   opción más abierta; el teléfono no se verifica.
 - Tus amigos, las solicitudes que envías y recibes y a quién has bloqueado.
 - Tu contraseña **solo como huella irreversible** (bcrypt): ni siquiera el servidor puede leerla.
-- Tu biblioteca: los juegos, su estado, tu nota y tu reseña.
+- Tu biblioteca: los juegos, su estado, tu nota y tu reseña. Si vinculas Steam, también tus horas
+  jugadas y tus logros: por defecto solo los ven tus amigos y, como todo lo demás, puedes
+  cambiarlo en *Perfil → Privacidad*.
 - Opcional: tu foto, tu descripción y tu SteamID.
 
 Lo que **no** guarda: tu contraseña de Steam, ni ningún dato de pago.

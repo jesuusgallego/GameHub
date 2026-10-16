@@ -73,7 +73,8 @@ GameHub/
 │   └── Dockerfile
 ├── frontend/                # Interfaz React, para web y escritorio
 │   ├── src/                     # Componentes .jsx, y sesion.js / validacion.js / telefono.js /
-│   │                            # paises.js / privacidad.js / tiempo.js / terminosIgdb.js
+│   │                            # paises.js / privacidad.js / tiempo.js / terminosIgdb.js /
+│   │                            # tono.js / comparar.js / juegoAjeno.js / sondeo.js
 │   │   ├── estilos/             # CSS por zonas (ver estilos/LEEME.md)
 │   │   └── textos/              # Traducciones es/en
 │   └── test/                    # Pruebas (npm test)
@@ -360,7 +361,7 @@ Después se añade la regla como `CHECK` (con una comprobación en `pg_constrain
 
 | Tabla | Qué guarda |
 |-------|------------|
-| `users` | Usuarios: nombre de usuario, email, hash de la contraseña (bcrypt), foto (`avatar`, data URL), bio, `token_version` y datos personales opcionales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, `country`, `phone`). Se guarda la fecha de nacimiento y no la edad, que se calcularía mal con el tiempo |
+| `users` | Usuarios: nombre de usuario, email, hash de la contraseña (bcrypt), foto (`avatar`, data URL), bio, `token_version` y datos personales opcionales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, `country`, `phone`). Se guarda la fecha de nacimiento y no la edad, que se calcularía mal con el tiempo. También la privacidad: un nivel `nadie`/`amigos`/`todos` por dato (`visibility_name`, `visibility_age`, `visibility_gender`, `visibility_location`, `visibility_library`, `visibility_reviews`, `visibility_achievements`, `visibility_friends`), `request_policy` (quién puede enviarte solicitudes) y `searchable` (si sales en las búsquedas) |
 | `user_games` | Un juego en la biblioteca de un usuario: `igdb_id`, estado, nota, reseña, plataforma, metadatos de IGDB (`genres`, `developers`, `publishers`, `release_date`, `igdb_rating`) y el progreso de Steam (`steam_appid`, `playtime_minutes`, `achievements_*`, `imported_from`) |
 | `translations` | Caché de traducciones de descripciones, por huella SHA-256 del texto y idioma |
 | `translation_usage` | Caracteres enviados a Azure cada mes (para respetar el tope propio) |
@@ -484,15 +485,36 @@ dependencias extra. Cubren la lógica que no necesita navegador ni servidor:
 - **Backend:** lectura de logros de Steam (con Steam simulado), recuperación de contraseña
   (código y correo), validación de sesiones, validación del registro, inicio de sesión con
   email o nombre de usuario, edición del perfil (datos personales y privacidad), reglas de
-  privacidad y validación de las rutas sociales.
+  privacidad, y validación de las rutas sociales (solicitudes, bloqueos, en común, logros de un
+  amigo y el contador de solicitudes).
 - **Frontend:** búsqueda, filtros y orden de la biblioteca, traducción de géneros y modos de
   IGDB, reglas de validación y de privacidad (comprueban que coinciden con las del backend),
-  tiempo relativo, teléfonos y países, y que todos los textos que usa el código existan.
+  tiempo relativo y agrupación por días, el color de cada persona (`tono.js`) y las filas del
+  cara a cara, el sondeo de la insignia (con temporizadores y reloj simulados), teléfonos y
+  países, y que todos los textos que usa el código existan.
 - **Escritorio:** avisos de actualización, que el instalador incluya los archivos que carga
   `main.js` y la construcción de las notas de cada Release.
 
 Para simular dependencias en las pruebas (la base de datos, Steam, axios) se sustituye el módulo
 antes de cargarlo; hay ejemplos en `backend/test/sesiones.test.js` y `steamLogros.test.js`.
+
+Estas pruebas **no ejecutan SQL** (la base de datos es simulada): comprueban validaciones, reglas y
+textos. Para el SQL de lo social (en común, logros de un amigo, privacidad por dato, sugerencias,
+actividad) hay que probar contra un Postgres de verdad, y no hace falta Docker:
+
+1. Instala `@electric-sql/pglite` en una carpeta aparte (no en el proyecto) y `playwright-core`
+   si quieres ver la interfaz.
+2. Un script de unas 40 líneas, ejecutado **desde esa carpeta** (así `dotenv` no encuentra tu
+   `.env` ni tus claves), crea la base (`new PGlite(dir, { parsers: { 1082: (v) => v } })`, para que
+   `DATE` salga como texto igual que en `config/db.js`), sustituye `require.cache` de
+   `backend/src/config/db.js` por un objeto con `query(sql, params)` y `connect()` (con
+   `db.exec` cuando no hay parámetros, para ejecutar `schema.sql` entero) y sustituye
+   `steamService.getLogrosDetallados` por logros inventados. Después hace `require` de
+   `backend/src/app.js` con `PORT=4100`, `JWT_SECRET` y `STEAM_SYNC_MINUTOS=0`.
+3. `npm run seed:demo` con ese mismo adaptador carga las personas ficticias y la interfaz compilada
+   con `VITE_API_URL=http://localhost:4100` se sirve con cualquier servidor estático.
+
+Usa **otros puertos** que tu entorno (4000, 5173 y 5432) y no escribas nunca en producción.
 
 ### Comprobar la calidad antes de subir
 
