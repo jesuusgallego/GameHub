@@ -18,7 +18,22 @@
   color: var(--sobre-peligro);
   background: var(--peligro);
   border-radius: 999px;
-  animation: insignia-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+  max-width: 1.75rem;
+  /* Al aparecer, además de crecer, va ocupando su hueco poco a poco: así los enlaces de la barra
+     (y la línea, que los sigue) se reacomodan con suavidad en vez de dar un salto de golpe */
+  animation: insignia-barra-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  overflow: hidden;
+}
+
+@keyframes insignia-barra-entrada {
+  from {
+    min-width: 0;
+    max-width: 0;
+    margin-left: 0;
+    padding-inline: 0;
+    opacity: 0;
+    transform: scale(0.4);
+  }
 }
 
 @keyframes insignia-entrada {

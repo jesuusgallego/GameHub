@@ -395,17 +395,22 @@
 }
 
 .chat-hilo__pulso {
+  position: relative;
   flex: none;
   width: 0.5rem;
   height: 0.5rem;
   background: var(--exito);
   border-radius: 50%;
-  animation: chat-pulso 2s ease-in-out infinite;
 }
 
-@keyframes chat-pulso {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--exito) 55%, transparent); }
-  60% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--exito) 0%, transparent); }
+/* Onda del punto "jugando": solo transform y opacity (ver .anillo--vivo en sala.css) */
+.chat-hilo__pulso::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: var(--exito);
+  border-radius: inherit;
+  animation: punto-vivo 2s ease-out infinite;
 }
 
 .chat-hilo__estado {

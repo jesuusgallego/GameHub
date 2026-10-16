@@ -60,7 +60,7 @@ function Actividad({ amigos, actividad, onIrADescubrir }) {
                     <li
                       key={`${m.username}-${m.igdb_id}`}
                       className="movimiento"
-                      style={{ ...estiloTono(m.username), '--orden': Math.min(orden++, 12) }}
+                      style={{ ...estiloTono(m.username), '--orden': Math.min(orden++, 6) }}
                     >
                       <Link to={`/usuarios/${m.username}`} className="movimiento__avatar" aria-hidden="true" tabIndex={-1}>
                         <AvatarTono usuario={m} tamano="normal" vivo={m.status === 'jugando' && tramo === 'hoy'} />

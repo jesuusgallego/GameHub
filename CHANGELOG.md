@@ -28,6 +28,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   un enlace) para probar el chat con `demo_ana`.
 
 ### Cambiado
+- **La barra de navegación y la entrada a Social, más fluidas.** Al aparecer la insignia de
+  solicitudes o de mensajes (por ejemplo, al abrir la app), el enlace saltaba de golpe y empujaba al
+  siguiente; ahora la insignia ocupa su hueco poco a poco y la línea la sigue. La línea de debajo
+  se mueve solo con `transform` (antes animaba también `width`, que va por otro hilo y se
+  descompasaba cuando la página de debajo cargaba). Los puntos y anillos "jugando ahora" animan
+  `transform` y `opacity` en lugar de `box-shadow`, que obligaba a repintar la página en cada
+  fotograma, y la lista de actividad escalona la entrada de menos elementos.
 - Si inicias o cierras sesión en una pestaña, las demás pestañas de ese navegador se recargan. Antes
   seguían enseñando la pantalla y el avatar de la cuenta anterior mientras pedían los datos de la
   nueva.

@@ -38,14 +38,27 @@
 
 .anillo--pequeno { padding: 2px; }
 
-/* Jugando ahora: el anillo late */
+/* Jugando ahora: del anillo sale una onda que se agranda y se desvanece. Va en un ::after y solo
+   cambia transform y opacity: eso lo anima la tarjeta gráfica sin repintar la página. Animar
+   box-shadow (como antes) obliga a repintar cada fotograma, y con varios anillos vivos a la vez la
+   página Social perdía fluidez, sobre todo mientras entraba. */
 .anillo--vivo {
-  animation: anillo-latido 2.4s ease-in-out infinite;
+  position: relative;
+}
+
+.anillo--vivo::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  border: 3px solid hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
+  border-radius: 50%;
+  animation: anillo-latido 2.4s ease-out infinite;
 }
 
 @keyframes anillo-latido {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.5); }
-  60% { box-shadow: 0 0 0 7px hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0); }
+  0% { opacity: 0.55; transform: scale(1); }
+  60%, 100% { opacity: 0; transform: scale(1.3); }
 }
 
 /* Sin foto, el círculo con la inicial toma el color de la persona en vez del de la marca */
@@ -402,12 +415,28 @@
   height: 0.6rem;
   background: var(--estado-jugando);
   border-radius: 50%;
+}
+
+/* La onda de los puntos verdes ("en directo"): un círculo del mismo color que se agranda y se
+   desvanece. Solo transform y opacity, como en el anillo de la foto */
+.sala-titulo__punto,
+.carnet__pulso {
+  position: relative;
+}
+
+.sala-titulo__punto::after,
+.carnet__pulso::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: var(--estado-jugando);
+  border-radius: inherit;
   animation: punto-vivo 2s ease-out infinite;
 }
 
 @keyframes punto-vivo {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--estado-jugando) 60%, transparent); }
-  70%, 100% { box-shadow: 0 0 0 8px transparent; }
+  0% { opacity: 0.6; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(2.7); }
 }
 
 .sala-vacio {
@@ -624,7 +653,9 @@
   border-radius: var(--radio-grande);
   transition: border-color var(--transicion), transform var(--transicion);
   animation: sala-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  animation-delay: calc(var(--orden, 0) * 0.04s);
+  /* Hasta 6 escalones (--orden se corta en Actividad.jsx): los demás entran a la vez, para no tener
+     decenas de elementos animándose al mismo tiempo en listas largas */
+  animation-delay: calc(var(--orden, 0) * 0.03s);
 }
 
 .movimiento:hover {
@@ -1006,7 +1037,6 @@
   height: 0.55rem;
   background: var(--estado-jugando);
   border-radius: 50%;
-  animation: punto-vivo 2s ease-out infinite;
 }
 
 .carnet__cuerpo {

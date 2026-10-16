@@ -27,18 +27,21 @@
   flex: 1;
 }
 
-/* Línea del enlace activo. Menu.jsx le pone el ancho y la posición; aquí solo
-   hago que los cambios se animen en 0,3 s, empezando y acabando suave. */
+/* Línea del enlace activo. Menu.jsx le pone la posición y el ancho con transform (translateX y
+   scaleX sobre estos 100 px de base); aquí solo hago que los cambios se animen en 0,3 s,
+   empezando y acabando suave. Solo transform: lo anima la tarjeta gráfica. */
 .barra__linea {
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 0;
+  width: 100px;
   height: 3px;
   background: var(--acento);
   pointer-events: none;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Hago que los enlaces midan lo mismo que la barra (64px) para que la línea,

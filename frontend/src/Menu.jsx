@@ -5,6 +5,12 @@ import MenuUsuario from './MenuUsuario'
 import MenuAjustes from './MenuAjustes'
 import { useIdioma } from './IdiomaContext'
 
+// Ancho base de la línea (el del CSS): se estira con scaleX para llegar al ancho del enlace. Así
+// la línea solo cambia transform, que anima la tarjeta gráfica sin pasar por el hilo principal;
+// animar `width` (como antes) iba por el hilo principal y se descompasaba del movimiento
+// cuando la página que se cargaba debajo le robaba tiempo.
+const ANCHO_BASE = 100
+
 // Coloco la línea bajo el enlace activo: mido dónde está y cuánto ocupa (en
 // píxeles, respecto a la barra de navegación) y se lo aplico a la línea.
 // Con conAnimacion = false la línea salta de golpe (primer pintado, cambios de
@@ -13,14 +19,13 @@ function colocarLinea(nav, linea, conAnimacion) {
   const activo = nav.querySelector('a.active')
 
   if (!activo) {
-    linea.style.width = '0px'
+    linea.style.transform = 'scaleX(0)'
     return
   }
 
   if (!conAnimacion) linea.style.transition = 'none'
 
-  linea.style.width = `${activo.offsetWidth}px`
-  linea.style.transform = `translateX(${activo.offsetLeft}px)`
+  linea.style.transform = `translateX(${activo.offsetLeft}px) scaleX(${activo.offsetWidth / ANCHO_BASE})`
 
   if (!conAnimacion) {
     // Fuerzo al navegador a aplicar el cambio YA, antes de reactivar la
@@ -48,7 +53,10 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
   // borde al cargar la web.
   useEffect(() => {
     const linea = lineaRef.current
-    colocarLinea(navRef.current, linea, linea.style.width !== '')
+    // La primera vez la línea aún no tiene posición (el CSS la deja en scaleX(0))
+    const yaColocada = linea.dataset.colocada === 'si'
+    colocarLinea(navRef.current, linea, yaColocada)
+    linea.dataset.colocada = 'si'
   }, [pathname])
 
   // Si un enlace cambia de tamaño (redimensiono la ventana, termina de cargar la
