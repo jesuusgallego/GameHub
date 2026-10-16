@@ -297,3 +297,33 @@ CREATE INDEX IF NOT EXISTS idx_blocks_blocked ON blocks (blocked_id);
 -- La búsqueda de personas filtra por el comienzo del nombre de usuario (starts_with). Con
 -- pocos usuarios recorrer la tabla es instantáneo; si algún día hay muchos, bastaría un
 -- índice sobre username con la clase de operador text_pattern_ops.
+
+-- Chat entre amigos. Una fila por mensaje, de `sender_id` a `recipient_id`; la conversación
+-- entre dos personas es el conjunto de mensajes entre ellas, en cualquier sentido (no hay
+-- tabla de conversaciones: sería un dato más que mantener igual).
+--  - body: el texto, de 1 a 2000 caracteres. Al borrar un mensaje se vacía de verdad (no se
+--    esconde): el contenido desaparece de la base de datos y solo queda el hueco "mensaje
+--    eliminado" con su hora, para que la conversación no cambie de forma.
+--  - read_at: cuándo lo vio quien lo recibió (NULL = sin leer). De ahí salen los contadores y
+--    el "visto" que ve quien lo envió.
+--  - deleted_at: cuándo lo borró quien lo envió (NULL = sigue ahí).
+-- Con ON DELETE CASCADE, al borrar una cuenta se van sus mensajes, los enviados y los recibidos.
+CREATE TABLE IF NOT EXISTS messages (
+    id SERIAL PRIMARY KEY,
+    sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    recipient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    body VARCHAR(2000) NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    read_at TIMESTAMPTZ,
+    deleted_at TIMESTAMPTZ,
+    CHECK (sender_id <> recipient_id),
+    CHECK (deleted_at IS NOT NULL OR length(btrim(body)) > 0)
+);
+
+-- Leer una conversación (mensajes de la pareja por orden) sin recorrer la tabla. Los dos
+-- sentidos comparten índice por LEAST/GREATEST, igual que en friendships.
+CREATE INDEX IF NOT EXISTS idx_messages_pareja
+    ON messages (LEAST(sender_id, recipient_id), GREATEST(sender_id, recipient_id), id);
+-- Contar lo que no he leído: solo indexa las filas sin leer, que son pocas
+CREATE INDEX IF NOT EXISTS idx_messages_sin_leer
+    ON messages (recipient_id, sender_id) WHERE read_at IS NULL AND deleted_at IS NULL;

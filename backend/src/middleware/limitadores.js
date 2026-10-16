@@ -47,11 +47,33 @@ const limitadorSolicitudes = limitador({ ventanaMinutos: 60, maximo: 30 });
 // consultas a Steam, y la clave de la app tiene un tope diario para todos los usuarios.
 const limitadorLogros = limitador({ ventanaMinutos: 10, maximo: 40 });
 
+// Mensajes del chat: 60 por minuto y por IP. Una conversación animada no pasa de unos pocos por
+// minuto; el tope corta a quien envíe mensajes en bucle a sus amigos.
+const limitadorMensajes = limitador({ ventanaMinutos: 1, maximo: 60 });
+
+// Leer el chat (lista de conversaciones, mensajes nuevos, no leídos): la interfaz lo repite
+// cada pocos segundos mientras se usa (ver sondeo.js), unas 20 veces por minuto con una
+// conversación abierta. Por eso no cuenta en el tope general por IP, donde dos amigos
+// chateando desde la misma casa se lo comerían; tiene el suyo, POR USUARIO (90 por minuto, algo
+// más de cuatro veces lo normal). Va después de verifyToken: necesita saber quién es.
+const limitadorLecturaChat = limitador({
+  ventanaMinutos: 1,
+  maximo: 90,
+  keyGenerator: (req) => `chat-${req.user.id}`,
+});
+
+// ¿Es una lectura del chat con sesión? Esas peticiones las limita limitadorLecturaChat.
+function esLecturaChat(req) {
+  return req.method === 'GET'
+    && (req.path === '/chat' || req.path.startsWith('/chat/'))
+    && Boolean(req.headers.authorization?.startsWith('Bearer '));
+}
+
 // Tope general para todo lo demás. Es alto a propósito (un uso normal ni se acerca);
 // solo corta a quien automatiza peticiones sin parar.
-const limitadorGeneral = limitador({ ventanaMinutos: 15, maximo: 1000 });
+const limitadorGeneral = limitador({ ventanaMinutos: 15, maximo: 1000, skip: esLecturaChat });
 
 module.exports = {
   limitadorLogin, limitadorRegistro, limitadorPedirCodigo, limitadorUsarCodigo, limitadorGeneral,
-  limitadorBusqueda, limitadorSolicitudes, limitadorLogros,
+  limitadorBusqueda, limitadorSolicitudes, limitadorLogros, limitadorMensajes, limitadorLecturaChat,
 };

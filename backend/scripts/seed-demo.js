@@ -1,6 +1,6 @@
 // Crea usuarios ficticios para probar la app (sobre todo la parte social): perfiles con
-// datos y privacidad distintos, amistades, solicitudes, un bloqueo y bibliotecas con juegos
-// reales de IGDB.
+// datos y privacidad distintos, amistades, solicitudes, un bloqueo, conversaciones del chat y
+// bibliotecas con juegos reales de IGDB.
 //
 //   npm run seed:demo                          crea (o recrea) los usuarios de demostración
 //   npm run seed:demo -- --solicitudes-a=ana   además, 2 solicitudes de amistad pendientes
@@ -150,6 +150,40 @@ const AMISTADES = [
 const SOLICITUDES = [['demo_hugo', 'demo_ana']];
 const BLOQUEOS = [['demo_hugo', 'demo_beto']];
 
+// Conversaciones del chat entre amigos: [quién escribe, texto, hace cuántos minutos, estado].
+// El estado es opcional: 'sinleer' (la otra persona aún no lo ha visto) o 'borrado' (su autor
+// lo eliminó). Los demás están leídos. Todo lo que escribe alguien a demo_ana y no está leído
+// sale como mensajes sin leer en su cuenta.
+const CONVERSACIONES = [
+  ['demo_ana', 'demo_beto', [
+    ['demo_beto', '¿Has probado ya Hades II?', 1700],
+    ['demo_ana', 'Sí! Llevo 12 horas, el combate es una pasada', 1690],
+    ['demo_ana', 'Aunque Hollow Knight sigue siendo mi favorito 😅', 1689],
+    ['demo_beto', 'jajaja eso no te lo discuto', 1650],
+    ['demo_beto', '¿Jugamos algo esta noche?', 130],
+    ['demo_ana', 'Dale, ¿a qué hora?', 120],
+    ['demo_beto', '¿Sobre las 10 te viene bien?', 14, 'sinleer'],
+    ['demo_beto', 'Y si quieres probamos el cooperativo de Portal 2', 13, 'sinleer'],
+  ]],
+  ['demo_ana', 'demo_carla', [
+    ['demo_carla', 'Mira lo que he encontrado: https://store.steampowered.com/app/1145360/Hades/', 400],
+    ['demo_ana', 'Ya lo tengo 😄 está rebajadísimo', 395],
+    ['demo_carla', 'Ups, mensaje equivocado', 300, 'borrado'],
+    ['demo_ana', 'Te debo una partida de Celeste', 61],
+  ]],
+  ['demo_ana', 'demo_gus', [
+    ['demo_gus', '¿Te animas a una partida de Elden Ring el finde?', 3000],
+    ['demo_ana', 'Cuenta conmigo, aviso a Fran también', 2990],
+  ]],
+  ['demo_ana', 'demo_eva', [
+    ['demo_eva', '¡Hola!', 9000, 'sinleer'],
+  ]],
+  ['demo_beto', 'demo_dani', [
+    ['demo_beto', 'Ya estoy en el lobby', 50],
+    ['demo_dani', 'Voy, dame un minuto', 49],
+  ]],
+];
+
 // El script solo escribe en una base de datos local
 function esBaseLocal(url) {
   try {
@@ -161,7 +195,7 @@ function esBaseLocal(url) {
 }
 
 async function borrarDemo(db) {
-  // ON DELETE CASCADE: se van también sus juegos, amistades, bloqueos y códigos
+  // ON DELETE CASCADE: se van también sus juegos, amistades, bloqueos, mensajes y códigos
   const r = await db.query('DELETE FROM users WHERE email LIKE $1', [`%${DOMINIO}`]);
   return r.rowCount;
 }
@@ -239,6 +273,22 @@ async function crearDemo(db, solicitudesA, steamId) {
   for (const [a, b] of SOLICITUDES) await amistad(a, b, 'pendiente');
   for (const [a, b] of BLOQUEOS) {
     await db.query('INSERT INTO blocks (blocker_id, blocked_id) VALUES ($1,$2)', [ids[a], ids[b]]);
+  }
+
+  // Conversaciones. created_at y read_at se calculan aquí y se pasan como fechas: la hora a la
+  // que se vio un mensaje es un minuto después de enviarlo (o ahora, si es más reciente).
+  const ahora = Date.now();
+  for (const [a, b, mensajes] of CONVERSACIONES) {
+    for (const [quien, texto, haceMin, estado] of mensajes) {
+      const enviado = new Date(ahora - haceMin * 60_000);
+      const visto = estado === 'sinleer' ? null : new Date(Math.min(ahora, enviado.getTime() + 60_000));
+      await db.query(
+        `INSERT INTO messages (sender_id, recipient_id, body, created_at, read_at, deleted_at)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [ids[quien], ids[quien === a ? b : a], estado === 'borrado' ? '' : texto, enviado, visto,
+          estado === 'borrado' ? new Date(enviado.getTime() + 120_000) : null]
+      );
+    }
   }
 
   // Solicitudes hacia una cuenta real (para probar Aceptar y la insignia de la barra)

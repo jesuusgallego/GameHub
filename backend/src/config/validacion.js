@@ -113,6 +113,11 @@ function fechaNacimientoValida(texto, hoy = new Date()) {
   return fecha.getTime() <= hoyUtc && fecha.getTime() >= masAntigua;
 }
 
+// Chat: los mensajes tienen de 1 a MENSAJE_MAX caracteres (la columna body de schema.sql
+// tiene el mismo tope)
+const MENSAJE_MAX = 2000;
+const MENSAJE_CHAT_INVALIDO = 'El mensaje debe tener entre 1 y 2000 caracteres';
+
 // Coste de bcrypt: cada +1 duplica el tiempo de calcular un hash
 const SALT_ROUNDS = 10;
 
@@ -121,6 +126,6 @@ module.exports = {
   USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
   SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, EDAD_MAX,
   VISIBILIDADES, MENSAJE_VISIBILIDAD, CAMPOS_VISIBILIDAD, POLITICAS_SOLICITUD, MENSAJE_POLITICA, MENSAJE_BUSCABLE,
-  PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO, normalizarTelefono,
+  PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO, normalizarTelefono, MENSAJE_MAX, MENSAJE_CHAT_INVALIDO,
   limpiarTextoPerfil, fechaNacimientoValida,
 };
