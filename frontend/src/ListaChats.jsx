@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import AvatarTono from './AvatarTono'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
 import { estiloTono } from './tono'
 import { usePresencia } from './usePresencia'
 import { useIdioma } from './IdiomaContext'
-import { tramoLista, vistaPrevia } from './chat'
+import { tramoLista, vistaPrevia, rutaChat } from './chat'
 
 // La hora de la última actividad en la lista: la hora si fue hoy, "Ayer", el día de la semana
 // si fue esta semana y la fecha corta si fue antes
@@ -63,7 +63,7 @@ function ElegirAmigo({ amigos, saliendo, onElegir }) {
             <ul className="chat-nuevo__lista">
               {visibles.map((amigo) => (
                 <li key={amigo.username} style={estiloTono(amigo.username)}>
-                  <Link to={`/chat/${amigo.username}`} onClick={onElegir}>
+                  <Link to={rutaChat(amigo.username)} onClick={onElegir}>
                     <AvatarTono usuario={amigo} tamano="pequeno" vivo={Boolean(amigo.playing)} />
                     <span className="chat-nuevo__texto">
                       <strong>{amigo.username}</strong>
@@ -85,7 +85,8 @@ function ElegirAmigo({ amigos, saliendo, onElegir }) {
 //  - conversaciones: la lista del servidor, o null mientras carga
 //  - amigos: tus amigos (para el panel de "Nuevo mensaje" y para saber quién está jugando)
 //  - error: texto si no se pudo cargar
-function ListaChats({ conversaciones, amigos, error }) {
+//  - activo: el usuario de la conversación abierta (o null)
+function ListaChats({ conversaciones, amigos, error, activo }) {
   const { t } = useIdioma()
   const etiquetaFecha = useEtiquetaFecha()
   const [eligiendo, setEligiendo] = useState(false)
@@ -136,11 +137,12 @@ function ListaChats({ conversaciones, amigos, error }) {
             const sinLeer = c.unread > 0
             return (
               <li key={c.username} style={{ ...estiloTono(c.username), '--orden': Math.min(i, 10) }}>
-                <NavLink
-                  to={`/chat/${c.username}`}
-                  className={({ isActive }) => [
+                <Link
+                  to={rutaChat(c.username)}
+                  aria-current={c.username === activo ? 'true' : undefined}
+                  className={[
                     'chat-fila',
-                    isActive && 'chat-fila--activa',
+                    c.username === activo && 'chat-fila--activa',
                     sinLeer && 'chat-fila--sin-leer',
                   ].filter(Boolean).join(' ')}
                 >
@@ -159,7 +161,7 @@ function ListaChats({ conversaciones, amigos, error }) {
                       )}
                     </span>
                   </span>
-                </NavLink>
+                </Link>
               </li>
             )
           })}

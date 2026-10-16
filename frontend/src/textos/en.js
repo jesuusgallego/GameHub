@@ -346,13 +346,14 @@ export default {
 
   // ---- Social ----
   'menu.social': 'Social',
-  'menu.solicitudesPendientes': '{n} pending friend requests',
+  'menu.avisosSocial': '{n} pending notices in Social',
   'social.titulo': 'Social',
   'social.subtitulo': "Who's playing what, what happened since last time, and new people to play with.",
   'social.secciones': 'Social sections',
   'social.cargando': 'Loading...',
   'social.tab.actividad': 'Activity',
   'social.tab.amigos': 'Friends',
+  'social.tab.chat': 'Chat',
   'social.tab.solicitudes': 'Requests',
   'social.tab.descubrir': 'Discover',
   'social.tab.bloqueados': 'Blocked',
@@ -532,8 +533,6 @@ export default {
   'privacidad.autoguardado': 'Changes are saved automatically.',
 
   // ---- Chat ----
-  'menu.chat': 'Chat',
-  'menu.mensajesSinLeer': '{n} unread messages',
   'chat.titulo': 'Chat',
   'chat.lista': 'Conversations',
   'chat.panel': 'Conversation with {usuario}',

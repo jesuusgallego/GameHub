@@ -347,13 +347,14 @@ export default {
 
   // ---- Social ----
   'menu.social': 'Social',
-  'menu.solicitudesPendientes': '{n} solicitudes de amistad pendientes',
+  'menu.avisosSocial': '{n} avisos pendientes en Social',
   'social.titulo': 'Social',
   'social.subtitulo': 'Quién juega a qué, qué ha pasado desde la última vez y gente nueva con la que jugar.',
   'social.secciones': 'Secciones de Social',
   'social.cargando': 'Cargando...',
   'social.tab.actividad': 'Actividad',
   'social.tab.amigos': 'Amigos',
+  'social.tab.chat': 'Chat',
   'social.tab.solicitudes': 'Solicitudes',
   'social.tab.descubrir': 'Descubrir',
   'social.tab.bloqueados': 'Bloqueados',
@@ -533,8 +534,6 @@ export default {
   'privacidad.autoguardado': 'Los cambios se guardan automáticamente.',
 
   // ---- Chat ----
-  'menu.chat': 'Chat',
-  'menu.mensajesSinLeer': '{n} mensajes sin leer',
   'chat.titulo': 'Chat',
   'chat.lista': 'Conversaciones',
   'chat.panel': 'Conversación con {usuario}',

@@ -12,10 +12,10 @@
   display: grid;
   grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
   gap: 1rem;
-  /* Alto de la ventana menos la barra y los márgenes: el cuadro de escribir siempre se ve y
-     solo se desplazan los mensajes */
-  height: clamp(30rem, calc(100svh - 9rem), 56rem);
-  animation: chat-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  /* Alto de la ventana menos la barra de arriba, la barra de pestañas de Social y los márgenes
+     (la cabecera de Social se pliega en esta pestaña): el cuadro de escribir siempre se ve y solo
+     se desplazan los mensajes. La entrada la anima Social con el cambio de pestaña. */
+  height: clamp(28rem, calc(100svh - 14.75rem), 56rem);
 }
 
 @keyframes chat-entrada {
@@ -853,8 +853,8 @@
 @media (max-width: 760px) {
   .chat {
     display: block;
-    height: calc(100svh - 11rem);
-    min-height: 26rem;
+    height: calc(100svh - 16.25rem);
+    min-height: 24rem;
   }
 
   .chat__lista,

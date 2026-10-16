@@ -59,6 +59,12 @@ const ICONOS = {
       <path d="m6 6 12 12" />
     </>
   ),
+  chat: (
+    <>
+      <path d="M21 12a8 8 0 0 1-11.8 7L3 20.5l1.6-5.2A8 8 0 1 1 21 12Z" />
+      <path d="M8.5 11h7M8.5 14h4" />
+    </>
+  ),
   comun: (
     <>
       <circle cx="9" cy="12" r="6" />

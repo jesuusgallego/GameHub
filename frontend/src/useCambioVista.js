@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 // Lo que dura la animación de salida de una vista (debe coincidir con
 // "vista-salida" en estilos/perfil.css)
@@ -13,21 +13,26 @@ const DURACION_VISTA_MS = 160
 export function useCambioVista() {
   const [saliendo, setSaliendo] = useState(false)
   const temporizadorRef = useRef(null)
+  // Si hay un cambio en marcha; en una referencia (y no en `saliendo`) para que `cambiar` no
+  // cambie de identidad a cada pintado y se pueda usar tranquilamente dentro de un efecto
+  const enCursoRef = useRef(false)
 
   // Si me quitan mientras hay un cambio a medias, lo cancelo
   useEffect(() => () => clearTimeout(temporizadorRef.current), [])
 
-  function cambiar(accion) {
-    if (saliendo) return
+  const cambiar = useCallback((accion) => {
+    if (enCursoRef.current) return
+    enCursoRef.current = true
     setSaliendo(true)
 
     // Con "reducir movimiento" el CSS quita las animaciones: no hay nada que esperar
     const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     temporizadorRef.current = setTimeout(() => {
       accion()
+      enCursoRef.current = false
       setSaliendo(false)
     }, sinMovimiento ? 0 : DURACION_VISTA_MS)
-  }
+  }, [])
 
   return { saliendo, cambiar }
 }

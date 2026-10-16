@@ -38,11 +38,13 @@ function colocarLinea(nav, linea, conAnimacion) {
 // Barra superior. NavLink añade la clase "active" al enlace de la página actual.
 // Perfil y cerrar sesión viven en el desplegable de la foto (MenuUsuario); el
 // idioma y el tema claro/oscuro, en el de las tres líneas (MenuAjustes).
-//  - solicitudes: cuántas solicitudes de amistad esperan respuesta; se enseña como una
-//    insignia en "Social"
-//  - mensajes: cuántos mensajes del chat no he leído; insignia en "Chat"
+//  - solicitudes: cuántas solicitudes de amistad esperan respuesta
+//  - mensajes: cuántos mensajes del chat no he leído
+//    Las dos se suman en una sola insignia de "Social", que es donde viven (el chat es una de sus
+//    pestañas); dentro, cada pestaña enseña su propio número.
 function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
   const { t } = useIdioma()
+  const avisos = solicitudes + mensajes
   const navRef = useRef(null)
   const lineaRef = useRef(null)
   // useLocation hace que este componente se vuelva a pintar cada vez que cambia la ruta
@@ -79,17 +81,9 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
           <NavLink to="/buscar">{t('menu.buscar')}</NavLink>
           <NavLink to="/social">
             {t('menu.social')}
-            {solicitudes > 0 && (
-              <span className="insignia" role="status" aria-label={t('menu.solicitudesPendientes', { n: solicitudes })}>
-                {solicitudes > 9 ? '9+' : solicitudes}
-              </span>
-            )}
-          </NavLink>
-          <NavLink to="/chat">
-            {t('menu.chat')}
-            {mensajes > 0 && (
-              <span className="insignia" role="status" aria-label={t('menu.mensajesSinLeer', { n: mensajes })}>
-                {mensajes > 9 ? '9+' : mensajes}
+            {avisos > 0 && (
+              <span className="insignia" role="status" aria-label={t('menu.avisosSocial', { n: avisos })}>
+                {avisos > 9 ? '9+' : avisos}
               </span>
             )}
           </NavLink>

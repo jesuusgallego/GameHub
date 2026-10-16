@@ -12,7 +12,7 @@ import { usePresencia } from './usePresencia'
 import { useIdioma } from './IdiomaContext'
 import { MENSAJE_MAX } from './validacion'
 import {
-  fusionar, marcarBorrados, ultimoId, hayPorLeer, mensajeVisto, agrupar, rotuloDia, sugerenciasInicio,
+  fusionar, marcarBorrados, ultimoId, hayPorLeer, mensajeVisto, agrupar, rotuloDia, sugerenciasInicio, rutaChat,
 } from './chat'
 
 // Cada cuánto se pregunta por mensajes nuevos mientras la conversación está abierta. Es más
@@ -336,7 +336,7 @@ function Conversacion({ username, amigo, borradores, onCambio, cerrarSesion }) {
   return (
     <section className="chat-hilo" style={estiloTono(username)} aria-label={t('chat.panel', { usuario: username })}>
       {estado !== 'error' && <header className="chat-hilo__cabecera">
-        <Link to="/chat" className="chat-hilo__volver" aria-label={t('chat.volver')}>
+        <Link to={rutaChat()} className="chat-hilo__volver" aria-label={t('chat.volver')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m15 18-6-6 6-6" />
           </svg>
@@ -368,7 +368,7 @@ function Conversacion({ username, amigo, borradores, onCambio, cerrarSesion }) {
       {estado === 'error' && (
         <div className="chat-hilo__estado">
           <Mensaje texto={errorCarga} />
-          <Link to="/chat" className="btn btn--secundario">{t('chat.volver')}</Link>
+          <Link to={rutaChat()} className="btn btn--secundario">{t('chat.volver')}</Link>
         </div>
       )}
 

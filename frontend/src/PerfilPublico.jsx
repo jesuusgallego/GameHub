@@ -8,6 +8,7 @@ import BibliotecaAjena from './BibliotecaAjena'
 import AmigosAjenos from './AmigosAjenos'
 import AvisoPrivado from './AvisoPrivado'
 import AccionAmistad from './AccionAmistad'
+import { rutaChat } from './chat'
 import BandaEnComun from './BandaEnComun'
 import CaraACara from './CaraACara'
 import EnComun from './EnComun'
@@ -183,7 +184,7 @@ function PerfilPublico({ setToken }) {
   const acciones = (
     <>
       {usuario.relation === 'amigos' && (
-        <Link to={`/chat/${nombre}`} className="btn btn--primario">{t('chat.enviarMensaje')}</Link>
+        <Link to={rutaChat(nombre)} className="btn btn--primario">{t('chat.enviarMensaje')}</Link>
       )}
       <AccionAmistad persona={usuario} onCambio={alCambiar} cerrarSesion={cerrarSesion} />
       {!esBloqueado && (

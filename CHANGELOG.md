@@ -5,9 +5,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
-- **Chat entre amigos.** Una sección nueva, **Chat**, en la barra: a la izquierda tus
-  conversaciones (la más reciente primero, con lo último que se dijo, la hora y cuántos mensajes
-  tienes sin leer) y a la derecha la que tengas abierta.
+- **Chat entre amigos**, en una pestaña nueva de **Social** (entre *Amigos* y *Solicitudes*): a la
+  izquierda tus conversaciones (la más reciente primero, con lo último que se dijo, la hora y
+  cuántos mensajes tienes sin leer) y a la derecha la que tengas abierta. Al entrar en ella, la
+  cabecera de Social se pliega para dejarle la altura de la pantalla, y al salir vuelve.
+  - La conversación abierta va en la dirección (`/social?tab=chat&con=ana`) y la pestaña la
+    recuerda al cambiar a otra y volver. Las direcciones antiguas `/chat` y `/chat/ana` siguen
+    funcionando.
   - Solo se escribe a **amigos**. Si dejáis de serlo, la conversación se conserva para leerla, pero
     no se puede escribir; si bloqueas a alguien (o te bloquea), desaparece para los dos.
   - **Intro** envía y **Mayús + Intro** hace un salto de línea. Los enlaces (`http` y `https`) se
@@ -17,7 +21,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   - **Eliminar un mensaje** tuyo lo borra para los dos de verdad (el texto desaparece del
     servidor) y deja el hueco "Mensaje eliminado".
   - Los mensajes llegan sin recargar (cada pocos segundos mientras la conversación está abierta y
-    la app se usa). La barra y el título de la pestaña enseñan cuántos tienes sin leer. Si estás
+    la app se usa). La pestaña Chat, la insignia de **Social** (que suma solicitudes y mensajes) y el
+    título de la ventana enseñan cuántos tienes sin leer. Si estás
     leyendo mensajes antiguos, no te baja de golpe: aparece "Mensajes nuevos".
   - Un mensaje que no se envía por falta de conexión se queda marcado con *Reintentar* y
     *Descartar*, y lo que dejas a medias de escribir se conserva al cambiar de conversación.

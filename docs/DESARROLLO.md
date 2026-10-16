@@ -807,10 +807,22 @@ Epic se descartaron), por eso es la única que se puede vincular.
 
 Mensajes de uno a uno **solo entre amigos**, con consultas periódicas (no WebSockets: Render
 gratuito se duerme y no mantiene conexiones abiertas). Backend: `controllers/chatController.js`
-y `routes/chatRoutes.js`. Frontend: `Chat.jsx` (la página: lista + panel, y la dirección
-`/chat/:username?`), `ListaChats.jsx` (conversaciones y el panel "Nuevo mensaje"),
+y `routes/chatRoutes.js`. Frontend: `Chat.jsx` (lista + panel; vive en la pestaña **Chat** de
+`Social.jsx`, que le pasa la conversación abierta y los borradores), `ListaChats.jsx`
+(conversaciones y el panel "Nuevo mensaje"),
 `Conversacion.jsx` (una conversación: carga, sondeo, envío, borrado, scroll), `Burbuja.jsx` (un
 mensaje) y `chat.js` (la lógica sin React, con pruebas). Estilos en `estilos/chat.css`.
+
+- **Dentro de Social.** La dirección es `/social?tab=chat&con=ana`, y es la **única fuente de
+  verdad**: `Social.jsx` deriva de ella la pestaña activa y la conversación (antes eran estados
+  propios), así que cualquier `<Link to={rutaChat(usuario)}>` funciona (el botón *Mensaje* del
+  carnet y del perfil, la lista de conversaciones, el botón atrás) y las rutas antiguas `/chat` y
+  `/chat/:usuario` solo redirigen (`RedirigirChat` en `App.jsx`). El chat **solo se monta mientras
+  su pestaña se ve**: los demás paneles de Social siempre están montados, pero un chat montado
+  oculto sondearía el servidor sin que nadie lo mire. Por eso los borradores y la última
+  conversación (`conChat`) viven en `Social`. Al entrar en la pestaña, la cabecera lobby se pliega
+  (`Plegable`) para dejarle la altura; para eso `.sala` ya no tiene `gap` (un `gap` no se anima).
+  La insignia de **Social** en la barra suma solicitudes y mensajes; cada pestaña enseña su número.
 
 - **Reglas.** Escribir exige amistad y ningún bloqueo; si dejáis de ser amigos el historial
   sigue ahí (solo lectura), y con un bloqueo la conversación no existe para ninguno de los dos
@@ -818,8 +830,8 @@ mensaje) y `chat.js` (la lógica sin React, con pruebas). Estilos en `estilos/ch
   mensajes (`ON DELETE CASCADE`). Un mensaje borrado pierde su texto en la base de datos.
 - **Dos sondeos.** La conversación abierta pregunta por `?after=<último id>` cada 4 s y la lista de
   conversaciones se pone al día cada 12 s; la lista trae los no leídos de cada una y de ella sale
-  la insignia de la barra mientras estás en Chat (fuera de Chat, `Layout.jsx` pide `/chat/unread`
-  cada minuto junto a las solicitudes). Ambos usan `iniciarSondeo`, así que **se paran con la
+  la insignia de la barra mientras estás en la pestaña Chat (fuera de ella, `Layout.jsx` pide
+  `/chat/unread` cada minuto junto a las solicitudes). Ambos usan `iniciarSondeo`, así que **se paran con la
   pestaña oculta o tras 5 minutos sin actividad**. Consecuencia buscada: con la app minimizada no
   llegan avisos de mensajes nuevos hasta que vuelves; para eso haría falta una conexión
   permanente (SSE o WebSocket) y un servidor siempre despierto.

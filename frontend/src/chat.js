@@ -104,6 +104,12 @@ export function vistaPrevia(ultimo, t) {
   return ultimo.mine ? t('chat.tu', { texto: cuerpo }) : cuerpo
 }
 
+// La dirección del chat dentro de Social: la lista (sin usuario) o una conversación. Es lo que
+// llevan todos los enlaces al chat (el botón Mensaje del perfil y del carnet, la lista...).
+export function rutaChat(usuario) {
+  return usuario ? `/social?tab=chat&con=${encodeURIComponent(usuario)}` : '/social?tab=chat'
+}
+
 // Cuánto hace de una fecha para la lista de conversaciones: 'hoy', 'ayer', 'semana' (los 5
 // días anteriores a ayer) o 'antes'. Días de calendario, como rotuloDia.
 export function tramoLista(fecha, ahora = Date.now()) {

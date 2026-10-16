@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, useOutletContext } from 'react-router-dom'
+import { useOutletContext } from 'react-router-dom'
 import { apiFetch } from './api'
 import ListaChats from './ListaChats'
 import Conversacion from './Conversacion'
@@ -14,21 +14,23 @@ const LISTA_CADA_MS = 12_000
 // Los amigos (para saber quién está jugando) se piden cada tantas vueltas de la lista
 const AMIGOS_CADA = 5
 
-// Página Chat: a la izquierda tus conversaciones y a la derecha la que tengas abierta. La
-// conversación va en la dirección (/chat/ana), así que se puede enlazar y el botón de atrás
-// vuelve a la lista. En pantallas estrechas se ve una u otra, nunca las dos.
+// El chat, que vive en la pestaña "Chat" de Social: a la izquierda tus conversaciones y a la
+// derecha la que tengas abierta. La conversación va en la dirección (/social?tab=chat&con=ana),
+// así que se puede enlazar y el botón de atrás vuelve a la lista. En pantallas estrechas se ve
+// una u otra, nunca las dos.
 //  - Solo se puede hablar con amigos; la lista incluye también a quien lo fue, para poder
 //    seguir leyendo lo que os dijisteis.
-function Chat({ setToken }) {
+//  - setToken: para cerrar sesión si caduca
+//  - username: con quién se habla (viene de la dirección), o null si no hay ninguna abierta
+//  - borradores: { current: Map } con lo que había a medio escribir en cada conversación; lo
+//    guarda Social para que sobreviva a cambiar de pestaña
+function Chat({ setToken, username, borradores }) {
   const { t } = useIdioma()
-  const { username } = useParams()
   const { ponerMensajes } = useOutletContext()
 
   const [conversaciones, setConversaciones] = useState(null)
   const [amigos, setAmigos] = useState(null)
   const [error, setError] = useState('')
-  // Lo que había escrito a medias en cada conversación; sobrevive a cambiar de una a otra
-  const borradores = useRef(new Map())
   const vueltasRef = useRef(0)
 
   const cerrarSesion = useCallback(() => {
@@ -83,7 +85,7 @@ function Chat({ setToken }) {
   return (
     <div className={username ? 'chat chat--abierto' : 'chat'}>
       <aside className="chat__lista">
-        <ListaChats conversaciones={conversaciones} amigos={amigos} error={error} />
+        <ListaChats conversaciones={conversaciones} amigos={amigos} error={error} activo={username} />
       </aside>
 
       <div className="chat__panel">
