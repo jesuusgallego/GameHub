@@ -15,3 +15,17 @@ export function escribirToken(token) {
 export function borrarToken() {
   localStorage.removeItem(CLAVE)
 }
+
+// Avisa cuando OTRA pestaña o ventana de este navegador inicia o cierra sesión (o cambia de
+// cuenta). El token se comparte entre todas las pestañas, y cada petición usa el que haya en
+// ese momento: sin este aviso, una pestaña abierta como "ana" seguiría enseñando su avatar y
+// su pantalla mientras pide los datos de "beto". El evento `storage` solo salta en las demás
+// pestañas, nunca en la que escribió. Devuelve la función para darse de baja.
+export function alCambiarSesionEnOtraPestana(funcion) {
+  const oyente = (e) => {
+    // e.key es null cuando se vacía todo el almacenamiento
+    if (e.key === null || e.key === CLAVE) funcion()
+  }
+  window.addEventListener('storage', oyente)
+  return () => window.removeEventListener('storage', oyente)
+}

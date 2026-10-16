@@ -28,6 +28,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   un enlace) para probar el chat con `demo_ana`.
 
 ### Cambiado
+- Si inicias o cierras sesión en una pestaña, las demás pestañas de ese navegador se recargan. Antes
+  seguían enseñando la pantalla y el avatar de la cuenta anterior mientras pedían los datos de la
+  nueva.
 - La barra de navegación en pantallas estrechas aprieta el hueco entre enlaces para que, con el
   cuarto enlace (Chat), "Mi biblioteca" no se parta en dos líneas.
 
