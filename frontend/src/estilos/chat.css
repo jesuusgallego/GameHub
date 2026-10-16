@@ -308,6 +308,7 @@
 
 /* ---- Lista de conversaciones ---- */
 .chat-lista {
+  position: relative; /* la hoja "¿A quién escribes?" se coloca encima de la lista */
   display: flex;
   min-height: 0;
   flex: 1;
@@ -576,10 +577,6 @@
 
 /* ---- La hoja "¿A quién escribes?" (ElegirAmigo, en ListaChats.jsx) ---- */
 /* Sube sobre la lista desde abajo, como una hoja de papel; los amigos entran uno tras otro */
-.chat-lista {
-  position: relative;
-}
-
 .chat-nuevo {
   position: absolute;
   inset: 0;
@@ -722,8 +719,11 @@
   max-width: 100%;
   align-items: center;
   gap: 0.35rem;
+  overflow: hidden;
   font-size: 0.74rem;
   color: var(--texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-nuevo__punto {
@@ -732,12 +732,6 @@
   height: 0.45rem;
   background: var(--estado-jugando);
   border-radius: 50%;
-}
-
-.chat-nuevo__juego {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .chat-nuevo__vacio,

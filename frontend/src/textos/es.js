@@ -575,7 +575,6 @@ export default {
   'chat.noEnviado': 'No se ha enviado',
   'chat.reintentar': 'Reintentar',
   'chat.descartar': 'Descartar',
-  'chat.visto': 'Visto',
   'chat.vistoA': 'Visto a las {hora}',
   'chat.nuevosMensajes': 'Mensajes nuevos',
   'chat.noAmigos': 'Ya no sois amigos, así que no puedes escribirle. Puedes seguir leyendo la conversación.',

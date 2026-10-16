@@ -574,7 +574,6 @@ export default {
   'chat.noEnviado': 'Not sent',
   'chat.reintentar': 'Retry',
   'chat.descartar': 'Discard',
-  'chat.visto': 'Seen',
   'chat.vistoA': 'Seen at {hora}',
   'chat.nuevosMensajes': 'New messages',
   'chat.noAmigos': 'You are no longer friends, so you cannot write to them. You can still read the conversation.',

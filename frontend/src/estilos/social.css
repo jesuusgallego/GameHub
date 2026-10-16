@@ -43,16 +43,6 @@
   }
 }
 
-/* Entrada de los elementos de una lista: suben un poco mientras aparecen, escalonados
-   con --orden (0, 1, 2...) */
-
-@keyframes social-entrada {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
-
 /* ---- Botones de la amistad ---- */
 
 .accion-amistad {
