@@ -650,6 +650,21 @@ IGDB falla, la lista sale igual y se reintenta en la siguiente visita. Las fecha
 leen como texto (`types.setTypeParser(1082)` en `config/db.js`) para evitar el desfase de zona
 horaria.
 
+**Fluidez de la biblioteca.** Cuatro piezas, todas en `frontend/src`:
+- `cacheBiblioteca.js`: la última lista de juegos se guarda en memoria, ligada al token de
+  sesión (otra cuenta nunca ve la de la anterior). Al volver a *Mi biblioteca* se pinta al
+  instante y se refresca por detrás; sin copia sale el spinner y la página entra con un fundido.
+  Si el refresco falla y hay copia, se sigue viendo la copia.
+- `useAnimacionLista.js`: al filtrar, buscar u ordenar, las tarjetas que se quedan **se
+  deslizan** a su sitio (técnica FLIP con la Web Animations API, solo `transform`), las que
+  entran aparecen con un fundido y las que salen dejan una copia ("fantasma") que se desvanece.
+  El contenedor es `position: relative` y cada hijo lleva `data-clave`. La primera vez que
+  aparece la lista no anima, y con "reducir movimiento" tampoco (la Web Animations API no la
+  apaga el CSS). La usan también las tarjetas de "Jugando ahora".
+- `Plegable.jsx`: la fila "Jugando ahora" se despliega y se pliega animando la altura
+  (`grid-template-rows` de `0fr` a `1fr`) en lugar de aparecer de golpe y empujar la página. El
+  hueco de debajo va dentro (por eso `.biblioteca-pagina` ya no tiene `gap`).
+- `ImagenSuave.jsx`: las portadas aparecen con un fundido al terminar de cargar.
 ### Steam
 
 Es la única plataforma con una API oficial para leer la biblioteca de un jugador (PSN, Xbox y

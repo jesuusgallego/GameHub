@@ -1,14 +1,95 @@
 /* Mi biblioteca: "Jugando ahora", filtros laterales y portadas pulsables. */
 
 /* ---- Mi biblioteca: fila "Jugando ahora" -------------------------------- */
+/* La página entra con un fundido y un pequeño ascenso, como las de Social. No hay `gap` entre los
+   bloques: el hueco de debajo de "Jugando ahora" va dentro de su Plegable (ver abajo), para que
+   se pliegue con él en vez de quedarse o desaparecer de golpe. */
 .biblioteca-pagina {
   display: flex;
   flex-direction: column;
-  gap: 2.25rem;
+  animation: biblioteca-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.biblioteca-pagina > section > .titulo-seccion {
+@keyframes biblioteca-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.biblioteca-pagina section > .titulo-seccion {
   margin-bottom: 0.9rem;
+}
+
+/* ---- Plegable: se despliega y se pliega animando la altura (ver Plegable.jsx) ---- */
+.plegable {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: plegable-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.plegable--quieto {
+  animation: none;
+}
+
+.plegable--saliendo {
+  pointer-events: none;
+  animation: plegable-salida 0.3s ease-in both;
+}
+
+/* min-height: 0 deja que la fila se encoja a 0; el recorte (overflow) solo se aplica mientras
+   dura la animación, para que en reposo no corte las sombras ni el realce de las tarjetas */
+.plegable__interior {
+  min-height: 0;
+  padding-bottom: 2.25rem;
+  animation: plegable-recorte 0.4s both;
+}
+
+.plegable--quieto .plegable__interior {
+  animation: none;
+}
+
+.plegable--saliendo .plegable__interior {
+  overflow: hidden;
+  animation: none;
+}
+
+@keyframes plegable-entrada {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@keyframes plegable-salida {
+  to {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+@keyframes plegable-recorte {
+  from, to {
+    overflow: hidden;
+  }
+}
+
+/* Listas que se animan al cambiar (useAnimacionLista): los fantasmas de lo que sale se colocan
+   dentro, así que el contenedor es su referencia */
+.rejilla,
+.jugando {
+  position: relative;
+}
+
+/* Las portadas aparecen con un fundido al cargar (ImagenSuave.jsx). Va antes que las reglas de
+   cada tipo de portada, así estas (como .jugando__fondo, translúcida) pueden fijar su opacidad. */
+.imagen-suave {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.imagen-suave--cargada {
+  opacity: 1;
 }
 
 .jugando__encabezado {
@@ -17,23 +98,24 @@
   gap: 0.75rem;
 }
 
-/* Puntito verde que late junto al título: "esto está pasando ahora" */
+/* Puntito verde que late junto al título: "esto está pasando ahora". La onda es un círculo que se
+   agranda y se desvanece (transform y opacity: lo anima la tarjeta gráfica, sin repintar) */
 .pulso {
+  position: relative;
   width: 10px;
   height: 10px;
   flex: none;
   border-radius: 50%;
   background: var(--estado-jugando);
-  animation: pulso 1.8s ease-out infinite;
 }
 
-@keyframes pulso {
-  0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--estado-jugando) 60%, transparent);
-  }
-  70%, 100% {
-    box-shadow: 0 0 0 9px transparent;
-  }
+.pulso::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--estado-jugando);
+  animation: punto-vivo 1.8s ease-out infinite;
 }
 
 .jugando {

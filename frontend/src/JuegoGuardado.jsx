@@ -10,6 +10,7 @@ import IconoResena from './IconoResena'
 import ProgresoSteam from './ProgresoSteam'
 import InsigniaSteam from './InsigniaSteam'
 import IconoPlataforma from './IconoPlataforma'
+import ImagenSuave from './ImagenSuave'
 import { esDeSteam } from './steam'
 
 // Tarjeta de un juego que ya está en mi biblioteca. onActualizar y onBorrar son
@@ -48,7 +49,7 @@ function JuegoGuardado({ juego, onActualizar, onBorrar, onVerDetalle }) {
   }
 
   return (
-    <li className="tarjeta" onContextMenu={abrirMenu}>
+    <li className="tarjeta" data-clave={juego.id} onContextMenu={abrirMenu}>
       <div className="portada">
         {/* La portada no lleva foco propio: el botón del título ya abre la ficha */}
         <button
@@ -59,7 +60,7 @@ function JuegoGuardado({ juego, onActualizar, onBorrar, onVerDetalle }) {
           aria-hidden="true"
         >
           {juego.cover_url
-            ? <img src={juego.cover_url} alt="" loading="lazy" />
+            ? <ImagenSuave src={juego.cover_url} loading="lazy" />
             : <span className="portada__vacia">{t('comun.sinPortada')}</span>}
         </button>
         <InsigniaSteam juego={juego} />

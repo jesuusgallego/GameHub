@@ -2,6 +2,8 @@ import { useIdioma } from './IdiomaContext'
 import IconoResena from './IconoResena'
 import InsigniaSteam from './InsigniaSteam'
 import IconoPlataforma from './IconoPlataforma'
+import ImagenSuave from './ImagenSuave'
+import { useAnimacionLista } from './useAnimacionLista'
 import VentanasJuego from './VentanasJuego'
 import { useAccionesJuego } from './useAccionesJuego'
 import { useMenuJuego } from './useMenuJuego'
@@ -18,10 +20,10 @@ function TarjetaJugando({ juego, onVerDetalle, onActualizar, onBorrar }) {
   const { abrirMenu, menu } = useMenuJuego(juego, acciones, acciones.borrando)
 
   return (
-    <li className="jugando__tarjeta" onContextMenu={abrirMenu}>
+    <li className="jugando__tarjeta" data-clave={juego.id} onContextMenu={abrirMenu}>
       {/* La misma portada, agrandada y desenfocada, hace de fondo de la tarjeta */}
       {juego.cover_url && (
-        <img className="jugando__fondo" src={juego.cover_url} alt="" aria-hidden="true" loading="lazy" />
+        <ImagenSuave className="jugando__fondo" src={juego.cover_url} aria-hidden="true" loading="lazy" />
       )}
 
       <div className="jugando__portada">
@@ -33,7 +35,7 @@ function TarjetaJugando({ juego, onVerDetalle, onActualizar, onBorrar }) {
           aria-hidden="true"
         >
           {juego.cover_url
-            ? <img src={juego.cover_url} alt="" loading="lazy" />
+            ? <ImagenSuave src={juego.cover_url} loading="lazy" />
             : <span className="portada__vacia">{t('comun.sinPortada')}</span>}
         </button>
         <InsigniaSteam juego={juego} pequena />
@@ -75,6 +77,7 @@ function TarjetaJugando({ juego, onVerDetalle, onActualizar, onBorrar }) {
 //    Error si el backend falla)
 function JugandoAhora({ juegos, onVerDetalle, onActualizar, onBorrar }) {
   const { t } = useIdioma()
+  const listaRef = useAnimacionLista()
 
   return (
     <section aria-labelledby="titulo-jugando">
@@ -84,7 +87,7 @@ function JugandoAhora({ juegos, onVerDetalle, onActualizar, onBorrar }) {
         <span className="contador">{juegos.length}</span>
       </h2>
 
-      <ul className="jugando">
+      <ul className="jugando" ref={listaRef}>
         {juegos.map((juego) => (
           <TarjetaJugando
             key={juego.id}

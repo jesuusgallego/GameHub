@@ -9,13 +9,18 @@ import { useIdioma } from './IdiomaContext'
 import { apiFetch } from './api'
 import Cargando from './Cargando'
 import JugandoAhora from './JugandoAhora'
+import Plegable from './Plegable'
+import { useAnimacionLista } from './useAnimacionLista'
+import { leerCacheJuegos, guardarCacheJuegos } from './cacheBiblioteca'
 import { borrarToken } from './sesion'
 
 // Muestro los juegos que el usuario ha guardado (GET /games).
 function Biblioteca({ setToken }) {
   const { t, locale } = useIdioma()
-  const [juegos, setJuegos] = useState([])
-  const [cargando, setCargando] = useState(true)
+  // Si ya pedí la biblioteca en esta sesión, la enseño al instante y la refresco por detrás
+  // (ver cacheBiblioteca.js); si no, spinner hasta que llegue
+  const [juegos, setJuegos] = useState(() => leerCacheJuegos() ?? [])
+  const [cargando, setCargando] = useState(() => leerCacheJuegos() === null)
   const [error, setError] = useState("")
   // Los filtros y el orden solo viven en el navegador: no piden nada al backend, los
   // aplico sobre la lista que ya tengo en "juegos".
@@ -32,6 +37,13 @@ function Biblioteca({ setToken }) {
   // Juego cuya ficha está abierta (null = ninguna). Un único estado en la página
   // vale para todas las tarjetas.
   const [detalle, setDetalle] = useState(null)
+  // Anima la rejilla al filtrar, ordenar o buscar (las tarjetas se deslizan, entran y salen)
+  const rejillaRef = useAnimacionLista()
+
+  // Cada cambio de la lista (al cargar, editar o borrar) se guarda para la próxima visita
+  useEffect(() => {
+    if (!cargando) guardarCacheJuegos(juegos)
+  }, [juegos, cargando])
 
   useEffect(() => {
     let cancelado = false
@@ -50,7 +62,9 @@ function Biblioteca({ setToken }) {
           return
         }
 
-        setError(err.message)
+        // Con la copia en pantalla, un fallo al refrescar no la quita: se sigue viendo lo último
+        // que se sabe. Sin copia, se enseña el error.
+        if (!leerCacheJuegos()) setError(err.message)
       })
       .finally(() => {
         if (!cancelado) setCargando(false)
@@ -138,14 +152,15 @@ function Biblioteca({ setToken }) {
 
   return (
     <div className="biblioteca-pagina">
-      {jugandoAhora.length > 0 && (
+      {/* Se despliega y se pliega en lugar de aparecer de golpe y empujar toda la página */}
+      <Plegable abierto={jugandoAhora.length > 0}>
         <JugandoAhora
           juegos={jugandoAhora}
           onVerDetalle={abrirDetalle}
           onActualizar={actualizarJuego}
           onBorrar={borrarJuego}
         />
-      )}
+      </Plegable>
 
       <div className="biblioteca">
         <FiltrosBiblioteca
@@ -192,7 +207,7 @@ function Biblioteca({ setToken }) {
             />
           </div>
 
-          <ul className="rejilla">
+          <ul className="rejilla" ref={rejillaRef}>
             {visibles.map((juego) => (
               <JuegoGuardado
                 key={juego.id}

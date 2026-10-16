@@ -28,6 +28,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   un enlace) para probar el chat con `demo_ana`.
 
 ### Cambiado
+- **Mi biblioteca, más fluida.**
+  - Al **filtrar, buscar u ordenar**, las tarjetas que se quedan se deslizan a su sitio, las que
+    entran aparecen con un fundido y las que sobran se desvanecen (antes saltaban o desaparecían
+    de golpe).
+  - Al **volver** a Mi biblioteca se ve al instante, sin esperar al spinner: se enseña la última
+    lista y se refresca por detrás.
+  - La fila **Jugando ahora** se despliega y se pliega cuando pones o quitas tu primer juego en
+    "jugando", en vez de empujar toda la página de golpe.
+  - Las portadas aparecen con un fundido al cargar, y la página entra con un fundido en lugar de
+    saltar del spinner a todo el contenido.
+  - El punto verde de "Jugando ahora" usa una animación que no obliga a repintar la página.
 - **La entrada a Social ya no da saltos cuando llegan los datos.** La barra de pestañas
   (Actividad, Amigos, Solicitudes…) se pintaba antes de tener los datos y, al llegar, le salían los
   contadores y se ensanchaba de golpe, y la frase de la cabecera cambiaba de texto y de ancho en
