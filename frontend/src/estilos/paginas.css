@@ -82,6 +82,38 @@
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
+  /* Entra con un fundido y un pequeño ascenso, como las demás páginas */
+  animation: buscar-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes buscar-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Debajo del banner: los bloques que se pliegan y la rejilla de resultados. Sin `gap`: el hueco
+   entre bloques va dentro de cada Plegable, para que se pliegue con él. */
+.buscar-zona {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mientras llegan los resultados de una búsqueda nueva, los de la anterior se ven atenuados */
+.rejilla--buscando {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.rejilla {
+  transition: opacity 0.2s ease;
+}
+
+.resultados__buscando {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .banner {
@@ -111,5 +143,4 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: -0.5rem;
 }

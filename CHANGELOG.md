@@ -28,6 +28,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   un enlace) para probar el chat con `demo_ana`.
 
 ### Cambiado
+- **Buscar, más fluido.**
+  - Al escribir, los resultados anteriores **se quedan en pantalla (atenuados)** mientras llegan los
+    nuevos, con "Buscando…" arriba, en vez de vaciar la página a cada letra. Los que siguen se
+    deslizan a su sitio, los nuevos entran uno tras otro y los que sobran se desvanecen.
+  - Si vuelves a un término que ya buscaste (al borrar letras, por ejemplo), sale **al instante**.
+  - Los bloques (la ayuda inicial, "Buscando…", el título de resultados, los errores) se despliegan
+    y se pliegan en lugar de aparecer de golpe y mover lo de debajo. Una búsqueda sin resultados
+    ahora lo dice ("No hay juegos que coincidan con…").
+  - Los botones "En tu biblioteca" salen bien desde el primer momento si ya habías abierto Mi
+    biblioteca, y un juego que añades desde aquí ya está en ella al volver. Las portadas aparecen
+    con un fundido y la página entra con un fundido.
 - **Mi biblioteca, más fluida.**
   - Al **filtrar, buscar u ordenar**, las tarjetas que se quedan se deslizan a su sitio, las que
     entran aparecen con un fundido y las que sobran se desvanecen (antes saltaban o desaparecían

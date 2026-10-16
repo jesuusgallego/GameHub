@@ -665,6 +665,15 @@ horaria.
   (`grid-template-rows` de `0fr` a `1fr`) en lugar de aparecer de golpe y empujar la página. El
   hueco de debajo va dentro (por eso `.biblioteca-pagina` ya no tiene `gap`).
 - `ImagenSuave.jsx`: las portadas aparecen con un fundido al terminar de cargar.
+
+**Fluidez de Buscar.** Reutiliza las mismas piezas (`useAnimacionLista` con `{ escalonar: true }`,
+`Plegable` con su `hueco`, `ImagenSuave`, `cacheBiblioteca`) más `cacheBusquedas.js`: los
+resultados de las últimas 40 búsquedas se guardan en memoria y un término repetido sale al
+instante, sin esperar la pausa de 400 ms al escribir ni al servidor. Mientras llega una búsqueda
+nueva se siguen viendo los resultados de la anterior, atenuados (`.rejilla--buscando`), y la
+cabecera enseña "Buscando…"; solo la primera búsqueda muestra el spinner grande. Los bloques de
+estado (ayuda inicial, spinner, error, cabecera, "sin resultados") son `Plegable` dentro de
+`.buscar-zona`, que no tiene `gap`: el hueco va dentro de cada bloque para que se pliegue con él.
 ### Steam
 
 Es la única plataforma con una API oficial para leer la biblioteca de un jugador (PSN, Xbox y

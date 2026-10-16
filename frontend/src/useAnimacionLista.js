@@ -12,12 +12,15 @@ import { useRef, useLayoutEffect, useEffect } from 'react'
 // Uso: const ref = useAnimacionLista(); <ul ref={ref}>…<li data-clave={juego.id}>…</li></ul>
 //  - El contenedor tiene que ser `position: relative` (los fantasmas se colocan dentro).
 //  - Cada hijo lleva `data-clave` con un valor único y estable (el id).
-//  - La primera vez que aparece la lista no se anima nada (de eso se encarga la entrada de la página).
+//  - La primera vez que aparece la lista no se anima nada (de eso se encarga la entrada de la página),
+//    salvo con `{ escalonar: true }`: entonces las tarjetas entran una tras otra. Es para las listas
+//    que se vacían y se llenan (los resultados de una búsqueda), donde cada tanda es "la primera".
 //  - Con "reducir movimiento" del sistema no se anima nada (las animaciones de la Web Animations
 //    API no las apaga el CSS, así que se comprueba aquí).
 const MOVER_MS = 340
 const ENTRAR_MS = 260
 const SALIR_MS = 200
+const ESCALON_MS = 35
 // Si cambia casi todo (una lista enorme), animar cientos de elementos a la vez sería peor que nada
 const MAX_ANIMADOS = 120
 const CURVA = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
@@ -43,7 +46,7 @@ function desplazamientoEnCurso(el) {
   return { x: m.m41, y: m.m42 }
 }
 
-export function useAnimacionLista() {
+export function useAnimacionLista({ escalonar = false } = {}) {
   const ref = useRef(null)
   const previas = useRef(new Map())
 
@@ -60,15 +63,18 @@ export function useAnimacionLista() {
     previas.current = ahora
 
     const sinMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (sinMovimiento || antes.size === 0 || ahora.size + antes.size > MAX_ANIMADOS * 2) return
+    if (sinMovimiento || (antes.size === 0 && !escalonar) || ahora.size + antes.size > MAX_ANIMADOS * 2) return
 
+    let entrando = 0
     for (const [clave, actual] of ahora) {
       const previa = antes.get(clave)
 
       if (!previa) {
+        // Con `escalonar`, cada tarjeta nueva espera un poco más que la anterior (hasta un tope)
+        const espera = escalonar ? Math.min(entrando++, 10) * ESCALON_MS : 0
         actual.nodo.animate(
           [{ opacity: 0, transform: 'scale(0.92)' }, { opacity: 1, transform: 'scale(1)' }],
-          { duration: ENTRAR_MS, easing: CURVA, id: 'lista-entrar' }
+          { duration: ENTRAR_MS, easing: CURVA, delay: espera, fill: 'backwards', id: 'lista-entrar' }
         )
         continue
       }

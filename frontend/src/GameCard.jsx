@@ -1,15 +1,18 @@
 import BotonAnadir from './BotonAnadir'
+import ImagenSuave from './ImagenSuave'
 import { useIdioma } from './IdiomaContext'
 
 // Tarjeta de un resultado de la búsqueda. El botón de añadir vive en BotonAnadir
 // y el padre (Buscar) me pasa yaGuardado y onAnadir.
 // Toda la tarjeta abre la ficha: el ::after del botón del título se estira por
 // ella (ver estilos/tarjetas.css) y el botón de añadir va por encima.
-function GameCard({ nombre, portada, yaGuardado, onAnadir, onVerDetalle }) {
+//  - clave: id estable del juego; lo lee useAnimacionLista (data-clave) para deslizar y animar
+//    las tarjetas cuando cambian los resultados
+function GameCard({ clave, nombre, portada, yaGuardado, onAnadir, onVerDetalle }) {
   const { t } = useIdioma()
 
   return (
-    <li className="tarjeta">
+    <li className="tarjeta" data-clave={clave}>
       <div className="portada">
         <button
           type="button"
@@ -19,7 +22,7 @@ function GameCard({ nombre, portada, yaGuardado, onAnadir, onVerDetalle }) {
           aria-hidden="true"
         >
           {portada
-            ? <img src={portada} alt="" loading="lazy" />
+            ? <ImagenSuave src={portada} loading="lazy" />
             : <span className="portada__vacia">{t('comun.sinPortada')}</span>}
         </button>
       </div>

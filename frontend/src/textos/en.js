@@ -171,6 +171,7 @@ export default {
   'buscar.buscando': 'Searching...',
   'buscar.resultadosPara': 'Results for “{termino}”',
   'buscar.marcados': 'The ones you already have are marked',
+  'buscar.sinResultados': 'No games match “{termino}”. Try another name.',
 
   // ---- Game details ----
   'detalle.cargando': 'Loading information...',

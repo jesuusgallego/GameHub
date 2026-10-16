@@ -172,6 +172,7 @@ export default {
   'buscar.buscando': 'Buscando...',
   'buscar.resultadosPara': 'Resultados para “{termino}”',
   'buscar.marcados': 'Los que ya tienes aparecen marcados',
+  'buscar.sinResultados': 'No hay juegos que coincidan con “{termino}”. Prueba con otro nombre.',
 
   // ---- Ficha de un juego ----
   'detalle.cargando': 'Cargando información...',
