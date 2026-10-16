@@ -34,6 +34,7 @@ mantiene fuera del repositorio, en un documento privado; su `bundle.css` se gene
 | [1.1.0](../CHANGELOG.md) | 2026-10-12 | Recuperación de contraseña por correo, sesiones más seguras y mejoras en el perfil y en los avisos de actualización |
 | [1.2.0](../CHANGELOG.md) | 2026-10-15 | Social: amigos, solicitudes, bloqueos, actividad y perfiles públicos con privacidad dato a dato; inicio de sesión con nombre de usuario y datos personales en el perfil |
 | [1.3.0](../CHANGELOG.md) | 2026-10-16 | Social rediseñado ("la sala"); en el perfil de un amigo, lo que tenéis en común, un cara a cara y la ficha de sus juegos con su partida y sus logros de Steam; ajuste de privacidad "Horas y logros"; la insignia de solicitudes se actualiza sola |
+| [1.4.0](../CHANGELOG.md) | 2026-10-16 | Chat entre amigos (botón y panel en toda la app, "visto", borrado y avisos de no leídos); Social, Mi biblioteca y Buscar mucho más fluidos |
 
 ## 3. Qué falta
 
@@ -41,16 +42,17 @@ mantiene fuera del repositorio, en un documento privado; su `bundle.css` se gene
 
 El orden es el acordado; cada fase es una versión con su entrada en el CHANGELOG.
 
-1. **Noticias por RSS (1.4)**: una sección con noticias de portales de videojuegos, con la
+1. **Noticias por RSS (1.5)**: una sección con noticias de portales de videojuegos, con la
    posibilidad de seguir portales. Solo titular, extracto y enlace al original; no se copian
    artículos.
-2. **Chat entre amigos (1.5)**: **hecho en local, sin publicar.** Mensajes de uno a uno entre
-   amigos con consultas periódicas (`sondeo.js`), "visto", borrado y avisos de no leídos; ver
-   [Chat](DESARROLLO.md#chat). Falta publicarlo (versión, etiqueta y Render) y, más adelante:
-   avisos del sistema, "escribiendo...", imágenes y chats de grupo.
-3. **Versión móvil (2.0)**: la misma interfaz React empaquetada con Capacitor, con una PWA como
+2. **Versión móvil (2.0)**: la misma interfaz React empaquetada con Capacitor, con una PWA como
    paso intermedio. Android primero; iOS cuesta una cuenta de pago y un Mac o un servicio de
    compilación, así que se decide aparte.
+
+### Ideas para el chat
+
+Avisos del sistema (hoy, con la app minimizada no llegan avisos), "escribiendo…", imágenes y
+chats de grupo; ver [Chat](DESARROLLO.md#chat).
 
 ### Pendientes conocidos
 

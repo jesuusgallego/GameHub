@@ -2,28 +2,27 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.4.0] - 2026-10-16
+
+El chat entre amigos, y una app mucho más fluida: Social, Mi biblioteca y Buscar ya no dan saltos.
 
 ### Añadido
-- **Chat entre amigos**, en **toda la app**: un botón abajo a la derecha (una pastilla con un anillo
-  de color y tres puntitos de "escribiendo" que suben y bajan al pasar el ratón; si tienes mensajes
-  sin leer, un aro rojo late a su alrededor y el número sale en la esquina) que **despliega un
-  panel grande**. El panel crece desde la esquina del propio botón, con su mismo tamaño, así que
-  parece que el botón se abre; al cerrarlo se encoge de vuelta. Se cierra con la flecha de arriba
-  o con Esc.
-  - El panel muestra a la izquierda tus conversaciones (la más reciente primero, con lo último que
-    se dijo, la hora y cuántos mensajes tienes sin leer) y a la derecha la que tengas abierta. En
-    el móvil, una sola columna con una flecha para volver a la lista.
+- **Chat entre amigos**, en toda la app: un botón abajo a la derecha (con un anillo de color y tres
+  puntitos de "escribiendo" que suben y bajan al pasar el ratón) que **despliega un panel grande**.
+  El panel crece desde el propio botón, con su mismo tamaño, así que parece que el botón se abre;
+  al cerrarlo se encoge de vuelta. Se cierra con la flecha de arriba o con Esc.
+  - A la izquierda, tus conversaciones (la más reciente primero, con lo último que se dijo, la
+    hora y cuántos mensajes tienes sin leer) y a la derecha la que tengas abierta. En el móvil,
+    una sola columna con una flecha para volver a la lista.
   - Sigue abierto mientras navegas por la app, y al cerrarlo y volver a abrirlo está donde lo
-    dejaste (con lo que tenías a medio escribir).
-  - **Nuevo mensaje**, rediseñado: una pastilla a todo el ancho con un anillo de color que da
-    vueltas, un brillo que la barre y una pluma que escribe al pasar el ratón. Al pulsarla sube una
-    hoja con "¿A quién escribes?": tus amigos como círculos de colores (los que están jugando,
-    primero y con su juego), que entran uno tras otro, y un filtro por nombre.
-  - El botón **Mensaje** del carnet de un amigo y el **Enviar mensaje** de su perfil abren el panel
-    en su conversación, sin sacarte de la página en la que estás.
-  - Solo se escribe a **amigos**. Si dejáis de serlo, la conversación se conserva para leerla, pero
-    no se puede escribir; si bloqueas a alguien (o te bloquea), desaparece para los dos.
+    dejaste, con lo que tenías a medio escribir.
+  - **Nuevo mensaje:** una pastilla con un anillo de color que da vueltas y una pluma que escribe
+    al pasar el ratón. Al pulsarla sube una hoja, "¿A quién escribes?", con tus amigos como
+    círculos de colores (los que están jugando, primero y con su juego) y un filtro por nombre.
+  - Desde el perfil de un amigo, y desde su carnet en Social, un botón **Mensaje** abre el chat
+    en su conversación sin sacarte de la página en la que estás.
+  - Solo se escribe a **amigos**. Si dejáis de serlo, la conversación se conserva para leerla,
+    pero no se puede escribir; si bloqueas a alguien (o te bloquea), desaparece para los dos.
   - **Intro** envía y **Mayús + Intro** hace un salto de línea. Los enlaces (`http` y `https`) se
     pueden pulsar y se abren en el navegador. Hasta 2000 caracteres por mensaje.
   - **Visto:** debajo de tu último mensaje leído aparece "Visto a las…". Solo cuenta cuando la otra
@@ -31,58 +30,54 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   - **Eliminar un mensaje** tuyo lo borra para los dos de verdad (el texto desaparece del
     servidor) y deja el hueco "Mensaje eliminado".
   - Los mensajes llegan sin recargar (cada pocos segundos mientras la conversación está abierta y
-    la app se usa). El botón del chat, la insignia de **Social** (que suma solicitudes y mensajes) y
-    el título de la ventana enseñan cuántos tienes sin leer. Si estás
-    leyendo mensajes antiguos, no te baja de golpe: aparece "Mensajes nuevos".
+    la app se usa). El botón del chat, la insignia de **Social** (que suma solicitudes y mensajes)
+    y el título de la ventana enseñan cuántos tienes sin leer. Si estás leyendo mensajes antiguos,
+    no te baja de golpe: aparece "Mensajes nuevos".
   - Un mensaje que no se envía por falta de conexión se queda marcado con *Reintentar* y
-    *Descartar*, y lo que dejas a medias de escribir se conserva al cambiar de conversación.
+    *Descartar*.
   - En una conversación vacía hay frases para romper el hielo ("¿Jugamos algo?", o una pregunta
-    sobre el juego al que está jugando). En la cabecera ves a qué juega tu amigo.
-  - Desde el perfil de un amigo y desde su carnet en Social hay un botón **Mensaje**.
-- `npm run seed:demo` crea también conversaciones de ejemplo (con mensajes sin leer, uno borrado y
-  un enlace) para probar el chat con `demo_ana`.
+    sobre el juego al que está jugando), y en la cabecera ves a qué juega tu amigo.
 
 ### Cambiado
-- **Buscar, más fluido.**
-  - Al escribir, los resultados anteriores **se quedan en pantalla (atenuados)** mientras llegan los
-    nuevos, con "Buscando…" arriba, en vez de vaciar la página a cada letra. Los que siguen se
-    deslizan a su sitio, los nuevos entran uno tras otro y los que sobran se desvanecen.
-  - Si vuelves a un término que ya buscaste (al borrar letras, por ejemplo), sale **al instante**.
-  - Los bloques (la ayuda inicial, "Buscando…", el título de resultados, los errores) se despliegan
-    y se pliegan en lugar de aparecer de golpe y mover lo de debajo. Una búsqueda sin resultados
-    ahora lo dice ("No hay juegos que coincidan con…").
-  - Los botones "En tu biblioteca" salen bien desde el primer momento si ya habías abierto Mi
-    biblioteca, y un juego que añades desde aquí ya está en ella al volver. Las portadas aparecen
-    con un fundido y la página entra con un fundido.
-- **Mi biblioteca, más fluida.**
-  - Al **filtrar, buscar u ordenar**, las tarjetas que se quedan se deslizan a su sitio, las que
-    entran aparecen con un fundido y las que sobran se desvanecen (antes saltaban o desaparecían
-    de golpe).
-  - Al **volver** a Mi biblioteca se ve al instante, sin esperar al spinner: se enseña la última
-    lista y se refresca por detrás.
-  - La fila **Jugando ahora** se despliega y se pliega cuando pones o quitas tu primer juego en
-    "jugando", en vez de empujar toda la página de golpe.
-  - Las portadas aparecen con un fundido al cargar, y la página entra con un fundido en lugar de
-    saltar del spinner a todo el contenido.
-  - El punto verde de "Jugando ahora" usa una animación que no obliga a repintar la página.
-- **La entrada a Social ya no da saltos cuando llegan los datos.** La barra de pestañas
-  (Actividad, Amigos, Solicitudes…) se pintaba antes de tener los datos y, al llegar, le salían los
-  contadores y se ensanchaba de golpe, y la frase de la cabecera cambiaba de texto y de ancho en
-  un fotograma. Ahora los contadores entran y salen ocupando su hueco poco a poco, el indicador de
-  la pestaña activa los sigue al instante (y solo se desliza cuando pulsas otra pestaña), y la
-  frase de la cabecera tiene su sitio reservado desde el principio y entra con un fundido.
-- **La barra de navegación y la entrada a Social, más fluidas.** Al aparecer la insignia de
-  solicitudes o de mensajes (por ejemplo, al abrir la app), el enlace saltaba de golpe y empujaba al
-  siguiente; ahora la insignia ocupa su hueco poco a poco y la línea la sigue. La línea de debajo
-  se mueve solo con `transform` (antes animaba también `width`, que va por otro hilo y se
-  descompasaba cuando la página de debajo cargaba). Los puntos y anillos "jugando ahora" animan
-  `transform` y `opacity` en lugar de `box-shadow`, que obligaba a repintar la página en cada
-  fotograma, y la lista de actividad escalona la entrada de menos elementos.
-- Si inicias o cierras sesión en una pestaña, las demás pestañas de ese navegador se recargan. Antes
-  seguían enseñando la pantalla y el avatar de la cuenta anterior mientras pedían los datos de la
-  nueva.
-- La barra de navegación en pantallas estrechas aprieta el hueco entre enlaces para que, con el
-  cuarto enlace (Chat), "Mi biblioteca" no se parta en dos líneas.
+- **Buscar, más fluido.** Al escribir, los resultados anteriores se quedan en pantalla
+  (atenuados) mientras llegan los nuevos, con "Buscando…" arriba, en vez de vaciar la página a cada
+  letra: los que siguen se deslizan a su sitio, los nuevos entran uno tras otro y los que sobran se
+  desvanecen. Si vuelves a un término que ya buscaste, sale al instante. Una búsqueda sin
+  resultados ahora lo dice. Los botones "En tu biblioteca" salen bien desde el primer momento y un
+  juego que añades desde aquí ya está en tu biblioteca al volver.
+- **Mi biblioteca, más fluida.** Al filtrar, buscar u ordenar, las tarjetas se deslizan a su sitio,
+  entran con un fundido o se desvanecen (antes saltaban o desaparecían de golpe). Al volver a Mi
+  biblioteca se ve al instante, sin esperar al spinner. La fila **Jugando ahora** se despliega y se
+  pliega en lugar de empujar toda la página, y las portadas aparecen con un fundido.
+- **Social ya no da saltos cuando llegan los datos.** La barra de pestañas se ensanchaba de golpe
+  al aparecer los contadores y la frase de la cabecera cambiaba de texto y de ancho en un
+  fotograma; ahora todo entra y se reacomoda con suavidad.
+- **La barra de navegación, sin saltos.** Al aparecer la insignia de solicitudes o de mensajes
+  (por ejemplo, al abrir la app), el enlace saltaba de golpe y empujaba al siguiente; ahora la
+  insignia ocupa su hueco poco a poco y la línea de debajo la sigue. En pantallas estrechas, con el
+  chat y todo, "Mi biblioteca" ya no se parte en dos líneas.
+- Si inicias o cierras sesión en una pestaña, las demás pestañas de ese navegador se recargan.
+  Antes seguían enseñando la pantalla y el avatar de la cuenta anterior mientras pedían los datos
+  de la nueva.
+
+### Interno
+- **API del chat** (`/chat`): conversaciones, no leídos, leer con `after`/`before`, enviar, marcar
+  como leído y borrar. Tabla `messages` (se crea sola al arrancar el servidor). Límites: 60
+  mensajes por minuto y por IP al enviar, y 90 lecturas por minuto y por usuario (esas lecturas no
+  cuentan en el tope general por IP). Ver la guía de desarrollo, sección "Chat".
+- Las animaciones usan solo `transform` y `opacity` (la línea de la barra, los puntos y anillos
+  "jugando ahora"), y las listas se animan con la técnica FLIP (`useAnimacionLista`).
+- `npm run seed:demo` crea también conversaciones de ejemplo (con mensajes sin leer, uno borrado y
+  un enlace) para probar el chat con `demo_ana`.
+- Limpieza de textos, animaciones y reglas de CSS sin uso.
+
+### Limitaciones conocidas
+- Los mensajes no están cifrados de extremo a extremo: se guardan como texto en la base de datos
+  del servidor.
+- Para ahorrar recursos del servidor gratuito, los mensajes nuevos solo llegan mientras usas la app
+  (con la ventana minimizada o tras cinco minutos sin tocar nada, se retoman al volver). No hay
+  avisos del sistema.
+- El chat solo permite texto: sin imágenes, ni chats de grupo, ni "escribiendo…".
 
 ## [1.3.0] - 2026-10-16
 

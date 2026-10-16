@@ -11,6 +11,20 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.4.0': {
+    es: [
+      'Chat entre amigos: un botón abajo a la derecha abre el chat en cualquier página.',
+      'Ves cuándo han leído tu mensaje y puedes eliminar los tuyos.',
+      'Social, Mi biblioteca y Buscar, más fluidos: las tarjetas se deslizan al filtrar y ya no hay saltos.',
+      'Mi biblioteca se ve al instante al volver a ella.',
+    ],
+    en: [
+      'Friends chat: a button at the bottom right opens the chat on any page.',
+      'See when your message has been read, and delete your own messages.',
+      'Smoother Social, My library and Search: cards slide when you filter and nothing jumps around.',
+      'My library shows up instantly when you come back to it.',
+    ],
+  },
   '1.3.0': {
     es: [
       'Social rediseñado: tu sala con lo que juegan tus amigos, sus carnets y las solicitudes a mano.',
