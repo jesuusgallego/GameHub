@@ -540,7 +540,7 @@ export default {
   'chat.panel': 'Conversación con {usuario}',
   'chat.nuevo': 'Nuevo mensaje',
   'chat.nuevoCerrar': 'Cerrar',
-  'chat.nuevoTitulo': 'Escribe a un amigo',
+  'chat.nuevoTitulo': '¿A quién escribes?',
   'chat.buscarAmigo': 'Buscar entre tus amigos',
   'chat.buscarAmigoPlaceholder': 'Escribe un nombre',
   'chat.sinAmigosFiltro': 'Ningún amigo se llama "{q}".',

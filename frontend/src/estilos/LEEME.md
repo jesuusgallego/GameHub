@@ -29,7 +29,7 @@ a su vez importa el resto de archivos con `@import`.
 | `progreso-steam.css` | Horas y barra de logros de Steam, y la lista de logros de la ficha | `ProgresoSteam`, `LogrosSteam` |
 | `social.css` | Lo común de lo social: insignia de solicitudes de la barra, botones de la amistad, avisos de "es privado", filtros de la biblioteca ajena y la sección Privacidad del perfil (tabla, ajustes, interruptor) | `AccionAmistad`, `AvisoPrivado`, `BibliotecaAjena`, `PanelPrivacidad`, `Interruptor` |
 | `sala.css` | La página Social ("la sala": cabecera, pestañas en barra, en directo, línea del tiempo, carnets, invitaciones, descubrir) y el perfil de otra persona (banner con su color, banda "en común", cara a cara, duelos, estantería, ficha con su partida). El color de cada persona sale de `--tono` (ver `src/tono.js`) | `Social`, `Actividad`, `EnDirecto`, `LateralSala`, `Carnet`, `Invitaciones`, `FilaPersona`, `Descubrir`, `AvatarTono`, `PerfilPublico`, `BandaEnComun`, `CaraACara`, `EnComun`, `BibliotecaAjena`, `SeccionAjena` |
-| `chat.css` | El chat: el botón y el panel flotante de Social, la lista de conversaciones, las burbujas, el cuadro para escribir y el aviso de mensajes nuevos. También usa `--tono` | `ChatDock`, `Chat`, `ListaChats`, `Conversacion`, `Burbuja` |
+| `chat.css` | El chat: el botón y el panel flotante (en toda la app), la lista de conversaciones, las burbujas, el cuadro para escribir y el aviso de mensajes nuevos. También usa `--tono` | `ChatDock`, `Chat`, `ListaChats`, `Conversacion`, `Burbuja` |
 | `movil.css` | Ajustes generales para pantallas estrechas | varios |
 
 ## Reglas para trabajar aquí

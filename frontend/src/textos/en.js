@@ -539,7 +539,7 @@ export default {
   'chat.panel': 'Conversation with {usuario}',
   'chat.nuevo': 'New message',
   'chat.nuevoCerrar': 'Close',
-  'chat.nuevoTitulo': 'Write to a friend',
+  'chat.nuevoTitulo': 'Who do you want to message?',
   'chat.buscarAmigo': 'Search your friends',
   'chat.buscarAmigoPlaceholder': 'Type a name',
   'chat.sinAmigosFiltro': 'No friend is called "{q}".',

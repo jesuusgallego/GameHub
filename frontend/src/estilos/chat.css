@@ -9,50 +9,113 @@
 
 /* ---- El botón y el panel flotante (ChatDock.jsx) ---- */
 
-/* El botón es deliberadamente discreto: un círculo neutro con el icono, sin color de marca. Solo
-   el número de mensajes sin leer lleva color, porque es lo único que pide atención. */
+/* El botón: una pastilla con un anillo de color y las tres puntitas de "escribiendo". Neutra por
+   dentro: lo único que pide atención es el número de mensajes sin leer. El panel, al abrirse,
+   crece desde ESTA misma esquina (mismo tamaño y sitio), así que parece que el botón se despliega. */
 .chat-lanzador {
   position: fixed;
   right: 1.25rem;
   bottom: 1.25rem;
   z-index: 40;
-  display: grid;
-  place-items: center;
-  width: 3rem;
-  height: 3rem;
-  padding: 0;
-  color: var(--texto);
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 8.5rem;
+  height: 3.5rem;
+  padding: 0 0.4rem 0 0;
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--texto-h);
+  text-transform: uppercase;
+  border: 2px solid transparent;
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(var(--superficie), var(--superficie)) padding-box,
+    conic-gradient(from var(--giro), var(--acento), #5b3df5, #1b74c8, var(--acento)) border-box;
   box-shadow: var(--sombra);
-  transition: color var(--transicion), border-color var(--transicion), background-color var(--transicion),
-    transform var(--transicion);
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3), opacity 0.2s ease 0.1s, box-shadow var(--transicion);
 }
 
 .chat-lanzador:hover {
-  color: var(--texto-h);
-  border-color: var(--acento);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: var(--sombra), 0 10px 28px var(--resplandor);
+  animation: chat-giro 2.6s linear infinite;
 }
 
-.chat-lanzador--abierto {
+.chat-lanzador:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Con el panel abierto el botón se esconde debajo: el panel ocupa su sitio */
+.chat-lanzador--oculto {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+  transition: transform 0.2s ease, opacity 0.12s ease;
+}
+
+.chat-lanzador__icono {
+  flex: none;
+  overflow: visible;
   color: var(--acento);
-  border-color: var(--acento);
-  background: var(--superficie-2);
+}
+
+/* Las tres puntitas de "escribiendo" suben y bajan al pasar el ratón */
+.chat-lanzador__punto {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.chat-lanzador:hover .chat-lanzador__punto {
+  animation: chat-punto 0.9s ease-in-out infinite;
+}
+
+.chat-lanzador:hover .chat-lanzador__punto:nth-of-type(2) {
+  animation-delay: 0.15s;
+}
+
+.chat-lanzador:hover .chat-lanzador__punto:nth-of-type(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes chat-punto {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-2.6px); }
+}
+
+/* Con mensajes sin leer, el botón avisa con un aro que se expande y se desvanece (transform y
+   opacity: lo anima la tarjeta gráfica) y el número en rojo en la esquina */
+.chat-lanzador--avisos::before {
+  position: absolute;
+  inset: -2px;
+  content: "";
+  border: 2px solid var(--peligro);
+  border-radius: inherit;
+  pointer-events: none;
+  animation: chat-aviso 2.2s ease-out infinite;
+}
+
+@keyframes chat-aviso {
+  0% { opacity: 0.7; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(1.22, 1.5); }
 }
 
 .chat-lanzador__cuenta {
   position: absolute;
-  top: -0.3rem;
-  right: -0.3rem;
+  top: -0.5rem;
+  right: -0.15rem;
   display: grid;
   place-items: center;
-  min-width: 1.25rem;
-  height: 1.25rem;
-  padding: 0 0.3rem;
-  font-size: 0.7rem;
-  font-weight: 700;
+  min-width: 1.45rem;
+  height: 1.45rem;
+  padding: 0 0.35rem;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0;
   line-height: 1;
   color: var(--sobre-peligro);
   background: var(--peligro);
@@ -60,76 +123,127 @@
   animation: insignia-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
 }
 
-/* El panel sale del botón: crece desde la esquina de abajo a la derecha */
+/* El panel. El contenedor lleva la sombra (un drop-shadow que sigue al recorte) y el marco de
+   dentro se recorta con clip-path: al abrirse, ese recorte pasa de ser del tamaño del botón, en la
+   esquina de abajo a la derecha, a ser el panel entero. */
 .chat-dock {
   position: fixed;
   right: 1.25rem;
-  bottom: 4.75rem;
-  z-index: 40;
+  bottom: 1.25rem;
+  z-index: 41;
+  width: min(58rem, calc(100vw - 2.5rem));
+  height: min(42rem, calc(100svh - 7rem));
+  container: chat-dock / inline-size;
+  filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.45));
+}
+
+.chat-dock__marco {
   display: flex;
+  height: 100%;
   flex-direction: column;
-  width: min(26rem, calc(100vw - 2rem));
-  height: min(38rem, calc(100svh - 7rem));
   overflow: hidden;
   background: var(--superficie);
-  border: 1px solid var(--borde);
   border-radius: var(--radio-grande);
-  box-shadow: var(--sombra);
-  transform-origin: bottom right;
-  animation: chat-dock-entrada 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.05) both;
+  clip-path: inset(0 round var(--radio-grande));
+  animation: chat-dock-entrada 0.62s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
 .chat-dock--saliendo {
   pointer-events: none;
-  animation: chat-dock-salida 0.22s ease-in both;
 }
 
+.chat-dock--saliendo .chat-dock__marco {
+  animation: chat-dock-salida 0.36s cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+
+/* Del tamaño del botón (8.5 × 3.5 rem, en la esquina) al panel entero */
 @keyframes chat-dock-entrada {
   from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.92);
+    clip-path: inset(calc(100% - 3.5rem) 0 0 calc(100% - 8.5rem) round 1.75rem);
   }
 }
 
 @keyframes chat-dock-salida {
   to {
-    opacity: 0;
-    transform: translateY(14px) scale(0.92);
+    clip-path: inset(calc(100% - 3.5rem) 0 0 calc(100% - 8.5rem) round 1.75rem);
   }
 }
 
+/* El contenido aparece un momento después de empezar a abrirse, y se va antes de cerrarse */
+.chat-dock__barra,
+.chat-dock__cuerpo {
+  animation: chat-dock-contenido 0.35s ease 0.18s both;
+}
+
+.chat-dock--saliendo .chat-dock__barra,
+.chat-dock--saliendo .chat-dock__cuerpo {
+  animation: chat-dock-contenido-salida 0.14s ease both;
+}
+
+@keyframes chat-dock-contenido {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes chat-dock-contenido-salida {
+  to {
+    opacity: 0;
+  }
+}
+
+/* La barra, como la cabecera de Social: el degradado del banner y las rayas de recreativa */
 .chat-dock__barra {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.4rem 0.5rem 0.4rem 1rem;
+  padding: 0.5rem 0.6rem 0.5rem 1.1rem;
+  background: var(--banner);
   border-bottom: 1px solid var(--borde);
 }
 
+.chat-dock__barra::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 4px);
+  pointer-events: none;
+}
+
+:root[data-tema="claro"] .chat-dock__barra::before {
+  background: repeating-linear-gradient(0deg, rgba(15, 27, 42, 0.05) 0 1px, transparent 1px 4px);
+}
+
 .chat-dock__barra h2 {
+  position: relative;
   margin: 0;
   font-family: var(--display);
-  font-size: 1.25rem;
-  letter-spacing: 0.06em;
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: var(--texto-h);
 }
 
 .chat-dock__cerrar {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 2.3rem;
+  height: 2.3rem;
   padding: 0;
-  color: var(--texto-suave);
-  background: transparent;
-  border: 0;
+  color: var(--texto);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--borde);
   border-radius: 50%;
-  transition: color var(--transicion), background-color var(--transicion);
+  transition: color var(--transicion), background-color var(--transicion), transform 0.25s ease;
 }
 
 .chat-dock__cerrar:hover {
   color: var(--texto-h);
   background: var(--superficie-2);
+  transform: translateY(2px);
 }
 
 .chat-dock__cuerpo {
@@ -139,7 +253,7 @@
   flex-direction: column;
 }
 
-/* ---- Estructura: una sola columna, la lista o la conversación abierta ---- */
+/* ---- Estructura: una columna (móvil) o dos (panel ancho) ---- */
 .chat {
   display: flex;
   min-height: 0;
@@ -164,9 +278,32 @@
   overflow: hidden;
 }
 
+/* En una sola columna se ve la lista o la conversación abierta, con su flecha para volver */
 .chat--abierto .chat__lista,
 .chat:not(.chat--abierto) .chat__panel {
   display: none;
+}
+
+/* Con sitio de sobra (el panel mide lo que mide, no la ventana: por eso una @container query),
+   la lista y la conversación van una al lado de la otra */
+@container chat-dock (min-width: 44rem) {
+  .chat {
+    display: grid;
+    grid-template-columns: 21rem minmax(0, 1fr);
+  }
+
+  .chat--abierto .chat__lista,
+  .chat:not(.chat--abierto) .chat__panel {
+    display: flex;
+  }
+
+  .chat__lista {
+    border-right: 1px solid var(--borde);
+  }
+
+  .chat .chat-hilo__volver {
+    display: none;
+  }
 }
 
 /* ---- Lista de conversaciones ---- */
@@ -177,31 +314,102 @@
   flex-direction: column;
 }
 
+/* La cabecera de la lista: a la izquierda cuántas conversaciones hay y a la derecha el botón */
 .chat-lista__cabecera {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 0.9rem 1rem;
+  padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--borde);
 }
 
+/* El título solo es para lectores de pantalla: el botón de debajo ya dice de qué va la lista */
 .chat-lista__titulo {
-  /* La barra del panel ya dice "Chat": la lista no repite el título */
-  display: none;
-  margin: 0;
-  font-family: var(--display);
-  font-size: 1.6rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.chat-lista__nuevo {
-  display: inline-flex;
+/* "Nuevo mensaje": una pastilla con un anillo de color que da vueltas al pasar el ratón, un brillo
+   que la barre y una pluma que escribe sobre la hoja. */
+@property --giro {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.chat-componer {
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.85rem;
-  font-size: 0.9rem;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  overflow: hidden;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  font-weight: 700;
+  color: var(--texto-h);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(var(--superficie), var(--superficie)) padding-box,
+    conic-gradient(from var(--giro), var(--acento), #5b3df5, #1b74c8, var(--acento)) border-box;
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.3), box-shadow var(--transicion);
+}
+
+/* El brillo que barre la pastilla de lado a lado */
+.chat-componer::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.22) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+
+.chat-componer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px var(--resplandor);
+  animation: chat-giro 2.6s linear infinite;
+}
+
+.chat-componer:hover::after {
+  transform: translateX(120%);
+  transition: transform 0.7s ease;
+}
+
+.chat-componer:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.chat-componer__icono {
+  flex: none;
+  color: var(--acento);
+  overflow: visible;
+}
+
+.chat-componer__pluma {
+  transform-origin: 8px 16px;
+  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.chat-componer:hover .chat-componer__pluma {
+  animation: chat-pluma 0.9s ease-in-out infinite;
+}
+
+@keyframes chat-pluma {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  30% { transform: translate(-2px, 1px) rotate(-10deg); }
+  60% { transform: translate(1px, -1px) rotate(6deg); }
+}
+
+@keyframes chat-giro {
+  to {
+    --giro: 360deg;
+  }
 }
 
 .chat-lista__vacio,
@@ -256,6 +464,12 @@
 .chat-fila {
   position: relative;
   display: flex;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
   align-items: center;
   gap: 0.8rem;
   padding: 0.75rem 1rem;
@@ -360,95 +574,180 @@
   animation: insignia-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
 }
 
-/* ---- Panel para escribir a un amigo nuevo ---- */
+/* ---- La hoja "¿A quién escribes?" (ElegirAmigo, en ListaChats.jsx) ---- */
+/* Sube sobre la lista desde abajo, como una hoja de papel; los amigos entran uno tras otro */
+.chat-lista {
+  position: relative;
+}
+
 .chat-nuevo {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  max-height: 22rem;
-  padding: 0.9rem 1rem;
-  overflow: hidden;
-  background: var(--superficie-2);
-  border-bottom: 1px solid var(--borde);
-  animation: chat-nuevo-entrada 0.22s ease both;
+  gap: 0.9rem;
+  padding: 1.1rem 1.1rem 0.5rem;
+  overflow-y: auto;
+  background:
+    radial-gradient(120% 60% at 100% 0%, color-mix(in srgb, var(--acento) 14%, transparent), transparent 70%),
+    var(--superficie);
+  animation: chat-nuevo-entrada 0.38s cubic-bezier(0.2, 0.85, 0.25, 1) both;
 }
 
 .chat-nuevo--saliendo {
   pointer-events: none;
-  animation: chat-nuevo-salida 0.2s ease both;
+  animation: chat-nuevo-salida 0.26s cubic-bezier(0.5, 0, 0.75, 0) both;
 }
 
 @keyframes chat-nuevo-entrada {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(2.5rem);
   }
 }
 
 @keyframes chat-nuevo-salida {
   to {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(2.5rem);
   }
 }
 
-.chat-nuevo__titulo {
+.chat-nuevo__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.chat-nuevo__sobre {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--texto-suave);
+  letter-spacing: 0.14em;
+  color: var(--acento);
   text-transform: uppercase;
 }
 
-.chat-nuevo__lista {
-  display: flex;
-  min-height: 0;
-  flex-direction: column;
-  gap: 0.15rem;
-  overflow-y: auto;
-}
-
-.chat-nuevo__lista a {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0.4rem 0.5rem;
-  color: inherit;
-  text-decoration: none;
-  border-radius: var(--radio);
-  transition: background-color var(--transicion);
-}
-
-.chat-nuevo__lista a:hover {
-  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.16);
-}
-
-.chat-nuevo__texto {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-}
-
-.chat-nuevo__texto strong {
+.chat-nuevo__titulo {
+  margin: 0.1rem 0 0;
+  font-family: var(--display);
+  font-size: 1.7rem;
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--texto-h);
 }
 
-.chat-nuevo__texto small {
-  overflow: hidden;
+.chat-nuevo__cerrar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
   color: var(--texto-suave);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: 50%;
+  transition: color var(--transicion), transform 0.3s ease;
+}
+
+.chat-nuevo__cerrar:hover {
+  color: var(--texto-h);
+  transform: rotate(90deg);
+}
+
+.chat-nuevo__rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.4rem, 1fr));
+  gap: 0.35rem 0.5rem;
+  padding-bottom: 0.75rem;
+}
+
+.chat-nuevo__rejilla > li {
+  animation: chat-nuevo-amigo 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation-delay: calc(0.12s + var(--orden, 0) * 0.04s);
+}
+
+@keyframes chat-nuevo-amigo {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.85);
+  }
+}
+
+/* Cada amigo, un círculo con su anillo de color y, debajo, su nombre y a qué juega */
+.chat-nuevo__amigo {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.6rem 0.25rem 0.5rem;
+  color: var(--texto);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radio-grande);
+  transition: background-color var(--transicion), border-color var(--transicion), transform 0.25s ease;
+}
+
+.chat-nuevo__amigo:hover,
+.chat-nuevo__amigo:focus-visible {
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.12);
+  border-color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.45);
+  transform: translateY(-3px);
+}
+
+.chat-nuevo__amigo .anillo {
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.chat-nuevo__amigo:hover .anillo {
+  transform: scale(1.08);
+}
+
+.chat-nuevo__nombre {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 700;
+  color: var(--texto-h);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.chat-nuevo__vacio {
+.chat-nuevo__juego {
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+  color: var(--texto-suave);
+}
+
+.chat-nuevo__punto {
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--estado-jugando);
+  border-radius: 50%;
+}
+
+.chat-nuevo__juego {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-nuevo__vacio,
+.chat-nuevo__sinresultados {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.6rem;
   margin: 0;
   color: var(--texto-suave);
-  font-size: 0.9rem;
 }
 
 .chat-nuevo__vacio p {
@@ -484,6 +783,9 @@
 /* En una sola columna, la conversación necesita su flecha para volver a la lista */
 .chat-hilo__volver {
   display: grid;
+  padding: 0;
+  background: transparent;
+  border: 0;
   place-items: center;
   width: 2.4rem;
   height: 2.4rem;
@@ -994,9 +1296,13 @@
   /* left + right (y no un ancho en vw): 100vw incluye la barra de desplazamiento y el panel se salía */
   .chat-dock {
     right: 0.5rem;
+    bottom: 0.5rem;
     left: 0.5rem;
-    bottom: 4.25rem;
     width: auto;
-    height: calc(100svh - 6.5rem);
+    height: calc(100svh - 8rem);
+  }
+
+  .chat-nuevo__rejilla {
+    grid-template-columns: repeat(3, 1fr);
   }
 }

@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Menu from './Menu'
+import ChatDock from './ChatDock'
 import { apiFetch } from './api'
 import { borrarToken } from './sesion'
 import { iniciarSondeo } from './sondeo'
@@ -15,6 +16,10 @@ import { iniciarSondeo } from './sondeo'
 // lo reparto: la barra lo recibe por props, y las páginas hijas lo leen con
 // useOutletContext(), que es el "props" de <Outlet />.
 //
+// El chat también vive aquí: su botón y su panel flotante están en TODAS las páginas con sesión, y
+// siguen abiertos mientras navegas. Las páginas lo abren con `abrirChat(usuario)` del contexto
+// (el botón Mensaje del carnet o del perfil de un amigo).
+//
 // Con las solicitudes de amistad pasa lo mismo: la barra enseña cuántas hay pendientes
 // (la insignia de "Social") y la página Social las cambia al aceptarlas o rechazarlas. Y con
 // los mensajes sin leer: la insignia de "Chat" y la página Chat, que los marca como leídos.
@@ -24,6 +29,18 @@ function Layout({ setToken }) {
   const [solicitudes, setSolicitudes] = useState(0)
   // Cuántos mensajes del chat tengo sin leer
   const [mensajes, setMensajes] = useState(0)
+  // El panel del chat: si está abierto y con quién habla (null = la lista). Al cerrarlo se
+  // recuerda la conversación, para que al abrirlo siga donde estaba.
+  const [chat, setChat] = useState({ abierto: false, con: null })
+  // Lo que había escrito a medias en cada conversación; sobrevive a cerrar el panel
+  const borradores = useRef(new Map())
+  // Con un usuario, abre su conversación; sin él, abre el panel donde estaba
+  const abrirChat = useCallback((usuario) => {
+    setChat((previo) => ({ abierto: true, con: usuario ?? previo.con }))
+  }, [])
+  const cerrarChat = useCallback(() => setChat((previo) => ({ ...previo, abierto: false })), [])
+  // Cambiar de conversación dentro del panel (null = volver a la lista)
+  const elegirConversacion = useCallback((usuario) => setChat({ abierto: true, con: usuario }), [])
   const { pathname } = useLocation()
 
   // Pide el número de solicitudes recibidas. Si falla no hago nada: es solo un número
@@ -92,8 +109,20 @@ function Layout({ setToken }) {
     <>
       <Menu setToken={setToken} perfil={perfil} solicitudes={solicitudes} mensajes={mensajes} />
       <main className="contenedor">
-        <Outlet context={{ perfil, setPerfil, solicitudes, refrescarSolicitudes, mensajes, ponerMensajes: setMensajes }} />
+        <Outlet context={{ perfil, setPerfil, solicitudes, refrescarSolicitudes, abrirChat }} />
       </main>
+
+      <ChatDock
+        abierto={chat.abierto}
+        sinLeer={mensajes}
+        username={chat.con}
+        borradores={borradores}
+        setToken={setToken}
+        ponerMensajes={setMensajes}
+        onAbrir={() => abrirChat()}
+        onCerrar={cerrarChat}
+        onElegir={elegirConversacion}
+      />
     </>
   )
 }

@@ -5,17 +5,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Añadido
-- **Chat entre amigos**, en **Social**: un botón discreto abajo a la derecha (un círculo con el
-  icono y, en rojo, los mensajes sin leer) que despliega hacia arriba un panel con tus
-  conversaciones (la más reciente primero, con lo último que se dijo, la hora y cuántos mensajes
-  tienes sin leer) y, al elegir una, la conversación. No es una pestaña ni tiene enlace en la
-  barra: está ahí cuando lo quieres y se cierra con la flecha, con el botón o con Esc.
-  - El panel flota sobre la página: puedes cambiar de pestaña de Social con él abierto. El botón
-    **Mensaje** del carnet de un amigo lo abre sin sacarte de la pestaña en la que estás, y el
-    del perfil de un amigo te lleva a Social con el chat abierto.
-  - La conversación abierta va en la dirección (`/social?chat=ana`); al cerrar y volver a abrir el
-    panel sigue donde lo dejaste. Las direcciones antiguas `/chat` y `/chat/ana` siguen
-    funcionando.
+- **Chat entre amigos**, en **toda la app**: un botón abajo a la derecha (una pastilla con un anillo
+  de color y tres puntitos de "escribiendo" que suben y bajan al pasar el ratón; si tienes mensajes
+  sin leer, un aro rojo late a su alrededor y el número sale en la esquina) que **despliega un
+  panel grande**. El panel crece desde la esquina del propio botón, con su mismo tamaño, así que
+  parece que el botón se abre; al cerrarlo se encoge de vuelta. Se cierra con la flecha de arriba
+  o con Esc.
+  - El panel muestra a la izquierda tus conversaciones (la más reciente primero, con lo último que
+    se dijo, la hora y cuántos mensajes tienes sin leer) y a la derecha la que tengas abierta. En
+    el móvil, una sola columna con una flecha para volver a la lista.
+  - Sigue abierto mientras navegas por la app, y al cerrarlo y volver a abrirlo está donde lo
+    dejaste (con lo que tenías a medio escribir).
+  - **Nuevo mensaje**, rediseñado: una pastilla a todo el ancho con un anillo de color que da
+    vueltas, un brillo que la barre y una pluma que escribe al pasar el ratón. Al pulsarla sube una
+    hoja con "¿A quién escribes?": tus amigos como círculos de colores (los que están jugando,
+    primero y con su juego), que entran uno tras otro, y un filtro por nombre.
+  - El botón **Mensaje** del carnet de un amigo y el **Enviar mensaje** de su perfil abren el panel
+    en su conversación, sin sacarte de la página en la que estás.
   - Solo se escribe a **amigos**. Si dejáis de serlo, la conversación se conserva para leerla, pero
     no se puede escribir; si bloqueas a alguien (o te bloquea), desaparece para los dos.
   - **Intro** envía y **Mayús + Intro** hace un salto de línea. Los enlaces (`http` y `https`) se

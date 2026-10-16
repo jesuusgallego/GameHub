@@ -1,10 +1,9 @@
-import { Link } from 'react-router-dom'
+import { Link, useOutletContext } from 'react-router-dom'
 import AvatarTono from './AvatarTono'
 import AccionAmistad from './AccionAmistad'
 import { useIdioma } from './IdiomaContext'
 import { estiloTono } from './tono'
 import { tiempoRelativo } from './tiempo'
-import { useRutaChat } from './useRutaChat'
 
 // Una persona como un carnet de jugador: arriba una banda (con la portada de lo que juega
 // ahora, o con su color si no juega a nada), su foto en un anillo del color de su nombre,
@@ -16,7 +15,7 @@ import { useRutaChat } from './useRutaChat'
 //  - onCambio(persona) / cerrarSesion(): como en AccionAmistad
 function Carnet({ persona, orden = 0, onCambio, cerrarSesion }) {
   const { t, idioma, locale } = useIdioma()
-  const rutaChat = useRutaChat()
+  const { abrirChat } = useOutletContext()
   const {
     username, bio, playing, games_count: juegos, completed_count: completados,
     avg_rating: nota, games_in_common: juegosComun, mutual,
@@ -81,7 +80,7 @@ function Carnet({ persona, orden = 0, onCambio, cerrarSesion }) {
       <div className="carnet__acciones">
         {esAmigo && (
           <>
-            <Link to={rutaChat(username)} className="btn btn--primario">{t('chat.mensaje')}</Link>
+            <button type="button" className="btn btn--primario" onClick={() => abrirChat(username)}>{t('chat.mensaje')}</button>
             <Link to={`/usuarios/${username}`} className="btn btn--secundario">{t('carnet.ver')}</Link>
           </>
         )}

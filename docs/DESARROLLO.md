@@ -807,31 +807,37 @@ Epic se descartaron), por eso es la única que se puede vincular.
 
 Mensajes de uno a uno **solo entre amigos**, con consultas periódicas (no WebSockets: Render
 gratuito se duerme y no mantiene conexiones abiertas). Backend: `controllers/chatController.js`
-y `routes/chatRoutes.js`. Frontend: `ChatDock.jsx` (el botón y el panel flotante de `Social.jsx`),
+y `routes/chatRoutes.js`. Frontend: `ChatDock.jsx` (el botón y el panel flotante, montados por `Layout.jsx`),
 `Chat.jsx` (su contenido: lista o conversación), `ListaChats.jsx` (conversaciones y el panel
 "Nuevo mensaje"),
 `Conversacion.jsx` (una conversación: carga, sondeo, envío, borrado, scroll), `Burbuja.jsx` (un
 mensaje) y `chat.js` (la lógica sin React, con pruebas). Estilos en `estilos/chat.css`.
 
-- **El panel flotante.** `ChatDock.jsx` pinta el botón (`.chat-lanzador`, un círculo neutro de
-  3 rem fijo abajo a la derecha, con el número de sin leer como única nota de color) y el panel
-  (`.chat-dock`), que crece desde esa esquina. Va con `createPortal` en el `<body>`: un
-  `position: fixed` dentro de un elemento con `transform` (casi todo en Social anima con
-  `transform`) deja de ser fijo a la ventana. Solo existe en Social. El panel es una sola columna
-  (la lista **o** la conversación, con su flecha para volver) en todos los anchos; en pantallas
-  estrechas ocupa casi todo el ancho (`left`/`right` y no `100vw`, que cuenta la barra de scroll).
-- **La dirección manda.** `?chat=ana` (conversación), `?chat=` (lista) o ausente (cerrado), y es
-  independiente de `?tab=`: `Social.jsx` deriva de la URL el estado del panel y la pestaña, y
-  `cambiarParam` toca uno sin borrar el otro. `rutaChat(usuario, ubicacion)` (`chat.js`) y el hook
-  `useRutaChat` construyen los enlaces conservando los demás parámetros cuando ya estás en Social
-  (el botón *Mensaje* del carnet abre el chat sin cambiarte de pestaña); desde otra página llevan a
-  `/social?chat=ana`. Las rutas antiguas `/chat` y `/chat/:usuario` solo redirigen
-  (`RedirigirChat` en `App.jsx`).
-- **Solo existe abierto.** El chat (con sus dos sondeos) solo se monta mientras el panel está
-  abierto, con animación de entrada y de salida (`usePresencia`). Los borradores y la última
-  conversación (`conChat`) viven en `Social` para sobrevivir a cerrarlo. El botón sigue enseñando
-  los sin leer cerrado gracias al sondeo de `Layout.jsx` (cada minuto). La insignia de **Social**
-  en la barra suma solicitudes y mensajes.
+- **El botón y el panel (`ChatDock.jsx`).** Lo monta `Layout.jsx`, así que está en **todas** las
+  páginas con sesión y sigue abierto al navegar. El botón (`.chat-lanzador`) es una pastilla de
+  8,5 × 3,5 rem con un anillo `conic-gradient` (el ángulo `--giro`, una `@property`, da vueltas al
+  pasar el ratón) y, si hay sin leer, un aro que se expande (`transform` y `opacity`). El panel
+  (`.chat-dock`) **ocupa el sitio del botón**: al abrirse, el marco interior se recorta con
+  `clip-path: inset(...)` desde el tamaño exacto del botón hasta el panel entero, y el botón se
+  esconde debajo (`--oculto`); al cerrarse se encoge hasta el botón, que reaparece. La sombra va en
+  el contenedor (`filter: drop-shadow`) porque un `clip-path` recorta también un `box-shadow`. Va
+  con `createPortal` en el `<body>`: un `position: fixed` dentro de un elemento con `transform`
+  deja de ser fijo a la ventana.
+- **Una o dos columnas.** `.chat-dock` es un contenedor (`container: chat-dock / inline-size`) y
+  `@container chat-dock (min-width: 44rem)` pone la lista (21 rem) al lado de la conversación; con
+  menos ancho (móvil) se ve una u otra, con la flecha para volver. Es una *container query* y no
+  una de ventana porque lo que importa es lo que mide el panel.
+- **Estado en `Layout`.** `chat = { abierto, con }`, más los borradores (`useRef`). Las páginas lo
+  abren con `abrirChat(usuario)` del contexto del `<Outlet>` (`useOutletContext()`): el botón
+  *Mensaje* de `Carnet` y *Enviar mensaje* de `PerfilPublico` son botones, no enlaces. Ya no hay
+  rutas del chat ni parámetros en la dirección. El chat (con sus dos sondeos) **solo se monta con
+  el panel abierto** (`usePresencia` mantiene la animación de salida); el botón sigue enseñando los
+  sin leer cerrado gracias al sondeo de `Layout` (cada minuto). La insignia de **Social** suma
+  solicitudes y mensajes. Esc cierra primero la hoja "Nuevo mensaje" si está abierta y luego el
+  panel, y el foco vuelve al botón.
+- **"Nuevo mensaje".** El botón (`.chat-componer`) y la hoja `ElegirAmigo` (en `ListaChats.jsx`):
+  una capa `position: absolute` sobre la lista que sube con `transform`, con los amigos como
+  `AvatarTono` en una rejilla (los que juegan primero) que entran escalonados con `--orden`.
 - **Reglas.** Escribir exige amistad y ningún bloqueo; si dejáis de ser amigos el historial
   sigue ahí (solo lectura), y con un bloqueo la conversación no existe para ninguno de los dos
   (404, igual que el perfil). Al desbloquear vuelve el historial. Al borrar una cuenta se van sus

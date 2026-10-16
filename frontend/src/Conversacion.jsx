@@ -11,7 +11,6 @@ import { iniciarSondeo } from './sondeo'
 import { usePresencia } from './usePresencia'
 import { useIdioma } from './IdiomaContext'
 import { MENSAJE_MAX } from './validacion'
-import { useRutaChat } from './useRutaChat'
 import {
   fusionar, marcarBorrados, ultimoId, hayPorLeer, mensajeVisto, agrupar, rotuloDia, sugerenciasInicio,
 } from './chat'
@@ -37,9 +36,10 @@ function estaAbajo(el) {
 //  - onCambio(): avisa a la página de que hay algo nuevo (mensaje enviado, leído...) para que
 //    ponga al día la lista de conversaciones
 //  - cerrarSesion(): para un 401
-function Conversacion({ username, amigo, borradores, onCambio, cerrarSesion }) {
+//  - onVolver(): vuelve a la lista de conversaciones (en un panel estrecho; en uno ancho la lista
+//    ya está al lado)
+function Conversacion({ username, amigo, borradores, onCambio, onVolver, cerrarSesion }) {
   const { t, locale } = useIdioma()
-  const rutaChat = useRutaChat()
   const ruta = `/chat/${encodeURIComponent(username)}`
 
   const [estado, setEstado] = useState('cargando') // 'cargando' | 'listo' | 'error'
@@ -338,11 +338,11 @@ function Conversacion({ username, amigo, borradores, onCambio, cerrarSesion }) {
   return (
     <section className="chat-hilo" style={estiloTono(username)} aria-label={t('chat.panel', { usuario: username })}>
       {estado !== 'error' && <header className="chat-hilo__cabecera">
-        <Link to={rutaChat()} className="chat-hilo__volver" aria-label={t('chat.volver')}>
+        <button type="button" className="chat-hilo__volver" aria-label={t('chat.volver')} onClick={onVolver}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m15 18-6-6 6-6" />
           </svg>
-        </Link>
+        </button>
         <Link
           to={`/usuarios/${username}`}
           className="chat-hilo__persona"
@@ -370,7 +370,7 @@ function Conversacion({ username, amigo, borradores, onCambio, cerrarSesion }) {
       {estado === 'error' && (
         <div className="chat-hilo__estado">
           <Mensaje texto={errorCarga} />
-          <Link to={rutaChat()} className="btn btn--secundario">{t('chat.volver')}</Link>
+          <button type="button" className="btn btn--secundario" onClick={onVolver}>{t('chat.volver')}</button>
         </div>
       )}
 

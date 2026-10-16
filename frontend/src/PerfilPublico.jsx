@@ -8,7 +8,6 @@ import BibliotecaAjena from './BibliotecaAjena'
 import AmigosAjenos from './AmigosAjenos'
 import AvisoPrivado from './AvisoPrivado'
 import AccionAmistad from './AccionAmistad'
-import { rutaChat } from './chat'
 import BandaEnComun from './BandaEnComun'
 import CaraACara from './CaraACara'
 import EnComun from './EnComun'
@@ -30,7 +29,7 @@ const PESTANAS = ['resumen', 'biblioteca', 'comun', 'amigos']
 function PerfilPublico({ setToken }) {
   const { t } = useIdioma()
   const { username } = useParams()
-  const { perfil: yo, refrescarSolicitudes } = useOutletContext()
+  const { perfil: yo, refrescarSolicitudes, abrirChat } = useOutletContext()
   // undefined = cargando; null = no existe; objeto = el perfil
   const [usuario, setUsuario] = useState(undefined)
   const [error, setError] = useState("")
@@ -184,7 +183,7 @@ function PerfilPublico({ setToken }) {
   const acciones = (
     <>
       {usuario.relation === 'amigos' && (
-        <Link to={rutaChat(nombre)} className="btn btn--primario">{t('chat.enviarMensaje')}</Link>
+        <button type="button" className="btn btn--primario" onClick={() => abrirChat(nombre)}>{t('chat.enviarMensaje')}</button>
       )}
       <AccionAmistad persona={usuario} onCambio={alCambiar} cerrarSesion={cerrarSesion} />
       {!esBloqueado && (
