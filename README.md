@@ -5,7 +5,7 @@ has terminado y lo que tienes pendiente, ponle nota y reseña, y vincula tu cuen
 para traer tus juegos, tus horas y tus logros.
 
 **[⬇ Descargar para Windows](https://github.com/jesuusgallego/GameHub/releases/latest)** ·
-[Novedades de cada versión](CHANGELOG.md) · [Guía de desarrollo](docs/DESARROLLO.md)
+[Novedades de cada versión](CHANGELOG.md) · [Guía de desarrollo](docs/DESARROLLO.md) · [Índice y estado del proyecto](docs/INDICE.md)
 
 ## Qué puedes hacer
 

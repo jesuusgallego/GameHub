@@ -21,7 +21,8 @@ mira el [README](../README.md).
 13. [Problemas frecuentes](#13-problemas-frecuentes)
 14. [Checklist de cierre](#14-checklist-de-cierre)
 
-Otras guías: [`DESPLIEGUE.md`](DESPLIEGUE.md) (poner el servidor en internet),
+Otras guías: [`INDICE.md`](INDICE.md) (dónde está cada cosa y qué falta por hacer),
+[`DESPLIEGUE.md`](DESPLIEGUE.md) (poner el servidor en internet),
 [`desktop/README.md`](../desktop/README.md) (la app de escritorio),
 [`frontend/README.md`](../frontend/README.md) y
 [`frontend/src/estilos/LEEME.md`](../frontend/src/estilos/LEEME.md) (los estilos).
