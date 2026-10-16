@@ -138,8 +138,9 @@ instalador.
 - **Límite de intentos:** 10 inicios de sesión fallidos cada 15 minutos por IP, 10 registros
   por hora, 5 códigos de recuperación pedidos por hora, 10 códigos probados cada 15 minutos,
   60 búsquedas de personas cada 5 minutos, 30 solicitudes de amistad por hora, 40 consultas de
-  logros de un amigo cada 10 minutos y 1000 peticiones cada 15 minutos en total. Responde
-  `429`.
+  logros de un amigo cada 10 minutos, 60 mensajes del chat por minuto y 1000 peticiones cada 15
+  minutos en total. Leer el chat tiene su propio tope por usuario (90 por minuto) y no cuenta en
+  el total. Responde `429`.
 - **Cabeceras de seguridad** (`helmet`) y **CORS** restringido a `CORS_ORIGINS`.
 - **Contraseñas** con bcrypt y sesiones con JWT de 7 días. Cambiar o recuperar la contraseña
   cierra todas las sesiones abiertas (`users.token_version`): el middleware comprueba la
@@ -155,6 +156,9 @@ instalador.
   La app sí consulta cada minuto (la insignia de solicitudes), pero **solo mientras alguien la
   usa**: se pausa con la pestaña oculta o tras 5 minutos sin actividad (`frontend/src/sondeo.js`).
   Si lo bajas a menos de un minuto o quitas la pausa por inactividad, vuelves al problema de arriba.
+  La excepción es el chat: con una conversación abierta pregunta cada 4 segundos, pero con la misma
+  pausa; el servidor y la base de datos ya están despiertos mientras alguien lo usa, y al dejar de
+  usarlo se duermen igual.
 - **Sin servidor despierto, no hay sincronización automática de Steam en segundo plano.** Se
   sincroniza al abrir el perfil (y el servidor se despierta con esa petición).
 - **Steam:** una sola clave tiene un tope de **100.000 consultas al día para todos los

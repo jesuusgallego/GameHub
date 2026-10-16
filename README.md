@@ -26,6 +26,9 @@ para traer tus juegos, tus horas y tus logros.
   y compara vuestras bibliotecas: en su perfil ves los juegos y los amigos que tenéis en común,
   un cara a cara con vuestras cifras y, al abrir uno de sus juegos, su partida con los logros
   que ha conseguido. Puedes bloquear a quien quieras.
+- **Chat:** escribe a tus amigos y recibe sus mensajes sin recargar. Ves cuándo han leído lo
+  que les mandaste, puedes eliminar tus mensajes (desaparecen para los dos) y la barra te avisa
+  de lo que no has leído.
 - **Tú decides qué ve cada persona:** la privacidad es dato a dato (nombre, edad, biblioteca,
   reseñas, horas y logros, lista de amigos...) y también eliges quién puede enviarte solicitudes y si apareces
   en las búsquedas.
@@ -130,6 +133,9 @@ Lo que guarda GameHub de ti:
   amigos o todo el mundo. El teléfono, el email y la fecha de nacimiento no los ve nadie más, ni con la
   opción más abierta; el teléfono no se verifica.
 - Tus amigos, las solicitudes que envías y recibes y a quién has bloqueado.
+- Tus mensajes del chat, que solo ven tú y la persona a la que se los escribes. No están cifrados
+  de extremo a extremo: se guardan como texto en la base de datos del servidor. Si eliminas uno,
+  su texto se borra de ella; al borrar tu cuenta se borran todos.
 - Tu contraseña **solo como huella irreversible** (bcrypt): ni siquiera el servidor puede leerla.
 - Tu biblioteca: los juegos, su estado, tu nota y tu reseña. Si vinculas Steam, también tus horas
   jugadas y tus logros: por defecto solo los ven tus amigos y, como todo lo demás, puedes

@@ -61,7 +61,7 @@ GameHub/
 │   ├── src/
 │   │   ├── app.js               # Arranque, seguridad (helmet, CORS, límites) y rutas
 │   │   ├── routes/              # Qué URL llama a qué controlador
-│   │   ├── controllers/         # Lógica de cada ruta: auth, games, profile, accounts, users, friends
+│   │   ├── controllers/         # Lógica de cada ruta: auth, games, profile, accounts, users, friends, chat
 │   │   ├── middleware/          # Sesión (JWT, con versión por usuario) y límites de intentos
 │   │   ├── services/            # IGDB, Steam, traducción, correo, recuperación de contraseña,
 │   │   │                        # emisión de tokens, sincronización automática, privacidad
@@ -75,7 +75,7 @@ GameHub/
 ├── frontend/                # Interfaz React, para web y escritorio
 │   ├── src/                     # Componentes .jsx, y sesion.js / validacion.js / telefono.js /
 │   │                            # paises.js / privacidad.js / tiempo.js / terminosIgdb.js /
-│   │                            # tono.js / comparar.js / juegoAjeno.js / sondeo.js
+│   │                            # tono.js / comparar.js / juegoAjeno.js / sondeo.js / chat.js
 │   │   ├── estilos/             # CSS por zonas (ver estilos/LEEME.md)
 │   │   └── textos/              # Traducciones es/en
 │   └── test/                    # Pruebas (npm test)
@@ -370,6 +370,7 @@ Después se añade la regla como `CHECK` (con una comprobación en `pg_constrain
 | `password_resets` | Código vigente de recuperación de contraseña de cada usuario (solo su huella, caducidad e intentos) |
 | `friendships` | Amistades y solicitudes: una fila por pareja (índice único sobre `LEAST/GREATEST` de los dos ids, así (1,2) y (2,1) son la misma), con `status` `pendiente` o `aceptada` |
 | `blocks` | Bloqueos: quién ha bloqueado a quién |
+| `messages` | Mensajes del chat: `sender_id`, `recipient_id`, `body` (1 a 2000 caracteres), `created_at`, `read_at` (cuándo lo vio quien lo recibió; `NULL` = sin leer) y `deleted_at`. No hay tabla de conversaciones: una conversación es el conjunto de mensajes entre dos personas, y el índice `idx_messages_pareja` (sobre `LEAST/GREATEST` de los dos ids, como en `friendships`) la lee ordenada. Borrar un mensaje **vacía `body`** y rellena `deleted_at`. Un índice parcial (`idx_messages_sin_leer`) sirve para contar los no leídos |
 
 ### Mirar la base de datos con psql
 
@@ -446,6 +447,12 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | GET | `/friends/blocks` | Bearer token | A quién has bloqueado |
 | POST | `/friends/blocks` | Bearer token | Bloquea (`username`) y borra la amistad o solicitud que hubiera |
 | DELETE | `/friends/blocks/:username` | Bearer token | Desbloquea (no devuelve la amistad) |
+| GET | `/chat` | Bearer token | Tus conversaciones, la más reciente primero: persona, `last` (último mensaje: `id`, `mine`, `body` recortado, `deleted`, `created_at`), `unread` e `is_friend`. No salen las personas con un bloqueo de por medio |
+| GET | `/chat/unread` | Bearer token | `{ unread, conversations }`: cuántos mensajes tienes sin leer y de cuántas personas. Lo consulta la barra cada minuto |
+| GET | `/chat/:username` | Bearer token | La conversación. Sin parámetros, los últimos 50; `?before=<id>` los 50 anteriores; `?after=<id>` solo lo que ha llegado desde ese mensaje (es lo que repite el sondeo). Trae también `has_more`, `is_friend`, `peer_read` (`{ id, at }`: hasta qué mensaje tuyo ha leído la otra persona) y `deleted` (ids borrados entre los últimos 200). 404 si no existe, es uno mismo o hay un bloqueo. **No marca nada como leído** |
+| POST | `/chat/:username` | Bearer token | Envía un mensaje (`body`). Se limpia (saltos de línea unificados, sin caracteres de control, como mucho una línea en blanco seguida) y se valida: 400 si queda vacío o pasa de 2000. 403 si no sois amigos (la comprobación va dentro del propio `INSERT`), 404 con un bloqueo; 60 por minuto |
+| POST | `/chat/:username/read` | Bearer token | Marca como leídos los mensajes que te envió esa persona (`{ read }`). Lo llama el cliente solo cuando de verdad los está viendo |
+| DELETE | `/chat/:username/messages/:id` | Bearer token | Borra un mensaje **tuyo** de esa conversación (vacía su texto). 404 si es ajeno, de otra conversación o ya estaba borrado |
 | GET | `/accounts` | Bearer token | Cuentas vinculadas del usuario y `steam_disponible` (si el servidor tiene `STEAM_API_KEY`) |
 | PUT | `/accounts/steam` | Bearer token | Vincula una cuenta de Steam. `perfil` puede ser la URL del perfil, el nombre personalizado o el SteamID de 17 dígitos. No se elige nada más: la sincronización siempre añade los juegos que te faltan. 409 si ya hay una vinculada |
 | POST | `/accounts/steam/sync` | Bearer token | Trae de Steam las horas y los logros de los juegos que ya tienes y añade los que te faltan (siempre). 422 si el perfil es privado; 409 si ya hay una sincronización en curso. No hace falta llamarlo a mano: el servidor lo hace solo cada `STEAM_SYNC_MINUTOS` y el frontend al abrir el perfil si los datos tienen más de 10 minutos |
@@ -486,13 +493,14 @@ dependencias extra. Cubren la lógica que no necesita navegador ni servidor:
 - **Backend:** lectura de logros de Steam (con Steam simulado), recuperación de contraseña
   (código y correo), validación de sesiones, validación del registro, inicio de sesión con
   email o nombre de usuario, edición del perfil (datos personales y privacidad), reglas de
-  privacidad, y validación de las rutas sociales (solicitudes, bloqueos, en común, logros de un
-  amigo y el contador de solicitudes).
+  privacidad, validación de las rutas sociales (solicitudes, bloqueos, en común, logros de un
+  amigo y el contador de solicitudes) y del chat (limpieza del texto y validaciones).
 - **Frontend:** búsqueda, filtros y orden de la biblioteca, traducción de géneros y modos de
   IGDB, reglas de validación y de privacidad (comprueban que coinciden con las del backend),
   tiempo relativo y agrupación por días, el color de cada persona (`tono.js`) y las filas del
-  cara a cara, el sondeo de la insignia (con temporizadores y reloj simulados), teléfonos y
-  países, y que todos los textos que usa el código existan.
+  cara a cara, el sondeo de la insignia (con temporizadores y reloj simulados), la lógica del
+  chat (fusionar mensajes, tandas, "visto", enlaces), teléfonos y países, y que todos los textos
+  que usa el código existan.
 - **Escritorio:** avisos de actualización, que el instalador incluya los archivos que carga
   `main.js` y la construcción de las notas de cada Release.
 
@@ -763,13 +771,61 @@ Epic se descartaron), por eso es la única que se puede vincular.
   despiertos Render y Neon (planes gratuitos), y una ventana olvidada no debe tenerlos
   despiertos todo el día. No apila consultas si el servidor tarda, y tampoco enseña el aviso
   de "servidor lento" (`avisoLento: false`). Se vuelve a pedir la lista completa solo al
-  navegar. Si algún día hay chat (1.4), este mismo módulo vale para sondear mensajes.
+  navegar. El chat usa este mismo módulo (ver "Chat").
 - **Cómo se probó.** Las pruebas del repositorio (`privacidad.test.js`, `social.test.js` en
   backend y `social.test.js` en frontend) cubren la tabla de privacidad, las validaciones y los
   textos sin base de datos. La lógica con SQL (solicitudes cruzadas, bloqueos, privacidad por
   dato, políticas, sugerencias, actividad, la búsqueda con `_`) se comprobó contra un Postgres
   real en memoria (PGlite) con varios usuarios; si tocas esas consultas, vuelve a comprobarlas
   contra una base de datos de verdad.
+
+### Chat
+
+Mensajes de uno a uno **solo entre amigos**, con consultas periódicas (no WebSockets: Render
+gratuito se duerme y no mantiene conexiones abiertas). Backend: `controllers/chatController.js`
+y `routes/chatRoutes.js`. Frontend: `Chat.jsx` (la página: lista + panel, y la dirección
+`/chat/:username?`), `ListaChats.jsx` (conversaciones y el panel "Nuevo mensaje"),
+`Conversacion.jsx` (una conversación: carga, sondeo, envío, borrado, scroll), `Burbuja.jsx` (un
+mensaje) y `chat.js` (la lógica sin React, con pruebas). Estilos en `estilos/chat.css`.
+
+- **Reglas.** Escribir exige amistad y ningún bloqueo; si dejáis de ser amigos el historial
+  sigue ahí (solo lectura), y con un bloqueo la conversación no existe para ninguno de los dos
+  (404, igual que el perfil). Al desbloquear vuelve el historial. Al borrar una cuenta se van sus
+  mensajes (`ON DELETE CASCADE`). Un mensaje borrado pierde su texto en la base de datos.
+- **Dos sondeos.** La conversación abierta pregunta por `?after=<último id>` cada 4 s y la lista de
+  conversaciones se pone al día cada 12 s; la lista trae los no leídos de cada una y de ella sale
+  la insignia de la barra mientras estás en Chat (fuera de Chat, `Layout.jsx` pide `/chat/unread`
+  cada minuto junto a las solicitudes). Ambos usan `iniciarSondeo`, así que **se paran con la
+  pestaña oculta o tras 5 minutos sin actividad**. Consecuencia buscada: con la app minimizada no
+  llegan avisos de mensajes nuevos hasta que vuelves; para eso haría falta una conexión
+  permanente (SSE o WebSocket) y un servidor siempre despierto.
+- **Cambios en mensajes viejos.** El sondeo con `after` solo trae mensajes nuevos, pero también
+  devuelve `peer_read` (para el "Visto") y `deleted` (los ids borrados entre los últimos 200), y
+  el cliente los aplica sobre lo que ya tiene (`fusionar`, `marcarBorrados`).
+- **"Visto" de verdad.** Abrir la conversación (`GET`) no marca nada: `Conversacion.jsx` llama a
+  `POST /chat/:u/read` solo cuando hay mensajes ajenos sin avisar y la pestaña está visible.
+- **Envío optimista.** Lo que escribes sale al instante como "Enviando..." (`pendientes`) y se
+  sustituye por el mensaje del servidor; si falla se queda con *Reintentar* y *Descartar*.
+  Mientras hay un envío en vuelo el sondeo ignora tus propios mensajes (ya los traerá la
+  respuesta) para que no salgan duplicados.
+- **Scroll.** Si estás abajo, lo nuevo te baja; si estás leyendo más arriba, no te mueve y sale
+  la pastilla "Mensajes nuevos"; al cargar anteriores, la posición se recoloca para que lo que
+  mirabas no salte.
+- **Límites.** Enviar: 60 por minuto y por IP (`limitadorMensajes`). Leer: **90 por minuto y por
+  usuario** (`limitadorLecturaChat`) y esas lecturas no cuentan en el tope general por IP: con una
+  conversación abierta el cliente hace unas 20 al minuto, y dos amigos chateando desde la misma
+  casa se habrían comido el tope de 1000 cada 15 minutos.
+- **Texto.** Se guarda tal cual, sin HTML; React lo escribe como texto y los enlaces los saca
+  `partirEnlaces` (solo `http`/`https` con un dominio con punto; nada de `javascript:`), con
+  `rel="noopener noreferrer"`. El tope (2000) está en `config/validacion.js` y `validacion.js`
+  del frontend, con una prueba que comprueba que coinciden.
+- **Cómo se probó.** `backend/test/chat.test.js` y `frontend/test/chat.test.js` cubren la
+  validación y la lógica sin base de datos. El SQL (no leídos, visto, borrado, paginación,
+  amistad y bloqueos, el índice y la migración desde el esquema anterior) se comprobó contra
+  PGlite con varios usuarios, y la interfaz con Chromium sin cabeza (enviar, recibir por
+  sondeo, borrar, paginar, móvil, tema claro e inglés).
+- **No está (por ahora):** avisos del sistema, "escribiendo...", imágenes o archivos, chats de
+  grupo, borrar una conversación entera y reportar mensajes.
 
 ### Tarjetas de la biblioteca
 

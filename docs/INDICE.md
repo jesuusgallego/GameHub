@@ -44,8 +44,10 @@ El orden es el acordado; cada fase es una versión con su entrada en el CHANGELO
 1. **Noticias por RSS (1.4)**: una sección con noticias de portales de videojuegos, con la
    posibilidad de seguir portales. Solo titular, extracto y enlace al original; no se copian
    artículos.
-2. **Chat entre amigos (1.5)**. Empezar con consultas periódicas (`sondeo.js` ya sirve de base), porque
-   el servidor gratuito se duerme y no mantiene conexiones abiertas. Reutiliza amigos y bloqueos.
+2. **Chat entre amigos (1.5)**: **hecho en local, sin publicar.** Mensajes de uno a uno entre
+   amigos con consultas periódicas (`sondeo.js`), "visto", borrado y avisos de no leídos; ver
+   [Chat](DESARROLLO.md#chat). Falta publicarlo (versión, etiqueta y Render) y, más adelante:
+   avisos del sistema, "escribiendo...", imágenes y chats de grupo.
 3. **Versión móvil (2.0)**: la misma interfaz React empaquetada con Capacitor, con una PWA como
    paso intermedio. Android primero; iOS cuesta una cuenta de pago y un Mac o un servicio de
    compilación, así que se decide aparte.

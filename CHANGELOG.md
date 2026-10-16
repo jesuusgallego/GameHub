@@ -2,6 +2,35 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Añadido
+- **Chat entre amigos.** Una sección nueva, **Chat**, en la barra: a la izquierda tus
+  conversaciones (la más reciente primero, con lo último que se dijo, la hora y cuántos mensajes
+  tienes sin leer) y a la derecha la que tengas abierta.
+  - Solo se escribe a **amigos**. Si dejáis de serlo, la conversación se conserva para leerla, pero
+    no se puede escribir; si bloqueas a alguien (o te bloquea), desaparece para los dos.
+  - **Intro** envía y **Mayús + Intro** hace un salto de línea. Los enlaces (`http` y `https`) se
+    pueden pulsar y se abren en el navegador. Hasta 2000 caracteres por mensaje.
+  - **Visto:** debajo de tu último mensaje leído aparece "Visto a las…". Solo cuenta cuando la otra
+    persona tiene la conversación abierta y la pestaña a la vista.
+  - **Eliminar un mensaje** tuyo lo borra para los dos de verdad (el texto desaparece del
+    servidor) y deja el hueco "Mensaje eliminado".
+  - Los mensajes llegan sin recargar (cada pocos segundos mientras la conversación está abierta y
+    la app se usa). La barra y el título de la pestaña enseñan cuántos tienes sin leer. Si estás
+    leyendo mensajes antiguos, no te baja de golpe: aparece "Mensajes nuevos".
+  - Un mensaje que no se envía por falta de conexión se queda marcado con *Reintentar* y
+    *Descartar*, y lo que dejas a medias de escribir se conserva al cambiar de conversación.
+  - En una conversación vacía hay frases para romper el hielo ("¿Jugamos algo?", o una pregunta
+    sobre el juego al que está jugando). En la cabecera ves a qué juega tu amigo.
+  - Desde el perfil de un amigo y desde su carnet en Social hay un botón **Mensaje**.
+- `npm run seed:demo` crea también conversaciones de ejemplo (con mensajes sin leer, uno borrado y
+  un enlace) para probar el chat con `demo_ana`.
+
+### Cambiado
+- La barra de navegación en pantallas estrechas aprieta el hueco entre enlaces para que, con el
+  cuarto enlace (Chat), "Mi biblioteca" no se parta en dos líneas.
+
 ## [1.3.0] - 2026-10-16
 
 Social rediseñado: tu sala con lo que juegan tus amigos, y en su perfil, lo que tenéis en común
