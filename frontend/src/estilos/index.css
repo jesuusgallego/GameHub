@@ -42,6 +42,7 @@
 @import './social.css';
 @import './sala.css';
 @import './chat.css';
+@import './noticias.css';
 @import './progreso-steam.css';
 
 /* Pantallas estrechas: va el último para poder sobrescribir lo anterior */

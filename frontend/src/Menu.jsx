@@ -74,9 +74,10 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
   return (
     <header className="barra">
       <div className="barra__interior">
-        <Marca to="/biblioteca" />
+        <Marca to="/noticias" />
 
         <nav className="barra__nav" ref={navRef}>
+          <NavLink to="/noticias">{t('menu.noticias')}</NavLink>
           <NavLink to="/biblioteca">{t('menu.biblioteca')}</NavLink>
           <NavLink to="/buscar">{t('menu.buscar')}</NavLink>
           <NavLink to="/social">

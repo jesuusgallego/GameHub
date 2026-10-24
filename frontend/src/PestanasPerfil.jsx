@@ -28,6 +28,18 @@ const ICONOS = {
       <path d="m16 6 4 1-3 12-4-1" />
     </>
   ),
+  // Pestañas de Noticias
+  para_ti: (
+    <>
+      <path d="M12 3l2.4 5 5.6.6-4.2 3.8 1.2 5.6L12 15.2 7 18l1.2-5.6L4 8.6 9.6 8Z" />
+    </>
+  ),
+  siguiendo: (
+    <>
+      <path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16" />
+      <circle cx="5" cy="19" r="1.5" />
+    </>
+  ),
   // Pestañas de Social
   amigos: (
     <>

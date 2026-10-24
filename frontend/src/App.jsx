@@ -5,6 +5,7 @@ import Biblioteca from './Biblioteca'
 import Buscar from './Buscar'
 import Perfil from './Perfil'
 import Social from './Social'
+import Noticias from './Noticias'
 import PerfilPublico from './PerfilPublico'
 import Layout from './Layout'
 import RutaProtegida from './RutaProtegida'
@@ -28,7 +29,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* Lo primero que se ve al entrar son las noticias (1.6); sin sesión, el inicio de sesión */}
+        <Route path="/" element={<Navigate to={token ? '/noticias' : '/login'} replace />} />
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/recuperar" element={<Recuperar />} />
@@ -40,6 +42,7 @@ function App() {
             </RutaProtegida>
           }
         >
+          <Route path="/noticias" element={<Noticias setToken={setToken} />} />
           <Route path="/biblioteca" element={<Biblioteca setToken={setToken} />} />
           <Route path="/buscar" element={<Buscar setToken={setToken} />} />
           <Route path="/perfil" element={<Perfil setToken={setToken} />} />

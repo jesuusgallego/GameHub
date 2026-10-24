@@ -38,7 +38,7 @@ function Login({ setToken }) {
       .then(data => {
         setToken(data.token)
         escribirToken(data.token)
-        navigate('/biblioteca')
+        navigate('/noticias')
       })
       .catch(err => setError(err.message))
       .finally(() => setEnviando(false))

@@ -30,6 +30,7 @@ function PanelPrivacidad({ perfil, onGuardado, cerrarSesion }) {
   const valor = (campo) => perfil[campo] ?? PRIVACIDAD_POR_DEFECTO[campo]
   const politica = perfil.request_policy ?? 'todos'
   const buscable = perfil.searchable ?? true
+  const personalizar = perfil.news_personalization ?? true
 
   // Guarda un ajuste. `optimista`: el perfil se actualiza ya, antes de que el servidor
   // conteste, para que la tabla y el selector respondan sin esperar; si el servidor
@@ -172,6 +173,33 @@ function PanelPrivacidad({ perfil, onGuardado, cerrarSesion }) {
         </div>
       </section>
 
+      <section className="ajuste">
+        <header className="ajuste__cabecera">
+          <span className="ajuste__icono" aria-hidden="true">
+            <IconoGrupo id="noticias" />
+          </span>
+          <div>
+            <h3 className="ajuste__titulo">{t('privacidad.grupo.noticias')}</h3>
+            <p className="ajuste__ayuda">{t('privacidad.grupo.noticias.ayuda')}</p>
+          </div>
+        </header>
+
+        <div className="privacidad__filas">
+          <div className="privacidad__fila">
+            <span className="privacidad__texto">
+              <strong>{t('privacidad.personalizar')}</strong>
+              <small>{t('privacidad.personalizar.ayuda')}</small>
+            </span>
+            <Interruptor
+              activado={personalizar}
+              onChange={(nuevo) => cambiar('news_personalization', nuevo)}
+              etiqueta={t('privacidad.personalizar')}
+              disabled={ocupado}
+            />
+          </div>
+        </div>
+      </section>
+
       <p className="privacidad__ayuda">{t('privacidad.autoguardado')}</p>
     </div>
   )
@@ -200,6 +228,7 @@ function IconoGrupo({ id }) {
     personales: <><circle cx="12" cy="8" r="4" /><path d="M4 21v-1.5A5.5 5.5 0 0 1 9.5 14h5a5.5 5.5 0 0 1 5.5 5.5V21" /></>,
     biblioteca: <><path d="M4 5h4v14H4zM10 5h4v14h-4z" /><path d="m16 6 4 1-3 12-4-1" /></>,
     contacto: <><path d="M4 5h16v11H8l-4 4z" /></>,
+    noticias: <><path d="M5 4h11v16H6a2 2 0 0 1-2-2V5a1 1 0 0 1 1-1Z" /><path d="M16 8h3a1 1 0 0 1 1 1v9a2 2 0 0 1-4 0M8 8h5M8 12h5M8 16h3" /></>,
   }
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
