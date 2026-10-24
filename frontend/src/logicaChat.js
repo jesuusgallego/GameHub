@@ -1,5 +1,21 @@
 // Lógica del chat sin React, para poder probarla (ver test/chat.test.js). Un mensaje del
 // servidor es { id, mine, body, created_at, deleted, read_at? } (read_at solo en los míos).
+// En un grupo además lleva `sender` (quién lo escribió), `kind` ('text' o 'event': los avisos
+// como "ana añadió a luis", con `event` y `target`) y `hidden` si es de alguien a quien has
+// bloqueado.
+//
+// Cada conversación se identifica con una "clave": el nombre de la persona ("ana") o
+// "g:<id>" para un grupo ("g:12"). Un nombre de usuario no puede llevar ":", así que no chocan.
+
+// ¿Es la clave de un grupo?
+export function esGrupo(clave) {
+  return typeof clave === 'string' && clave.startsWith('g:')
+}
+
+// La ruta de la API de una conversación: /chat/ana o /chat/g/12
+export function rutaConversacion(clave) {
+  return esGrupo(clave) ? `/chat/g/${clave.slice(2)}` : `/chat/${encodeURIComponent(clave)}`
+}
 
 // Entre dos mensajes seguidos de la misma persona que pasen más de esto, se corta el bloque
 // y se vuelve a enseñar la hora
@@ -28,10 +44,10 @@ export function ultimoId(mensajes) {
   return mensajes.reduce((max, m) => Math.max(max, m.id), 0)
 }
 
-// ¿Hay mensajes de la otra persona que aún no he marcado como leídos? `leidoHasta` es el
-// mayor id que ya avisé al servidor que vi.
+// ¿Hay mensajes de otra persona que aún no he marcado como leídos? `leidoHasta` es el
+// mayor id que ya avisé al servidor que vi. Los avisos del grupo no cuentan.
 export function hayPorLeer(mensajes, leidoHasta) {
-  return mensajes.some((m) => !m.mine && !m.deleted && m.id > leidoHasta)
+  return mensajes.some((m) => !m.mine && !m.deleted && m.kind !== 'event' && m.id > leidoHasta)
 }
 
 // El mensaje mío bajo el que se escribe "Visto": el último que la otra persona ha leído.
@@ -54,9 +70,28 @@ export function claveDia(fecha) {
   return `${d.getFullYear()}-${mes}-${dia}`
 }
 
+// En un grupo, el "Visto por...": quiénes han leído mi último mensaje. `reads` es la lista del
+// servidor ([{ username, last_read_id }], sin mí). Devuelve { id, nombres, todos } o null si no
+// lo ha leído nadie (o no tengo mensajes).
+export function vistoPor(mensajes, reads) {
+  let mio = null
+  for (let i = mensajes.length - 1; i >= 0; i--) {
+    const m = mensajes[i]
+    if (m.kind === 'event') continue
+    if (m.mine && !m.deleted) mio = m
+    break
+  }
+  if (!mio || !reads?.length) return null
+  const nombres = reads.filter((r) => r.last_read_id >= mio.id).map((r) => r.username)
+  if (nombres.length === 0) return null
+  return { id: mio.id, nombres, todos: nombres.length === reads.length }
+}
+
 // Reparte los mensajes en días y, dentro de cada día, en bloques: tandas seguidas de la misma
-// persona con menos de HUECO_BLOQUE_MS entre mensajes. Es la forma en que se pintan:
-//   [{ dia: '2026-10-16', fecha, bloques: [{ mine, mensajes: [...] }] }]
+// persona con menos de HUECO_BLOQUE_MS entre mensajes. Un aviso del grupo ("ana añadió a luis")
+// va suelto, en su propio bloque, y corta la tanda. Es la forma en que se pintan:
+//   [{ dia: '2026-10-16', fecha, bloques: [{ mine, sender?, mensajes: [...] } | { evento }] }]
+// `sender` solo aparece en los grupos (en una conversación de dos ya se sabe quién es quién).
 export function agrupar(mensajes) {
   const dias = []
   for (const m of mensajes) {
@@ -67,12 +102,17 @@ export function agrupar(mensajes) {
       dias.push(dia)
     }
 
+    if (m.kind === 'event') {
+      dia.bloques.push({ evento: m })
+      continue
+    }
+
     const bloque = dia.bloques[dia.bloques.length - 1]
-    const anterior = bloque?.mensajes[bloque.mensajes.length - 1]
-    const seguido = bloque && bloque.mine === m.mine
+    const anterior = bloque?.mensajes?.[bloque.mensajes.length - 1]
+    const seguido = anterior && bloque.mine === m.mine && bloque.sender === m.sender
       && new Date(m.created_at) - new Date(anterior.created_at) < HUECO_BLOQUE_MS
     if (seguido) bloque.mensajes.push(m)
-    else dia.bloques.push({ mine: m.mine, mensajes: [m] })
+    else dia.bloques.push({ mine: m.mine, ...(m.sender !== undefined && { sender: m.sender }), mensajes: [m] })
   }
   return dias
 }
@@ -96,12 +136,54 @@ export function totalSinLeer(conversaciones) {
   return conversaciones.reduce((suma, c) => suma + (c.unread ?? 0), 0)
 }
 
-// El texto de la vista previa de una conversación en la lista
-export function vistaPrevia(ultimo, t) {
+// El texto de un aviso del grupo, con la forma que toca según quién lo hizo y a quién afecta:
+// "ana añadió a luis", "Añadiste a luis", "ana te añadió"... `m` es { mine, sender, event,
+// target, body }; `yo` es mi nombre de usuario (para el "te").
+export function textoEvento(m, t, yo) {
+  const quien = m.sender
+  const objetivo = m.target ?? t('chat.alguien')
+  const aMi = m.target != null && m.target === yo
+  const forma = m.mine ? '.yo' : aMi ? '.ati' : ''
+  switch (m.event) {
+    case 'created': return t(`chat.evento.created${m.mine ? '.yo' : ''}`, { quien, nombre: m.body })
+    case 'renamed': return t(`chat.evento.renamed${m.mine ? '.yo' : ''}`, { quien, nombre: m.body })
+    case 'left': return t('chat.evento.left', { quien })
+    case 'owner': return t(`chat.evento.owner${m.mine ? '.yo' : ''}`, { quien })
+    case 'added': return t(`chat.evento.added${forma}`, { quien, objetivo })
+    case 'removed': return t(`chat.evento.removed${forma}`, { quien, objetivo })
+    default: return ''
+  }
+}
+
+// El texto de la vista previa de una conversación en la lista. En los grupos (`grupo`), lo de
+// los demás va con su nombre delante ("luis: vale") y los avisos, con su texto.
+export function vistaPrevia(ultimo, t, { grupo = false, yo = null } = {}) {
   if (!ultimo) return ''
+  if (ultimo.kind === 'event') return textoEvento(ultimo, t, yo)
   if (ultimo.deleted) return t('chat.mensajeEliminado')
+  if (ultimo.hidden) return t('chat.mensajeOculto')
   const cuerpo = ultimo.body.replace(/\s+/g, ' ')
-  return ultimo.mine ? t('chat.tu', { texto: cuerpo }) : cuerpo
+  if (ultimo.mine) return t('chat.tu', { texto: cuerpo })
+  return grupo && ultimo.sender ? t('chat.de', { usuario: ultimo.sender, texto: cuerpo }) : cuerpo
+}
+
+// "Escribiendo...": en una conversación de dos basta eso; en un grupo, quién. `nombres` es la
+// lista de quienes escriben (sin mí).
+export function textoEscribiendo(nombres, t, grupo) {
+  if (!grupo) return t('chat.escribiendo')
+  if (nombres.length === 1) return t('chat.escribiendoUno', { a: nombres[0] })
+  if (nombres.length === 2) return t('chat.escribiendoDos', { a: nombres[0], b: nombres[1] })
+  return t('chat.escribiendoVarios')
+}
+
+// El nombre que se propone para un grupo nuevo con los elegidos: "ana, luis y marta". Si no cabe
+// en `max` caracteres, se recorta con "...".
+export function nombreSugerido(nombres, t, max) {
+  if (nombres.length === 0) return ''
+  const texto = nombres.length === 1
+    ? nombres[0]
+    : t('chat.grupo.nombreLista', { lista: nombres.slice(0, -1).join(', '), ultimo: nombres[nombres.length - 1] })
+  return [...texto].length <= max ? texto : `${[...texto].slice(0, max - 3).join('')}...`
 }
 
 // Cuánto hace de una fecha para la lista de conversaciones: 'hoy', 'ayer', 'semana' (los 5

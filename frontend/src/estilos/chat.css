@@ -807,8 +807,11 @@
 }
 
 .chat-hilo__texto strong {
+  overflow: hidden;
   color: var(--texto-h);
   font-size: 1.05rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-hilo__persona:hover strong {
@@ -1299,4 +1302,898 @@
   .chat-nuevo__rejilla {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* =====================================================================================
+   Grupos, "escribiendo", vaciar y avisos (1.5)
+   ===================================================================================== */
+
+/* En el chat, igual que en Social: sin foto, el círculo con la inicial toma el color de la persona
+   en vez del de la marca (cada cara del grupo, cada autor y cada amigo se distinguen) */
+.chat-dock .avatar:not(:has(img)) {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--tono, 220) var(--tono-s) var(--tono-l)),
+    hsl(calc(var(--tono, 220) + 50) calc(var(--tono-s) - 8%) calc(var(--tono-l) - 14%))
+  );
+}
+
+/* En un grupo, las burbujas de cada persona llevan SU color, no el del grupo */
+.chat-bloque--con-autor {
+  --burbuja-suya: hsl(var(--tono, 220) 28% 22%);
+}
+
+:root[data-tema="claro"] .chat-bloque--con-autor {
+  --burbuja-suya: hsl(var(--tono, 220) 60% 92%);
+}
+
+/* ---- La "foto" de un grupo (AvatarGrupo.jsx): caras de hasta tres miembros en un anillo con el
+   color del grupo. Al pasar por la fila, las caras se separan un poco. ---- */
+.avatar-grupo {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 62px;
+  height: 62px;
+  padding: 3px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 200deg,
+    hsl(var(--tono, 220) var(--tono-s) var(--tono-l)),
+    hsl(calc(var(--tono, 220) + 70) var(--tono-s) var(--tono-l)),
+    hsl(var(--tono, 220) var(--tono-s) var(--tono-l))
+  );
+}
+
+/* El fondo de dentro, teñido con el tono del grupo */
+.avatar-grupo::before {
+  position: absolute;
+  inset: 3px;
+  content: "";
+  background: hsl(var(--tono, 220) 30% 17%);
+  border-radius: 50%;
+}
+
+:root[data-tema="claro"] .avatar-grupo::before {
+  background: hsl(var(--tono, 220) 55% 92%);
+}
+
+.avatar-grupo--grande {
+  width: 104px;
+  height: 104px;
+  padding: 4px;
+}
+
+.avatar-grupo__cara {
+  position: absolute;
+  display: grid;
+  width: var(--t, 50%);
+  height: var(--t, 50%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px hsl(var(--tono, 220) 30% 17%);
+  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.avatar-grupo__cara .avatar {
+  width: 100%;
+  height: 100%;
+  font-size: 0.85rem;
+}
+
+.avatar-grupo--grande .avatar-grupo__cara .avatar {
+  font-size: 1.4rem;
+}
+
+/* Una cara: en el centro. Dos: en diagonal. Tres: en triángulo. */
+.avatar-grupo--1 .avatar-grupo__cara { --t: 70%; top: 15%; left: 15%; }
+.avatar-grupo--2 .avatar-grupo__cara { --t: 56%; }
+.avatar-grupo--2 .avatar-grupo__cara:nth-child(1) { top: 7%; left: 7%; }
+.avatar-grupo--2 .avatar-grupo__cara:nth-child(2) { right: 7%; bottom: 7%; }
+.avatar-grupo--3 .avatar-grupo__cara { --t: 48%; }
+.avatar-grupo--3 .avatar-grupo__cara:nth-child(1) { top: 5%; left: 26%; }
+.avatar-grupo--3 .avatar-grupo__cara:nth-child(2) { bottom: 9%; left: 5%; }
+.avatar-grupo--3 .avatar-grupo__cara:nth-child(3) { right: 5%; bottom: 9%; }
+
+.chat-fila:hover .avatar-grupo--2 .avatar-grupo__cara:nth-child(1),
+.chat-hilo__persona:hover .avatar-grupo--2 .avatar-grupo__cara:nth-child(1) { transform: translate(-2px, -2px); }
+.chat-fila:hover .avatar-grupo--2 .avatar-grupo__cara:nth-child(2),
+.chat-hilo__persona:hover .avatar-grupo--2 .avatar-grupo__cara:nth-child(2) { transform: translate(2px, 2px); }
+.chat-fila:hover .avatar-grupo--3 .avatar-grupo__cara:nth-child(1),
+.chat-hilo__persona:hover .avatar-grupo--3 .avatar-grupo__cara:nth-child(1) { transform: translateY(-3px); }
+.chat-fila:hover .avatar-grupo--3 .avatar-grupo__cara:nth-child(2),
+.chat-hilo__persona:hover .avatar-grupo--3 .avatar-grupo__cara:nth-child(2) { transform: translate(-3px, 2px); }
+.chat-fila:hover .avatar-grupo--3 .avatar-grupo__cara:nth-child(3),
+.chat-hilo__persona:hover .avatar-grupo--3 .avatar-grupo__cara:nth-child(3) { transform: translate(3px, 2px); }
+
+.avatar-grupo__inicial {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  font-family: var(--display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
+}
+
+/* En la lista: cuántas personas hay, junto al nombre */
+.chat-fila__cuantos {
+  display: inline-grid;
+  min-width: 1.25rem;
+  height: 1.1rem;
+  margin-left: 0.4rem;
+  padding: 0 0.35rem;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  vertical-align: 2px;
+  color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.16);
+  border-radius: 999px;
+}
+
+/* ---- "Escribiendo..." ---- */
+.chat-puntos {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+}
+
+.chat-puntos span {
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+  border-radius: 50%;
+  animation: chat-tecleo 1.1s ease-in-out infinite;
+}
+
+.chat-puntos span:nth-child(2) { animation-delay: 0.15s; }
+.chat-puntos span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes chat-tecleo {
+  0%, 60%, 100% { opacity: 0.4; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+.chat-fila__previa--escribiendo,
+.chat-hilo__escribiendo {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  color: var(--acento);
+  animation: chat-entrada 0.25s ease both;
+}
+
+.chat-hilo__miembros {
+  overflow: hidden;
+  color: var(--texto-suave);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* La burbuja de "escribiendo" al final de la conversación, del lado de los demás */
+.chat-tecleo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  margin-top: 0.4rem;
+  transform-origin: bottom left;
+  animation: chat-burbuja-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+.chat-tecleo--saliendo {
+  animation: chat-tecleo-salida 0.22s ease both;
+}
+
+@keyframes chat-tecleo-salida {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.9);
+  }
+}
+
+.chat-tecleo small {
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}
+
+.chat-tecleo__burbuja {
+  display: inline-flex;
+  padding: 0.75rem 0.95rem;
+  color: var(--burbuja-suya-texto);
+  background: var(--burbuja-suya);
+  border-radius: 1.1rem 1.1rem 1.1rem 0.3rem;
+}
+
+.chat-tecleo__burbuja .chat-puntos span {
+  width: 7px;
+  height: 7px;
+}
+
+/* ---- Cabecera de la conversación: el grupo como botón y el menú "⋯" ---- */
+button.chat-hilo__persona {
+  padding: 0.15rem 0.4rem 0.15rem 0.1rem;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radio-grande);
+  transition: background-color var(--transicion);
+}
+
+button.chat-hilo__persona:hover:not(:disabled) {
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.1);
+}
+
+button.chat-hilo__persona:disabled {
+  cursor: default;
+}
+
+button.chat-hilo__persona:disabled:hover strong {
+  text-decoration: none;
+}
+
+.chat-hilo__opciones {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  margin-left: auto;
+  padding: 0;
+  color: var(--texto-suave);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  transition: background-color var(--transicion), color var(--transicion), transform 0.25s ease;
+}
+
+.chat-hilo__opciones:hover,
+.chat-hilo__opciones[aria-expanded="true"] {
+  color: var(--texto-h);
+  background: var(--superficie-2);
+}
+
+.chat-hilo__opciones:active {
+  transform: scale(0.92);
+}
+
+/* ---- Grupos: quién escribe cada tanda y los avisos ("ana añadió a luis") ---- */
+.chat-bloque__autor {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.2rem 0.15rem;
+  font-size: 0.78rem;
+}
+
+.chat-bloque__autor .avatar {
+  width: 22px;
+  height: 22px;
+  font-size: 0.7rem;
+}
+
+.chat-bloque__autor strong {
+  font-weight: 700;
+  color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
+}
+
+.chat-evento {
+  display: flex;
+  max-width: 92%;
+  align-self: center;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.3rem 0;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  text-align: center;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+}
+
+.chat-evento svg {
+  flex: none;
+  color: var(--acento);
+}
+
+.chat-evento time {
+  flex: none;
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+.chat-evento--nuevo {
+  animation: chat-evento-entrada 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+@keyframes chat-evento-entrada {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+.chat-hilo__fuera {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.chat-hilo__fuera p {
+  margin: 0;
+}
+
+/* ---- La hoja "Nuevo mensaje": los dos modos y el grupo nuevo ---- */
+/* Mensaje o grupo: una pastilla de color que se desliza de un lado al otro */
+.chat-modos {
+  position: relative;
+  display: grid;
+  flex: none;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+}
+
+.chat-modos button {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.8rem;
+  font-weight: 700;
+  color: var(--texto-suave);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  transition: color 0.25s ease;
+}
+
+.chat-modos button:hover {
+  color: var(--texto-h);
+}
+
+.chat-modos button[aria-checked="true"] {
+  color: #fff;
+}
+
+.chat-modos__pastilla {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: var(--degradado);
+  border-radius: 999px;
+  box-shadow: 0 4px 14px var(--resplandor);
+  transition: transform 0.38s cubic-bezier(0.3, 0.9, 0.3, 1.2);
+}
+
+.chat-modos--grupo .chat-modos__pastilla {
+  transform: translateX(100%);
+}
+
+.chat-nuevo__ayuda {
+  margin: -0.3rem 0 0;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.chat-nuevo__cuerpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* El círculo de cada amigo, con la marca de elegido en una esquina */
+.chat-nuevo__cara {
+  position: relative;
+  display: inline-grid;
+}
+
+.chat-nuevo__marca {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  color: #fff;
+  background: var(--degradado);
+  border: 2px solid var(--superficie);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.3) rotate(-45deg);
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.5), opacity 0.2s ease;
+}
+
+.chat-nuevo__amigo--elegido {
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.16);
+  border-color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.6);
+}
+
+.chat-nuevo__amigo--elegido .anillo {
+  transform: scale(0.92);
+}
+
+.chat-nuevo__amigo--elegido .chat-nuevo__marca {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.chat-nuevo__amigo--apagado {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.chat-nuevo__amigo--apagado:hover {
+  background: transparent;
+  border-color: transparent;
+  transform: none;
+}
+
+/* Abajo, fija: el nombre del grupo y el botón de crearlo. Se ilumina al haber elegido a dos. */
+.chat-crear {
+  position: sticky;
+  bottom: -0.5rem;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+  margin: 0 -1.1rem -0.5rem;
+  padding: 0.8rem 1.1rem 0.9rem;
+  background: var(--superficie);
+  border-top: 1px solid var(--borde);
+  animation: chat-crear-entrada 0.35s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+}
+
+@keyframes chat-crear-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+.chat-crear__campo {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.chat-crear__campo span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+}
+
+.chat-crear__boton {
+  width: 100%;
+  white-space: nowrap;
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4), box-shadow var(--transicion), opacity var(--transicion);
+}
+
+.chat-crear--listo .chat-crear__boton {
+  animation: chat-crear-listo 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.5);
+}
+
+@keyframes chat-crear-listo {
+  40% { transform: scale(1.06); }
+}
+
+/* ---- La tarjeta que ofrece los avisos del sistema ---- */
+.chat-avisos {
+  display: flex;
+  flex: none;
+  gap: 0.8rem;
+  margin: 0 1rem 0.6rem;
+  padding: 0.9rem 1rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--acento) 15%, transparent), color-mix(in srgb, #5b3df5 13%, transparent)),
+    var(--superficie-2);
+  border: 1px solid color-mix(in srgb, var(--acento) 35%, var(--borde));
+  border-radius: var(--radio-grande);
+  animation: chat-avisos-entrada 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.chat-avisos--saliendo {
+  pointer-events: none;
+  animation: chat-avisos-salida 0.26s ease both;
+}
+
+@keyframes chat-avisos-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+}
+
+@keyframes chat-avisos-salida {
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+.chat-avisos__icono {
+  display: grid;
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  color: #fff;
+  background: var(--degradado);
+  border-radius: 50%;
+}
+
+/* La campana se mueve de vez en cuando */
+.chat-avisos__icono svg {
+  transform-origin: 50% 12%;
+  animation: chat-campana 3s ease-in-out 0.6s infinite;
+}
+
+@keyframes chat-campana {
+  0%, 72%, 100% { transform: rotate(0); }
+  76% { transform: rotate(16deg); }
+  81% { transform: rotate(-13deg); }
+  86% { transform: rotate(8deg); }
+  91% { transform: rotate(-4deg); }
+}
+
+.chat-avisos__texto strong {
+  color: var(--texto-h);
+}
+
+.chat-avisos__texto p {
+  margin: 0.15rem 0 0.65rem;
+  font-size: 0.86rem;
+  color: var(--texto-suave);
+}
+
+.chat-avisos__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chat-avisos .btn {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+/* ---- La información del grupo (InfoGrupo.jsx): entra desde la derecha sobre la conversación ---- */
+.chat-info {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background:
+    radial-gradient(110% 45% at 0% 0%, hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.16), transparent 70%),
+    var(--superficie);
+  outline: none;
+  animation: chat-info-entrada 0.4s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+}
+
+.chat-info--saliendo {
+  pointer-events: none;
+  animation: chat-info-salida 0.26s cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+
+@keyframes chat-info-entrada {
+  from {
+    opacity: 0.3;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes chat-info-salida {
+  to {
+    opacity: 0.3;
+    transform: translateX(100%);
+  }
+}
+
+.chat-info__barra {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem 0.7rem 0.5rem;
+  background: color-mix(in srgb, var(--superficie) 88%, transparent);
+  border-bottom: 1px solid var(--borde);
+  backdrop-filter: blur(8px);
+}
+
+.chat-info__barra h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-h);
+}
+
+.chat-info__cerrar,
+.chat-info__lapiz,
+.chat-info__sacar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  padding: 0;
+  color: var(--texto-suave);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  transition: background-color var(--transicion), color var(--transicion), transform 0.25s ease;
+}
+
+.chat-info__cerrar {
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--texto-h);
+}
+
+.chat-info__cerrar:hover,
+.chat-info__lapiz:hover {
+  color: var(--texto-h);
+  background: var(--superficie-2);
+}
+
+.chat-info__cerrar:active,
+.chat-info__lapiz:active,
+.chat-info__sacar:active {
+  transform: scale(0.9);
+}
+
+.chat-info > .mensaje {
+  margin: 0.8rem 1.2rem 0;
+}
+
+.chat-info__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  padding: 1.4rem 1.2rem 1.2rem;
+}
+
+.chat-info__portada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.chat-info__portada .avatar-grupo {
+  animation: chat-info-portada 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4) 0.12s both;
+}
+
+@keyframes chat-info-portada {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-12deg);
+  }
+}
+
+.chat-info__nombre {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.3rem 0 0;
+  font-family: var(--display);
+  font-size: 1.6rem;
+  letter-spacing: 0.03em;
+  color: var(--texto-h);
+  overflow-wrap: anywhere;
+}
+
+.chat-info__lapiz {
+  width: 2rem;
+  height: 2rem;
+}
+
+.chat-info__cuantos {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.chat-info__renombrar {
+  display: flex;
+  width: 100%;
+  max-width: 26rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+  animation: chat-entrada 0.25s ease both;
+}
+
+.chat-info__renombrar input {
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.chat-info__titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.chat-info__titulo h4 {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+}
+
+.chat-info__anadir-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--acento);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--acento) 55%, transparent);
+  border-radius: 999px;
+  transition: background-color var(--transicion), color var(--transicion), transform 0.25s ease;
+}
+
+.chat-info__anadir-boton:hover {
+  color: #fff;
+  background: var(--acento);
+  transform: translateY(-1px);
+}
+
+.chat-info__anadir-boton svg {
+  transition: transform 0.3s ease;
+}
+
+.chat-info__anadir-boton:hover svg {
+  transform: rotate(90deg);
+}
+
+.chat-info__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-info__lista > li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: var(--radio);
+  transition: background-color var(--transicion);
+  animation: chat-entrada 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(0.1s + var(--orden, 0) * 0.04s);
+}
+
+.chat-info__lista > li:hover {
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.1);
+}
+
+.chat-info__persona {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  color: var(--texto-h);
+  text-decoration: none;
+}
+
+.chat-info__persona > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.chat-info__persona:hover > span:last-child {
+  text-decoration: underline;
+}
+
+.chat-info__persona em {
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.chat-info__admin {
+  flex: none;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.15);
+  border-radius: 999px;
+}
+
+.chat-info__sacar {
+  width: 2.1rem;
+  height: 2.1rem;
+}
+
+.chat-info__sacar:hover:not(:disabled) {
+  color: var(--peligro);
+  background: color-mix(in srgb, var(--peligro) 14%, transparent);
+}
+
+.chat-info__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.chat-info__accion {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.75rem 0.95rem;
+  font: inherit;
+  font-weight: 600;
+  color: var(--texto-h);
+  text-align: left;
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-grande);
+  transition: background-color var(--transicion), border-color var(--transicion), transform 0.25s ease;
+}
+
+.chat-info__accion:hover {
+  transform: translateX(3px);
+  border-color: color-mix(in srgb, var(--texto-suave) 50%, var(--borde));
+}
+
+.chat-info__accion--peligro {
+  color: var(--peligro);
+}
+
+.chat-info__accion--peligro:hover {
+  background: color-mix(in srgb, var(--peligro) 12%, var(--superficie-2));
+  border-color: color-mix(in srgb, var(--peligro) 50%, transparent);
+}
+
+.chat-info__anadir {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem 1.1rem;
+}
+
+.chat-info__selector {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.9rem;
 }

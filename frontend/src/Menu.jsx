@@ -92,7 +92,7 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
 
         <div className="barra__acciones">
           <MenuUsuario perfil={perfil} setToken={setToken} />
-          <MenuAjustes />
+          <MenuAjustes conAvisos />
         </div>
       </div>
     </header>

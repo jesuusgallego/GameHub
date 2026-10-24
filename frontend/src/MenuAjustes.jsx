@@ -5,6 +5,8 @@ import { temaActual, alternarTema } from './tema'
 import { useIdioma } from './IdiomaContext'
 import { IDIOMAS } from './idioma'
 import { useMenuDesplegable } from './useMenuDesplegable'
+import Interruptor from './Interruptor'
+import { useAvisos, activarAvisos, desactivarAvisos } from './useAvisos'
 
 // Menú de ajustes: un botón de tres líneas con un desplegable para elegir el
 // idioma de la interfaz y el tema claro/oscuro. Está en la barra, a la derecha de
@@ -14,8 +16,11 @@ import { useMenuDesplegable } from './useMenuDesplegable'
 // ratón por encima, o al tocarlo / pulsar Enter en móvil y teclado.
 // Elegir un idioma o cambiar el tema NO cierra el menú: así se ve el cambio y se
 // puede volver a pulsar.
-function MenuAjustes() {
+// Con `conAvisos` (dentro de la app, con sesión) también está el interruptor de los avisos del
+// sistema de los mensajes del chat (ver avisos.js).
+function MenuAjustes({ conAvisos = false }) {
   const { t, idioma, setIdioma } = useIdioma()
+  const avisos = useAvisos()
   const [tema, setTema] = useState(temaActual)
   const { fase, abierto, abrir, cerrar, contenedorRef, botonRef, propsContenedor } = useMenuDesplegable()
   // Con qué tipo de puntero se pulsó el botón por última vez (ver alPulsarBoton)
@@ -85,6 +90,24 @@ function MenuAjustes() {
               {tema === "oscuro" ? t('ajustes.temaClaro') : t('ajustes.temaOscuro')}
               <IconoTema tema={tema} />
             </button>
+
+            {conAvisos && avisos.disponible && (
+              <>
+                <p className="menu-ajustes__titulo menu-ajustes__titulo--separado">{t('ajustes.avisos')}</p>
+                <div className="menu-ajustes__avisos">
+                  <span id="ajustes-avisos-texto">{t('ajustes.avisosMensajes')}</span>
+                  <Interruptor
+                    activado={avisos.activos}
+                    etiqueta={t('ajustes.avisosMensajes')}
+                    disabled={avisos.permiso === 'denied'}
+                    onChange={(activar) => (activar ? activarAvisos() : desactivarAvisos())}
+                  />
+                </div>
+                {avisos.permiso === 'denied' && (
+                  <p className="menu-ajustes__nota">{t('ajustes.avisosBloqueados')}</p>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}

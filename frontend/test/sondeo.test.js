@@ -153,3 +153,17 @@ test('se puede cambiar el ritmo y el tiempo de inactividad', () => {
   diezSegundos() // 30 s sin actividad > 25 s: se para
   assert.strictEqual(llamadas, 2)
 })
+
+test('seguirOculto: sigue con la ventana oculta, pero se para tras el tiempo de inactividad', () => {
+  iniciar(undefined, { seguirOculto: true, inactividad: 15 * MINUTO })
+  cambiarVisibilidad('hidden')
+  avanzar(3 * MINUTO)
+  assert.strictEqual(llamadas, 3, 'oculta, sigue preguntando')
+  avanzar(20 * MINUTO)
+  const tope = llamadas
+  assert.ok(tope <= 15, `se para a los 15 minutos sin actividad (${tope})`)
+  avanzar(10 * MINUTO)
+  assert.strictEqual(llamadas, tope, 'parado')
+  cambiarVisibilidad('visible')
+  assert.strictEqual(llamadas, tope + 1, 'al volver consulta en el acto')
+})

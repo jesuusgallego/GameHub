@@ -684,3 +684,49 @@ body:has(dialog[open]) {
   gap: 0.6rem;
   margin-top: 1.5rem;
 }
+
+/* ---- Fecha de nacimiento que falta (PedirFechaNacimiento.jsx) ------------- */
+.dialogo--edad {
+  width: min(440px, calc(100% - 2rem));
+}
+
+.dialogo--edad .formulario {
+  margin-top: 1.2rem;
+}
+
+.dialogo--edad .dialogo__acciones {
+  margin-top: 0.4rem;
+}
+
+/* Un calendario con una marca que se dibuja al abrirse */
+.dialogo--edad__icono {
+  display: grid;
+  width: 3.4rem;
+  height: 3.4rem;
+  place-items: center;
+  margin-bottom: 0.9rem;
+  color: var(--sobre-degradado, #fff);
+  background: var(--degradado);
+  border-radius: 1rem;
+  box-shadow: 0 8px 22px var(--resplandor);
+  animation: edad-icono 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.4) 0.1s both;
+}
+
+.dialogo--edad__marca {
+  stroke-dasharray: 12;
+  stroke-dashoffset: 12;
+  animation: edad-marca 0.45s ease 0.5s forwards;
+}
+
+@keyframes edad-icono {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-15deg);
+  }
+}
+
+@keyframes edad-marca {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

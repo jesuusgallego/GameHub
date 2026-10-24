@@ -40,8 +40,15 @@ export const LIMITES_PERFIL = { first_name: 50, last_name: 100, location: 100 }
 // Una fecha de nacimiento no puede ser de hace más de tantos años
 export const EDAD_MAX = 120
 
+// Edad mínima para tener cuenta (la misma que en el servidor: RGPD y LOPDGDD, art. 7)
+export const EDAD_MINIMA = 14
+
 // Chat: longitud máxima de un mensaje (la misma que en el servidor y en la base de datos)
 export const MENSAJE_MAX = 2000
+
+// Chats de grupo: nombre de hasta tantos caracteres y como mucho tantas personas contándote
+export const GRUPO_NOMBRE_MAX = 50
+export const GRUPO_MAX_MIEMBROS = 10
 
 // "AAAA-MM-DD" con el día de hoy, en la zona horaria de quien lo mira
 function aFechaIso(fecha) {
@@ -50,11 +57,34 @@ function aFechaIso(fecha) {
   return `${fecha.getFullYear()}-${mes}-${dia}`
 }
 
-// El mínimo y el máximo que admite el campo de fecha de nacimiento. `hoy` solo se pasa
-// en las pruebas.
+// El mínimo y el máximo que admite el campo de fecha de nacimiento: de hace EDAD_MAX años a
+// hace EDAD_MINIMA (quien es más joven no puede tener cuenta). `hoy` solo se pasa en las pruebas.
 export function limitesFechaNacimiento(hoy = new Date()) {
   const masAntigua = new Date(hoy.getFullYear() - EDAD_MAX, hoy.getMonth(), hoy.getDate())
-  return { min: aFechaIso(masAntigua), max: aFechaIso(hoy) }
+  const masReciente = new Date(hoy.getFullYear() - EDAD_MINIMA, hoy.getMonth(), hoy.getDate())
+  return { min: aFechaIso(masAntigua), max: aFechaIso(masReciente) }
+}
+
+// Los años cumplidos a fecha de `hoy` por quien nació en "AAAA-MM-DD", con el calendario de
+// quien lo mira. Quien nació un 29 de febrero los cumple el 1 de marzo en los años que no son
+// bisiestos (igual que edadCumplida en el servidor).
+export function edadCumplida(texto, hoy = new Date()) {
+  const [anio, mes, dia] = texto.split('-').map(Number)
+  const mesHoy = hoy.getMonth() + 1
+  let edad = hoy.getFullYear() - anio
+  if (mesHoy < mes || (mesHoy === mes && hoy.getDate() < dia)) edad -= 1
+  return edad
+}
+
+// Qué le pasa a una fecha de nacimiento escrita en el formulario: 'vacia', 'invalida' (fuera
+// de los límites o mal escrita), 'menor' (menos de EDAD_MINIMA años) o null si vale
+export function problemaFechaNacimiento(texto, hoy = new Date()) {
+  if (!texto) return 'vacia'
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) return 'invalida'
+  const { min } = limitesFechaNacimiento(hoy)
+  if (texto < min || texto > aFechaIso(hoy)) return 'invalida'
+  if (edadCumplida(texto, hoy) < EDAD_MINIMA) return 'menor'
+  return null
 }
 
 // Deja el teléfono en su forma canónica, igual que el servidor: sin espacios, guiones,

@@ -6,16 +6,22 @@ import MenuAjustes from './MenuAjustes'
 import { useIdioma } from './IdiomaContext'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
-import { emailRegex, passwordRegex, usernameRegex, normalizarUsername, USERNAME_MAX } from './validacion'
+import {
+  emailRegex, passwordRegex, usernameRegex, normalizarUsername, USERNAME_MAX,
+  EDAD_MINIMA, limitesFechaNacimiento, problemaFechaNacimiento,
+} from './validacion'
 
 function Registro() {
   const { t } = useIdioma()
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  // "AAAA-MM-DD". Es obligatoria: hay que tener al menos EDAD_MINIMA años (14)
+  const [nacimiento, setNacimiento] = useState("")
   const [error, setError] = useState("")
   const [enviando, setEnviando] = useState(false)
   const navigate = useNavigate()
+  const { min: nacimientoMin, max: nacimientoMax } = limitesFechaNacimiento()
 
   function handleRegistro(e) {
     e.preventDefault()
@@ -41,10 +47,16 @@ function Registro() {
       return
     }
 
+    const problemaFecha = problemaFechaNacimiento(nacimiento)
+    if (problemaFecha) {
+      setError(t(`edad.error.${problemaFecha}`, { n: EDAD_MINIMA }))
+      return
+    }
+
     setEnviando(true)
     apiFetch('/auth/register', {
       method: 'POST',
-      body: { username, email, password }
+      body: { username, email, password, birth_date: nacimiento }
     })
       .then(() => navigate('/login'))
       .catch(err => setError(err.message))
@@ -96,6 +108,19 @@ function Registro() {
               required
             />
             <small>{t('auth.registro.passwordAyuda')}</small>
+          </label>
+          <label className="campo">
+            <span>{t('editarPerfil.nacimiento')}</span>
+            <input
+              type="date"
+              value={nacimiento}
+              onChange={(e) => setNacimiento(e.target.value)}
+              min={nacimientoMin}
+              max={nacimientoMax}
+              autoComplete="bday"
+              required
+            />
+            <small>{t('auth.registro.nacimientoAyuda', { n: EDAD_MINIMA })}</small>
           </label>
 
           <Mensaje texto={error} />

@@ -1,12 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { apiFetch } from './api'
 import AvatarTono from './AvatarTono'
+import AvatarGrupo from './AvatarGrupo'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
+import PuntosEscribiendo from './PuntosEscribiendo'
+import SelectorAmigos from './SelectorAmigos'
 import { estiloTono } from './tono'
 import { usePresencia } from './usePresencia'
 import { useIdioma } from './IdiomaContext'
-import { tramoLista, vistaPrevia } from './logicaChat'
+import { useAvisos, activarAvisos, desactivarAvisos } from './useAvisos'
+import { tramoLista, vistaPrevia, textoEscribiendo, nombreSugerido } from './logicaChat'
+import { GRUPO_MAX_MIEMBROS, GRUPO_NOMBRE_MAX } from './validacion'
 
 // La hora de la última actividad en la lista: la hora si fue hoy, "Ayer", el día de la semana
 // si fue esta semana y la fecha corta si fue antes
@@ -27,26 +32,49 @@ function useEtiquetaFecha() {
   }
 }
 
-// "¿A quién escribes?": una hoja que sube sobre la lista con tus amigos como círculos de colores,
-// los que están jugando primero y con su punto verde, igual que en la cabecera de Social. Un filtro
-// por nombre arriba. Elegir a alguien abre su conversación.
+// La hoja "Nuevo mensaje", que sube sobre la lista, con dos modos:
+//  - Mensaje: "¿A quién escribes?"; elegir a un amigo abre su conversación
+//  - Grupo: eliges a varios amigos (de 2 a GRUPO_MAX_MIEMBROS - 1), le pones nombre (se propone
+//    uno con sus nombres) y se crea
 //  - amigos: GET /friends (null mientras carga)
 //  - saliendo: la hoja se está cerrando (para la animación de salida)
-//  - onElegir(usuario) / onCerrar()
-function ElegirAmigo({ amigos, saliendo, onElegir, onCerrar }) {
+//  - onElegir(usuario) / onCreado(clave del grupo) / onCerrar()
+function HojaNuevo({ amigos, saliendo, onElegir, onCreado, onCerrar }) {
   const { t } = useIdioma()
-  const [filtro, setFiltro] = useState('')
-  const campoRef = useRef(null)
-  const texto = filtro.trim().toLowerCase()
+  const [modo, setModo] = useState('mensaje')
+  // Por orden de elección: así el nombre propuesto sigue el orden en que los eliges
+  const [seleccion, setSeleccion] = useState([])
+  const [nombre, setNombre] = useState('')
+  const [tocado, setTocado] = useState(false)
+  const [creando, setCreando] = useState(false)
+  const [error, setError] = useState('')
 
-  // Los que juegan, primero; luego por orden alfabético (el servidor ya los da así)
-  const ordenados = [...(amigos ?? [])].sort((a, b) => Number(Boolean(b.playing)) - Number(Boolean(a.playing)))
-  const visibles = ordenados.filter((a) => a.username.includes(texto))
+  const maximo = GRUPO_MAX_MIEMBROS - 1
+  const sugerido = nombreSugerido(seleccion, t, GRUPO_NOMBRE_MAX)
+  // Mientras no escribas un nombre, se usa el propuesto (y se va poniendo al día al elegir)
+  const nombreFinal = (tocado ? nombre : sugerido).trim()
+  const puedeCrear = seleccion.length >= 2 && nombreFinal.length > 0 && !creando
 
-  // En pantallas con ratón, el cursor ya está en el filtro (en las táctiles abriría el teclado)
-  useEffect(() => {
-    if (window.matchMedia('(pointer: fine)').matches) campoRef.current?.focus()
-  }, [amigos])
+  function alternar(usuario) {
+    setError('')
+    setSeleccion((previa) => (previa.includes(usuario)
+      ? previa.filter((u) => u !== usuario)
+      : previa.length < maximo ? [...previa, usuario] : previa))
+  }
+
+  async function crear(e) {
+    e.preventDefault()
+    if (!puedeCrear) return
+    setCreando(true)
+    setError('')
+    try {
+      const data = await apiFetch('/chat/g', { method: 'POST', body: { name: nombreFinal, members: seleccion } })
+      onCreado(data.group.key)
+    } catch (err) {
+      setError(err.message)
+      setCreando(false)
+    }
+  }
 
   // Esc cierra solo la hoja, no el panel entero
   function alTeclear(e) {
@@ -60,13 +88,13 @@ function ElegirAmigo({ amigos, saliendo, onElegir, onCerrar }) {
     <div
       className={saliendo ? 'chat-nuevo chat-nuevo--saliendo' : 'chat-nuevo'}
       role="dialog"
-      aria-label={t('chat.nuevoTitulo')}
+      aria-label={modo === 'grupo' ? t('chat.grupo.nuevoTitulo') : t('chat.nuevoTitulo')}
       onKeyDown={alTeclear}
     >
       <div className="chat-nuevo__cabecera">
         <div>
-          <p className="chat-nuevo__sobre">{t('chat.nuevo')}</p>
-          <h2 className="chat-nuevo__titulo">{t('chat.nuevoTitulo')}</h2>
+          <p className="chat-nuevo__sobre">{modo === 'grupo' ? t('chat.grupo.nuevo') : t('chat.nuevo')}</p>
+          <h2 className="chat-nuevo__titulo">{modo === 'grupo' ? t('chat.grupo.nuevoTitulo') : t('chat.nuevoTitulo')}</h2>
         </div>
         <button type="button" className="chat-nuevo__cerrar" aria-label={t('chat.nuevoCerrar')} title={t('chat.nuevoCerrar')} onClick={onCerrar}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
@@ -75,67 +103,161 @@ function ElegirAmigo({ amigos, saliendo, onElegir, onCerrar }) {
         </button>
       </div>
 
-      {amigos === null && <Cargando texto={t('social.cargando')} centrado />}
-
-      {amigos !== null && amigos.length === 0 && (
-        <div className="chat-nuevo__vacio">
-          <p>{t('chat.sinAmigos')}</p>
-          <Link to="/social?tab=descubrir" className="btn btn--primario" onClick={onCerrar}>{t('chat.irDescubrir')}</Link>
+      {/* Dos modos con una pastilla que se desliza de uno a otro */}
+      {amigos?.length > 0 && (
+        <div className={`chat-modos chat-modos--${modo}`} role="radiogroup" aria-label={t('chat.modos')}>
+          <span className="chat-modos__pastilla" aria-hidden="true" />
+          <button type="button" role="radio" aria-checked={modo === 'mensaje'} onClick={() => setModo('mensaje')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 12a8 8 0 0 1-11.8 7L3 20.5l1.6-5.2A8 8 0 1 1 21 12Z" />
+            </svg>
+            {t('chat.modo.mensaje')}
+          </button>
+          <button type="button" role="radio" aria-checked={modo === 'grupo'} onClick={() => setModo('grupo')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="9" cy="8" r="3.2" />
+              <path d="M3 19a6 6 0 0 1 12 0M16 4.6a3 3 0 0 1 0 5.8M18 14.2a5.5 5.5 0 0 1 3 4.8" />
+            </svg>
+            {t('chat.modo.grupo')}
+          </button>
         </div>
       )}
 
-      {amigos !== null && amigos.length > 0 && (
-        <>
-          <div className="caja-busqueda chat-nuevo__buscar">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.5-3.5" />
-            </svg>
-            <input
-              ref={campoRef}
-              type="search"
-              value={filtro}
-              placeholder={t('chat.buscarAmigoPlaceholder')}
-              aria-label={t('chat.buscarAmigo')}
-              autoComplete="off"
-              onChange={(e) => setFiltro(e.target.value)}
-            />
-          </div>
+      {modo === 'grupo' && amigos?.length > 0 && (
+        <p className="chat-nuevo__ayuda" aria-live="polite">
+          {seleccion.length === 0
+            ? t('chat.grupo.ayuda', { n: maximo })
+            : t('chat.grupo.elegidos', { n: seleccion.length, max: maximo })}
+        </p>
+      )}
 
-          {visibles.length === 0 ? (
-            <p className="chat-nuevo__sinresultados">{t('chat.sinAmigosFiltro', { q: filtro.trim() })}</p>
-          ) : (
-            <ul className="chat-nuevo__rejilla">
-              {visibles.map((amigo, i) => (
-                <li key={amigo.username} style={{ ...estiloTono(amigo.username), '--orden': Math.min(i, 12) }}>
-                  <button type="button" className="chat-nuevo__amigo" onClick={() => onElegir(amigo.username)}>
-                    <AvatarTono usuario={amigo} tamano="grande" vivo={Boolean(amigo.playing)} />
-                    <span className="chat-nuevo__nombre">{amigo.username}</span>
-                    {amigo.playing && (
-                      <span className="chat-nuevo__juego">
-                        <span className="chat-nuevo__punto" aria-hidden="true" />
-                        {amigo.playing.name}
-                      </span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
+      <div className="chat-nuevo__cuerpo">
+        <SelectorAmigos
+          key={modo}
+          amigos={amigos}
+          seleccion={modo === 'grupo' ? seleccion : null}
+          lleno={seleccion.length >= maximo}
+          onElegir={onElegir}
+          onAlternar={alternar}
+          onIrDescubrir={onCerrar}
+        />
+      </div>
+
+      {modo === 'grupo' && amigos?.length > 0 && (
+        <form className={seleccion.length >= 2 ? 'chat-crear chat-crear--listo' : 'chat-crear'} onSubmit={crear}>
+          <Mensaje texto={error} />
+          <label className="chat-crear__campo">
+            <span>{t('chat.grupo.nombre')}</span>
+            <input
+              type="text"
+              value={tocado ? nombre : sugerido}
+              maxLength={GRUPO_NOMBRE_MAX}
+              placeholder={t('chat.grupo.nombrePlaceholder')}
+              onChange={(e) => { setTocado(true); setNombre(e.target.value) }}
+            />
+          </label>
+          <button type="submit" className="btn btn--primario chat-crear__boton" disabled={!puedeCrear}>
+            {creando ? <><Cargando tamano="pequeno" /> {t('chat.grupo.creando')}</> : t('chat.grupo.crear', { n: seleccion.length + 1 })}
+          </button>
+        </form>
       )}
     </div>
   )
 }
 
-// La columna de las conversaciones: la más reciente primero, con lo último que se dijo y cuántos
-// mensajes tienes sin leer, y el botón para escribir a otro amigo.
+// La tarjeta que ofrece activar los avisos del sistema. Sale en la lista hasta que eliges (sí o
+// "ahora no"); después se cambia desde el menú de ajustes.
+function TarjetaAvisos() {
+  const { t } = useIdioma()
+  const { disponible, permiso, preferencia } = useAvisos()
+  const visible = disponible && preferencia === null && permiso !== 'denied'
+  const { montado, saliendo } = usePresencia(visible, 260)
+  if (!montado) return null
+
+  return (
+    <div className={saliendo ? 'chat-avisos chat-avisos--saliendo' : 'chat-avisos'} role="region" aria-label={t('avisos.tarjeta.titulo')}>
+      <span className="chat-avisos__icono" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9Z" />
+          <path className="chat-avisos__badajo" d="M10 20a2.2 2.2 0 0 0 4 0" />
+        </svg>
+      </span>
+      <div className="chat-avisos__texto">
+        <strong>{t('avisos.tarjeta.titulo')}</strong>
+        <p>{t('avisos.tarjeta.texto')}</p>
+        <div className="chat-avisos__acciones">
+          <button type="button" className="btn btn--primario" onClick={activarAvisos}>{t('avisos.activar')}</button>
+          <button type="button" className="btn btn--secundario" onClick={desactivarAvisos}>{t('avisos.ahoraNo')}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Una fila de la lista: una persona o un grupo
+function FilaConversacion({ c, activa, jugando, yo, etiquetaFecha, onElegir, orden }) {
+  const { t } = useIdioma()
+  const grupo = c.type === 'group'
+  const sinLeer = c.unread > 0
+  const quienesEscriben = grupo ? c.typing : (c.typing ? [c.username] : [])
+  const nombre = grupo ? c.name : c.username
+
+  return (
+    <li style={{ ...estiloTono(nombre), '--orden': Math.min(orden, 10) }}>
+      <button
+        type="button"
+        onClick={() => onElegir(c.key)}
+        aria-current={activa ? 'true' : undefined}
+        className={[
+          'chat-fila',
+          grupo && 'chat-fila--grupo',
+          activa && 'chat-fila--activa',
+          sinLeer && 'chat-fila--sin-leer',
+        ].filter(Boolean).join(' ')}
+      >
+        {grupo
+          ? <AvatarGrupo nombre={c.name} miembros={c.members} />
+          : <AvatarTono usuario={c} tamano="normal" vivo={Boolean(jugando)} />}
+        <span className="chat-fila__texto">
+          <span className="chat-fila__arriba">
+            <strong>
+              {nombre}
+              {grupo && <span className="chat-fila__cuantos" aria-label={t('chat.grupo.personas', { n: c.member_count })}>{c.member_count}</span>}
+            </strong>
+            {c.last && <time dateTime={c.last.created_at}>{etiquetaFecha(c.last.created_at)}</time>}
+          </span>
+          <span className="chat-fila__abajo">
+            {quienesEscriben.length > 0 ? (
+              <span className="chat-fila__previa chat-fila__previa--escribiendo">
+                <PuntosEscribiendo />
+                {textoEscribiendo(quienesEscriben, t, grupo)}
+              </span>
+            ) : (
+              <span className="chat-fila__previa">{vistaPrevia(c.last, t, { grupo, yo })}</span>
+            )}
+            {sinLeer && (
+              <span className="chat-fila__cuenta" aria-label={t('chat.sinLeer', { n: c.unread })}>
+                {c.unread > 99 ? '99+' : c.unread}
+              </span>
+            )}
+          </span>
+        </span>
+      </button>
+    </li>
+  )
+}
+
+// La columna de las conversaciones: la más reciente primero (personas y grupos mezclados), con
+// lo último que se dijo y cuántos mensajes tienes sin leer, y el botón para escribir a otro
+// amigo o crear un grupo.
 //  - conversaciones: la lista del servidor, o null mientras carga
 //  - amigos: tus amigos (para la hoja "Nuevo mensaje" y para saber quién está jugando)
 //  - error: texto si no se pudo cargar
-//  - activo: el usuario de la conversación abierta (o null)
-//  - onElegir(usuario): abre una conversación
-function ListaChats({ conversaciones, amigos, error, activo, onElegir }) {
+//  - activo: la clave de la conversación abierta (o null)
+//  - yo: mi nombre de usuario
+//  - onElegir(clave): abre una conversación
+//  - onCreado(clave): se acaba de crear un grupo
+function ListaChats({ conversaciones, amigos, error, activo, yo, onElegir, onCreado }) {
   const { t } = useIdioma()
   const etiquetaFecha = useEtiquetaFecha()
   const [eligiendo, setEligiendo] = useState(false)
@@ -146,6 +268,11 @@ function ListaChats({ conversaciones, amigos, error, activo, onElegir }) {
   function elegir(usuario) {
     setEligiendo(false)
     onElegir(usuario)
+  }
+
+  function creado(clave) {
+    setEligiendo(false)
+    onCreado(clave)
   }
 
   return (
@@ -163,6 +290,8 @@ function ListaChats({ conversaciones, amigos, error, activo, onElegir }) {
         </button>
       </div>
 
+      <TarjetaAvisos />
+
       <Mensaje texto={error} />
 
       {conversaciones === null && !error && <Cargando texto={t('social.cargando')} centrado />}
@@ -176,44 +305,30 @@ function ListaChats({ conversaciones, amigos, error, activo, onElegir }) {
 
       {conversaciones !== null && conversaciones.length > 0 && (
         <ul className="chat-lista__filas" aria-label={t('chat.lista')}>
-          {conversaciones.map((c, i) => {
-            const juego = jugando.get(c.username)
-            const sinLeer = c.unread > 0
-            return (
-              <li key={c.username} style={{ ...estiloTono(c.username), '--orden': Math.min(i, 10) }}>
-                <button
-                  type="button"
-                  onClick={() => onElegir(c.username)}
-                  aria-current={c.username === activo ? 'true' : undefined}
-                  className={[
-                    'chat-fila',
-                    c.username === activo && 'chat-fila--activa',
-                    sinLeer && 'chat-fila--sin-leer',
-                  ].filter(Boolean).join(' ')}
-                >
-                  <AvatarTono usuario={c} tamano="normal" vivo={Boolean(juego)} />
-                  <span className="chat-fila__texto">
-                    <span className="chat-fila__arriba">
-                      <strong>{c.username}</strong>
-                      <time dateTime={c.last.created_at}>{etiquetaFecha(c.last.created_at)}</time>
-                    </span>
-                    <span className="chat-fila__abajo">
-                      <span className="chat-fila__previa">{vistaPrevia(c.last, t)}</span>
-                      {sinLeer && (
-                        <span className="chat-fila__cuenta" aria-label={t('chat.sinLeer', { n: c.unread })}>
-                          {c.unread > 99 ? '99+' : c.unread}
-                        </span>
-                      )}
-                    </span>
-                  </span>
-                </button>
-              </li>
-            )
-          })}
+          {conversaciones.map((c, i) => (
+            <FilaConversacion
+              key={c.key}
+              c={c}
+              orden={i}
+              activa={c.key === activo}
+              jugando={c.type === 'user' ? jugando.get(c.username) : null}
+              yo={yo}
+              etiquetaFecha={etiquetaFecha}
+              onElegir={onElegir}
+            />
+          ))}
         </ul>
       )}
 
-      {montado && <ElegirAmigo amigos={amigos} saliendo={saliendo} onElegir={elegir} onCerrar={() => setEligiendo(false)} />}
+      {montado && (
+        <HojaNuevo
+          amigos={amigos}
+          saliendo={saliendo}
+          onElegir={elegir}
+          onCreado={creado}
+          onCerrar={() => setEligiendo(false)}
+        />
+      )}
     </div>
   )
 }

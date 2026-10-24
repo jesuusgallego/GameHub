@@ -5,7 +5,7 @@
 // Este archivo solo abre la ventana, sirve la interfaz y protege la navegación. La
 // app NO lleva backend dentro: llama por internet al servidor cuya dirección se fijó
 // al compilar (VITE_API_URL, ver scripts/build-web.mjs).
-const { app, BrowserWindow, Menu, protocol, net, shell, session, screen, dialog } = require('electron')
+const { app, BrowserWindow, Menu, protocol, net, shell, session, screen, dialog, ipcMain } = require('electron')
 const { autoUpdater } = require('electron-updater')
 const actualizaciones = require('./actualizaciones')
 const crypto = require('node:crypto')
@@ -31,6 +31,12 @@ const URL_DESARROLLO = app.isPackaged ? null : process.env.GAMEHUB_DEV_URL
 // Actions para no generar un instalador de una app que ni siquiera arranca.
 const PRUEBA_HUMO = process.argv.includes('--smoke-test')
 
+// En Windows, las notificaciones (los avisos de mensajes del chat) se asocian a la app por su
+// "AppUserModelID". Tiene que ser el mismo appId con el que el instalador crea el acceso
+// directo (package.json, build.appId); si no, Windows no las enseña o las pone a nombre de
+// Electron.
+if (process.platform === 'win32') app.setAppUserModelId('com.jesuusgallego.gamehub')
+
 // Esto tiene que ir ANTES de que la app esté lista
 protocol.registerSchemesAsPrivileged([
   { scheme: ESQUEMA, privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } },
@@ -49,6 +55,15 @@ if (!app.requestSingleInstanceLock()) {
     ventana.focus()
   })
 }
+
+// Al pulsar el aviso de un mensaje, la interfaz pide traer la ventana al frente (preload.js).
+// Solo se hace caso a la ventana de la app.
+ipcMain.on('gamehub:enfocar', (evento) => {
+  if (!ventana || ventana.isDestroyed() || evento.sender !== ventana.webContents) return
+  if (ventana.isMinimized()) ventana.restore()
+  ventana.show()
+  ventana.focus()
+})
 
 // ---- Tamaño y posición de la ventana, recordados entre ejecuciones ---------------
 const ARCHIVO_ESTADO = () => path.join(app.getPath('userData'), 'ventana.json')
@@ -214,6 +229,8 @@ function crearVentana() {
       contextIsolation: true, // la página no ve las APIs de Electron
       nodeIntegration: false, // ni puede usar Node
       sandbox: true,
+      // Solo deja en la página window.gamehubEscritorio.enfocar() (ver preload.js)
+      preload: path.join(__dirname, 'preload.js'),
     },
   })
 

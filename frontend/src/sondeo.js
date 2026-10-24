@@ -9,6 +9,9 @@
 //    táctil (5 minutos por defecto);
 //  - al volver (verla otra vez o mover el ratón) consulta en el acto y se reanuda;
 //  - no lanza una consulta nueva si la anterior (un servidor que despierta tarda) sigue en vuelo.
+// Con `seguirOculto`, sigue también con la pestaña oculta o la ventana minimizada (es lo que
+// necesitan los avisos del sistema del chat), pero igualmente se para pasados `inactividad` ms
+// desde que tocaste la app por última vez.
 //
 // Lógica sin React para poder probarla con un reloj y un documento simulados (el `doc`,
 // la `ventana` y `ahora` se pueden inyectar). Devuelve la función que lo detiene todo.
@@ -17,6 +20,7 @@
 export function iniciarSondeo(funcion, {
   cada = 60_000,
   inactividad = 5 * 60_000,
+  seguirOculto = false,
   doc = document,
   ventana = window,
   ahora = Date.now,
@@ -27,7 +31,8 @@ export function iniciarSondeo(funcion, {
   let ultimaActividad = ahora()
   let enCurso = false
 
-  const activo = () => doc.visibilityState === 'visible' && ahora() - ultimaActividad < inactividad
+  const activo = () => (seguirOculto || doc.visibilityState === 'visible')
+    && ahora() - ultimaActividad < inactividad
 
   // Lanza la consulta salvo que la anterior siga sin terminar. Un fallo no para el sondeo:
   // ya se reintenta en el siguiente turno.
@@ -74,7 +79,7 @@ export function iniciarSondeo(funcion, {
 
   function alCambiarVisibilidad() {
     if (doc.visibilityState === 'visible') alActividad()
-    else parar()
+    else if (!seguirOculto) parar()
   }
 
   // Ha vuelto internet: no esperes al siguiente turno

@@ -4,7 +4,10 @@
 .barra {
   position: sticky;
   top: 0;
-  z-index: 10;
+  /* Por encima del chat (botón 40, panel 41, ver chat.css): sus desplegables (el menú de ajustes,
+     con el interruptor de los avisos) no deben quedar tapados por el panel abierto. No se solapan:
+     el panel empieza por debajo de la barra. */
+  z-index: 45;
   background: var(--barra);
   border-bottom: 1px solid var(--borde);
   transition: background-color var(--transicion);

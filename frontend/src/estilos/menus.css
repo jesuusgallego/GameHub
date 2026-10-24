@@ -289,3 +289,22 @@
   opacity: 1;
   scale: 1;
 }
+
+/* Avisos de mensajes: el texto y su interruptor en la misma fila */
+.menu-ajustes__avisos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.92rem;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+.menu-ajustes__nota {
+  max-width: 16rem;
+  margin: 0 0.7rem 0.4rem;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+}

@@ -10,6 +10,7 @@ import { useIdioma } from './IdiomaContext'
 import Desplegable from './Desplegable'
 import {
   usernameRegex, normalizarUsername, USERNAME_MAX, SEXOS, LIMITES_PERFIL, limitesFechaNacimiento,
+  problemaFechaNacimiento, EDAD_MINIMA,
 } from './validacion'
 import CampoTelefono from './CampoTelefono'
 import {
@@ -73,7 +74,7 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
     }
   }
 
-  // Lo que admite el campo de fecha: ni futura ni de hace más de 120 años
+  // Lo que admite el campo de fecha: de hace 120 años a hace EDAD_MINIMA (14)
   const { min: nacimientoMin, max: nacimientoMax } = limitesFechaNacimiento()
   // Los países en el idioma de la interfaz, ordenados por su nombre
   const opcionesPais = useMemo(
@@ -93,7 +94,8 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
   // Un campo vacío se manda como null: así se borra el dato
   if (nombre.trim() !== (perfil.first_name ?? "")) cambios.first_name = nombre.trim() || null
   if (apellidos.trim() !== (perfil.last_name ?? "")) cambios.last_name = apellidos.trim() || null
-  if (nacimiento !== (perfil.birth_date ?? "")) cambios.birth_date = nacimiento || null
+  // La fecha de nacimiento es obligatoria (edad mínima): se cambia, pero no se borra
+  if (nacimiento !== (perfil.birth_date ?? "")) cambios.birth_date = nacimiento
   if (sexo !== (perfil.gender ?? "")) cambios.gender = sexo || null
   if (localizacion.trim() !== (perfil.location ?? "")) cambios.location = localizacion.trim() || null
   if (pais !== (perfil.country ?? "")) cambios.country = pais || null
@@ -184,6 +186,12 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
 
     if (!usernameRegex.test(username)) {
       setError(t('validacion.usernameInvalido'))
+      return
+    }
+
+    const problemaFecha = 'birth_date' in cambios ? problemaFechaNacimiento(nacimiento) : null
+    if (problemaFecha) {
+      setError(t(`edad.error.${problemaFecha}`, { n: EDAD_MINIMA }))
       return
     }
 
@@ -339,6 +347,7 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
             min={nacimientoMin}
             max={nacimientoMax}
             autoComplete="bday"
+            required
           />
         </label>
         <label className="campo">

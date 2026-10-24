@@ -14,15 +14,16 @@ import { useIdioma } from './IdiomaContext'
 //
 //  - abierto: si el panel está desplegado
 //  - sinLeer: mensajes sin leer; es el número del botón
-//  - username: la conversación abierta (o null para ver solo la lista)
+//  - clave: la conversación abierta: un nombre de usuario o "g:<id>" (o null para ver la lista)
+//  - yo: mi nombre de usuario (para los avisos de los grupos: "ana te añadió")
 //  - borradores / setToken / ponerMensajes: se pasan al chat (ver Chat.jsx)
 //  - onAbrir() / onCerrar(): el botón abre; la flecha del panel y Esc cierran
-//  - onElegir(usuario): abre una conversación (null = la lista)
+//  - onElegir(clave): abre una conversación (null = la lista)
 // El chat de dentro solo existe mientras el panel está abierto (sondea el servidor cada pocos
 // segundos: no tiene sentido hacerlo sin que nadie lo mire). Se pinta en el <body> (createPortal)
 // para que ninguna transformación de la página lo descoloque (un `position: fixed` dentro de un
 // elemento con `transform` deja de ser fijo a la ventana).
-function ChatDock({ abierto, sinLeer, username, borradores, setToken, ponerMensajes, onAbrir, onCerrar, onElegir }) {
+function ChatDock({ abierto, sinLeer, clave, yo, borradores, setToken, ponerMensajes, onAbrir, onCerrar, onElegir }) {
   const { t } = useIdioma()
   const { montado, saliendo } = usePresencia(abierto, 340)
   const panelRef = useRef(null)
@@ -72,7 +73,8 @@ function ChatDock({ abierto, sinLeer, username, borradores, setToken, ponerMensa
             <div className="chat-dock__cuerpo">
               <Chat
                 setToken={setToken}
-                username={username}
+                clave={clave}
+                yo={yo}
                 borradores={borradores}
                 ponerMensajes={ponerMensajes}
                 onElegir={onElegir}

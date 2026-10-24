@@ -5,6 +5,7 @@ import { createRequire } from 'node:module'
 import {
   emailRegex, passwordRegex, usernameRegex, normalizarUsername, USERNAME_MAX,
   SEXOS, LIMITES_PERFIL, EDAD_MAX, limitesFechaNacimiento, normalizarTelefono,
+  EDAD_MINIMA, edadCumplida, problemaFechaNacimiento, GRUPO_NOMBRE_MAX, GRUPO_MAX_MIEMBROS, MENSAJE_MAX,
 } from '../src/validacion.js'
 import { PAISES, nombrePais, opcionesPaises } from '../src/paises.js'
 import {
@@ -45,8 +46,9 @@ test('normalizarUsername deja el texto listo para el campo', () => {
 })
 
 test('limitesFechaNacimiento: de hoy a hace 120 años, en formato AAAA-MM-DD', () => {
-  assert.deepStrictEqual(limitesFechaNacimiento(new Date(2026, 9, 13)), { min: '1906-10-13', max: '2026-10-13' })
-  assert.deepStrictEqual(limitesFechaNacimiento(new Date(2026, 0, 5)), { min: '1906-01-05', max: '2026-01-05' })
+  // El máximo es hace 14 años: quien es más joven no puede tener cuenta
+  assert.deepStrictEqual(limitesFechaNacimiento(new Date(2026, 9, 13)), { min: '1906-10-13', max: '2012-10-13' })
+  assert.deepStrictEqual(limitesFechaNacimiento(new Date(2026, 0, 5)), { min: '1906-01-05', max: '2012-01-05' })
 })
 
 test('normalizarTelefono: sin separadores y con + en lugar de 00', () => {
@@ -198,4 +200,25 @@ test('todos los mensajes de error del backend tienen traducción', async () => {
   assert.ok(mensajes.size > 30, `solo encontré ${mensajes.size} mensajes: ¿cambió el formato?`)
   const sinTraducir = [...mensajes].filter((m) => !erroresApi[m])
   assert.deepStrictEqual(sinTraducir, [], `faltan en erroresApi (en.js):\n  ${sinTraducir.join('\n  ')}`)
+})
+
+test('edad mínima: la misma que el servidor, y los cumpleaños se cuentan igual', () => {
+  const require = createRequire(import.meta.url)
+  const servidor = require('../../backend/src/config/validacion.js')
+  assert.strictEqual(EDAD_MINIMA, servidor.EDAD_MINIMA)
+  assert.strictEqual(GRUPO_NOMBRE_MAX, servidor.GRUPO_NOMBRE_MAX)
+  assert.strictEqual(GRUPO_MAX_MIEMBROS, servidor.GRUPO_MAX_MIEMBROS)
+  assert.strictEqual(MENSAJE_MAX, servidor.MENSAJE_MAX)
+
+  const hoy = new Date(2026, 9, 24)
+  assert.strictEqual(edadCumplida('2012-10-24', hoy), 14)
+  assert.strictEqual(edadCumplida('2012-10-25', hoy), 13)
+  assert.strictEqual(edadCumplida('2012-02-29', new Date(2026, 1, 28)), 13)
+  assert.strictEqual(edadCumplida('2012-02-29', new Date(2026, 2, 1)), 14)
+
+  assert.strictEqual(problemaFechaNacimiento('', hoy), 'vacia')
+  assert.strictEqual(problemaFechaNacimiento('1800-01-01', hoy), 'invalida')
+  assert.strictEqual(problemaFechaNacimiento('2030-01-01', hoy), 'invalida')
+  assert.strictEqual(problemaFechaNacimiento('2015-06-01', hoy), 'menor')
+  assert.strictEqual(problemaFechaNacimiento('2012-10-24', hoy), null)
 })

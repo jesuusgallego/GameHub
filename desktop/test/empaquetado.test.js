@@ -20,3 +20,12 @@ test('todo archivo local que main.js carga con require va en build.files', () =>
     assert.ok(incluidos.includes(archivo), `${archivo} lo carga main.js pero no está en build.files: la app instalada no arrancaría`);
   }
 });
+
+test('el preload de la ventana existe y va en build.files', () => {
+  const preloads = [...main.matchAll(/preload: path\.join\(__dirname, '([\w.-]+)'\)/g)].map((m) => m[1]);
+  assert.ok(preloads.length > 0, 'esperaba un preload');
+  for (const archivo of preloads) {
+    assert.ok(fs.existsSync(path.join(raiz, archivo)), `${archivo} no existe`);
+    assert.ok(incluidos.includes(archivo), `${archivo} es el preload pero no está en build.files`);
+  }
+});

@@ -29,6 +29,7 @@
     },
     "files": [
       "main.js",
+      "preload.js",
       "actualizaciones.js",
       "app/**/*",
       "build/icon.png"

@@ -17,14 +17,15 @@ const AMIGOS_CADA = 5
 // tengas abierta. En un panel ancho se ven las dos a la vez, una al lado de la otra; en uno estrecho
 // (el móvil) se ve una u otra, con una flecha para volver a la lista (lo decide el CSS).
 //  - Solo se puede hablar con amigos; la lista incluye también a quien lo fue, para poder
-//    seguir leyendo lo que os dijisteis.
+//    seguir leyendo lo que os dijisteis. También están los grupos (ver gruposController).
 //  - setToken: para cerrar sesión si caduca
-//  - username: con quién se habla, o null si no hay ninguna conversación abierta
+//  - clave: la conversación abierta ("ana" o "g:12", ver logicaChat.js), o null
+//  - yo: mi nombre de usuario
 //  - borradores: { current: Map } con lo que había a medio escribir en cada conversación; lo
 //    guarda Layout para que sobreviva a cerrar el panel
 //  - ponerMensajes(n): fija el total de mensajes sin leer (la lista ya lo trae, sin otra petición)
-//  - onElegir(usuario): abre esa conversación (con null, vuelve a la lista)
-function Chat({ setToken, username, borradores, ponerMensajes, onElegir }) {
+//  - onElegir(clave): abre esa conversación (con null, vuelve a la lista)
+function Chat({ setToken, clave, yo, borradores, ponerMensajes, onElegir }) {
   const { t } = useIdioma()
 
   const [conversaciones, setConversaciones] = useState(null)
@@ -79,23 +80,44 @@ function Chat({ setToken, username, borradores, ponerMensajes, onElegir }) {
   // la lista sin esperar a su turno
   const alCambiar = useCallback(() => { cargarLista() }, [cargarLista])
 
-  const amigo = amigos?.find((a) => a.username === username)
+  // He salido de un grupo (o me han sacado): vuelvo a la lista y la pongo al día
+  const alSalir = useCallback(() => {
+    onElegir(null)
+    cargarLista()
+  }, [onElegir, cargarLista])
+
+  const amigo = amigos?.find((a) => a.username === clave)
+  // Lo que ya sé de la conversación por la lista (en un grupo, su nombre y su gente), para
+  // pintar la cabecera mientras carga
+  const fila = conversaciones?.find((c) => c.key === clave)
 
   return (
-    <div className={username ? 'chat chat--abierto' : 'chat'}>
+    <div className={clave ? 'chat chat--abierto' : 'chat'}>
       <aside className="chat__lista">
-        <ListaChats conversaciones={conversaciones} amigos={amigos} error={error} activo={username} onElegir={onElegir} />
+        <ListaChats
+          conversaciones={conversaciones}
+          amigos={amigos}
+          error={error}
+          activo={clave}
+          yo={yo}
+          onElegir={onElegir}
+          onCreado={(nueva) => { cargarLista(); onElegir(nueva) }}
+        />
       </aside>
 
       <div className="chat__panel">
-        {username ? (
+        {clave ? (
           <Conversacion
-            key={username}
-            username={username}
+            key={clave}
+            clave={clave}
+            fila={fila}
             amigo={amigo}
+            amigos={amigos}
+            yo={yo}
             borradores={borradores}
             onCambio={alCambiar}
             onVolver={() => onElegir(null)}
+            onSalir={alSalir}
             cerrarSesion={cerrarSesion}
           />
         ) : (
