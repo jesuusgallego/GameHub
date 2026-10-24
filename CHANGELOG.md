@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.5.0] - 2026-10-24
 
 Chats de grupo, "escribiendo…", vaciar conversaciones, avisos de Windows para los mensajes nuevos y
 edad mínima de 14 años.
@@ -62,8 +62,6 @@ edad mínima de 14 años.
   pero solo hasta 15 minutos después de la última vez que la usaste (para no mantener despierto el
   servidor gratuito todo el día). Con la app cerrada no llegan avisos.
 - "Escribiendo…" puede tardar unos segundos en aparecer y en irse.
-- Los avisos de Windows de la app de escritorio no se han podido probar en el entorno de
-  desarrollo; en el navegador, sí.
 
 ## [1.4.0] - 2026-10-16
 

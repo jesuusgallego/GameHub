@@ -11,6 +11,22 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.5.0': {
+    es: [
+      'Chats de grupo de hasta 10 personas: crea uno desde "Nuevo mensaje".',
+      'Ves cuándo tu amigo te está escribiendo.',
+      'Vacía una conversación solo para ti desde el menú ⋯.',
+      'Avisos de Windows cuando te escriben y GameHub está en segundo plano (actívalos en el chat o en Ajustes).',
+      'Para usar GameHub hay que tener al menos 14 años: si tu cuenta es de antes, te pediremos tu fecha de nacimiento una vez.',
+    ],
+    en: [
+      'Group chats of up to 10 people: create one from "New message".',
+      'See when your friend is typing.',
+      'Clear a conversation just for you from the ⋯ menu.',
+      'Windows notifications when someone writes and GameHub is in the background (turn them on in the chat or in Settings).',
+      'You must be at least 14 to use GameHub: if your account is older, we will ask for your date of birth once.',
+    ],
+  },
   '1.4.0': {
     es: [
       'Chat entre amigos: un botón abajo a la derecha abre el chat en cualquier página.',
