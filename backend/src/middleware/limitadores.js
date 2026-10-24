@@ -63,6 +63,14 @@ const limitadorLecturaChat = limitador({
   keyGenerator: (req) => `chat-${req.user.id}`,
 });
 
+// Registro de lo que pasa con las noticias (impresiones y clics, por tandas): 120 tandas por minuto
+// y por usuario. La interfaz manda una cada pocos segundos como mucho mientras desplazas.
+const limitadorEventosNoticias = limitador({
+  ventanaMinutos: 1,
+  maximo: 120,
+  keyGenerator: (req) => `noticias-${req.user.id}`,
+});
+
 // ¿Es una lectura del chat con sesión? Esas peticiones las limita limitadorLecturaChat. Los
 // avisos de "escribiendo" (POST .../typing, uno cada pocos segundos mientras escribes) cuentan
 // como lecturas por lo mismo: se repiten mucho y no guardan nada.
@@ -79,4 +87,5 @@ const limitadorGeneral = limitador({ ventanaMinutos: 15, maximo: 1000, skip: esL
 module.exports = {
   limitadorLogin, limitadorRegistro, limitadorPedirCodigo, limitadorUsarCodigo, limitadorGeneral,
   limitadorBusqueda, limitadorSolicitudes, limitadorLogros, limitadorMensajes, limitadorLecturaChat,
+  limitadorEventosNoticias,
 };

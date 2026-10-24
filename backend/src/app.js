@@ -13,6 +13,8 @@ const accountRoutes = require('./routes/accountRoutes');
 const userRoutes = require('./routes/userRoutes');
 const friendRoutes = require('./routes/friendRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const newsRoutes = require('./routes/newsRoutes');
+const { sincronizarPortales } = require('./services/noticias');
 const { iniciarSincronizacionAutomatica } = require('./services/sincronizacionAutomatica');
 
 const PORT = process.env.PORT || 4000;
@@ -60,6 +62,7 @@ app.use('/accounts', accountRoutes);
 app.use('/users', userRoutes);
 app.use('/friends', friendRoutes);
 app.use('/chat', chatRoutes);
+app.use('/news', newsRoutes);
 
 // Compruebo a la vez el servidor y la base de datos: si la BD no responde, devuelvo 500
 app.get('/health', async (req, res) => {
@@ -100,6 +103,8 @@ async function aplicarEsquema() {
 }
 
 aplicarEsquema()
+  // El catálogo de portales de noticias (config/portales.js) pasa a la base de datos
+  .then(() => sincronizarPortales())
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Servidor corriendo en http://localhost:${PORT}`);

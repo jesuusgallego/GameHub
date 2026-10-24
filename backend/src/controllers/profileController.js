@@ -23,7 +23,7 @@ const COLUMNAS_PUBLICAS = `id, username, email, bio, avatar, created_at,
   first_name, last_name, birth_date, gender, location, country, phone,
   visibility_name, visibility_age, visibility_gender, visibility_location,
   visibility_library, visibility_reviews, visibility_friends, visibility_achievements,
-  request_policy, searchable,
+  request_policy, searchable, news_personalization,
   EXTRACT(YEAR FROM age(birth_date))::int AS age`;
 
 // Comparo la contraseña enviada con el hash guardado. Si la contraseña es
@@ -183,6 +183,14 @@ async function updateProfile(req, res) {
   }
 
   // Tiene que ser un booleano de verdad: "false" o 0 no valen
+  // Si "Para ti" puede usar (y registrar) lo que haces con las noticias
+  if (has('news_personalization')) {
+    if (typeof req.body.news_personalization !== 'boolean') {
+      return res.status(400).json({ error: 'La opción de personalización no es válida' });
+    }
+    cambios.news_personalization = req.body.news_personalization;
+  }
+
   if (has('searchable')) {
     if (typeof req.body.searchable !== 'boolean') {
       return res.status(400).json({ error: MENSAJE_BUSCABLE });

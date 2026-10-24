@@ -392,3 +392,87 @@ CREATE TABLE IF NOT EXISTS group_messages (
     CHECK (kind = 'event' OR deleted_at IS NOT NULL OR length(btrim(body)) > 0)
 );
 CREATE INDEX IF NOT EXISTS idx_group_messages_grupo ON group_messages (group_id, id);
+
+-- ---- Noticias (1.6) ------------------------------------------------------------------------
+-- Los portales. El catálogo vive en config/portales.js y se copia aquí al arrancar (ver
+-- services/noticias.js). Si se quita uno del catálogo, queda con active = FALSE: no se lee ni se
+-- ofrece, pero no se pierden sus noticias ni quién lo seguía.
+--  - etag / last_modified: lo que dijo el portal la última vez, para pedirle solo lo nuevo
+--  - fetched_at / fetch_error: cuándo se leyó y, si falló, por qué (para la guía de desarrollo)
+CREATE TABLE IF NOT EXISTS news_sources (
+    id SERIAL PRIMARY KEY,
+    slug VARCHAR(40) NOT NULL UNIQUE,
+    name VARCHAR(80) NOT NULL,
+    site_url VARCHAR(300) NOT NULL,
+    feed_url VARCHAR(500) NOT NULL,
+    lang VARCHAR(2) NOT NULL CHECK (lang IN ('es', 'en')),
+    tono INTEGER NOT NULL DEFAULT 220 CHECK (tono BETWEEN 0 AND 359),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    etag VARCHAR(300),
+    last_modified VARCHAR(100),
+    fetched_at TIMESTAMPTZ,
+    fetch_error VARCHAR(300)
+);
+
+-- Las noticias: lo mínimo para enseñar una tarjeta y enlazar al artículo original (nunca el
+-- artículo entero). Cada portal da a cada noticia un identificador (guid); con él no se guarda
+-- dos veces. Se borran a los 30 días, salvo las que tienen interacciones registradas, que se
+-- conservan mientras ellas (hacen falta para entrenar el recomendador de la 1.7).
+CREATE TABLE IF NOT EXISTS news_articles (
+    id SERIAL PRIMARY KEY,
+    source_id INTEGER NOT NULL REFERENCES news_sources(id) ON DELETE CASCADE,
+    guid VARCHAR(1000) NOT NULL,
+    url VARCHAR(1000) NOT NULL,
+    title VARCHAR(300) NOT NULL,
+    excerpt VARCHAR(300) NOT NULL DEFAULT '',
+    image_url VARCHAR(1000),
+    published_at TIMESTAMPTZ NOT NULL,
+    fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (source_id, guid)
+);
+CREATE INDEX IF NOT EXISTS idx_news_articles_fecha ON news_articles (published_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_news_articles_portal ON news_articles (source_id, published_at DESC);
+
+-- Qué portales sigue cada persona
+CREATE TABLE IF NOT EXISTS news_follows (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    source_id INTEGER NOT NULL REFERENCES news_sources(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, source_id)
+);
+
+-- Noticias que alguien ha ocultado ("No me interesa"): no le vuelven a salir. Es una preferencia
+-- explícita, así que funciona aunque la personalización esté apagada.
+CREATE TABLE IF NOT EXISTS news_hidden (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    article_id INTEGER NOT NULL REFERENCES news_articles(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, article_id)
+);
+
+-- Lo que pasa con cada noticia que se enseña: los datos con los que la 1.7 entrenará el
+-- recomendador. Una fila por suceso:
+--  - kind: 'impression' (estuvo a la vista al menos un segundo), 'click' (se abrió) o 'hide'
+--  - feed: en qué pestaña estaba ('para_ti' o 'siguiendo') y position: en qué puesto (0 = el
+--    primero). La posición importa: lo de arriba se pulsa más solo por estar arriba ("sesgo de
+--    posición"), y para corregirlo hay que saber dónde estaba cada cosa.
+--  - features: las señales con las que se puntuó la noticia EN ESE MOMENTO (juego, similitud,
+--    amigos, reciente, idioma, portal, explorar) y su puntuación. Si se recalcularan al entrenar,
+--    la biblioteca habría cambiado y el modelo aprendería de datos que nunca existieron.
+-- Solo se guarda con la personalización activada (users.news_personalization). Se borra a los
+-- 180 días y, con ON DELETE CASCADE, al borrar la cuenta.
+CREATE TABLE IF NOT EXISTS news_events (
+    id BIGSERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    article_id INTEGER NOT NULL REFERENCES news_articles(id) ON DELETE CASCADE,
+    kind VARCHAR(12) NOT NULL CHECK (kind IN ('impression', 'click', 'hide')),
+    feed VARCHAR(10) NOT NULL CHECK (feed IN ('para_ti', 'siguiendo')),
+    position INTEGER CHECK (position BETWEEN 0 AND 1000),
+    features JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_news_events_usuario ON news_events (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_news_events_noticia ON news_events (article_id);
+
+-- Si "Para ti" puede usar lo que haces con las noticias (y si se registra). Por defecto, sí.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS news_personalization BOOLEAN NOT NULL DEFAULT TRUE;
