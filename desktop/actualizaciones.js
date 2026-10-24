@@ -11,6 +11,22 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.6.0': {
+    es: [
+      'Noticias es ahora lo primero que ves: lo último de 24 portales de videojuegos.',
+      'Para ti: las noticias de los juegos de tu biblioteca, con el motivo de cada una.',
+      'Siguiendo: lo último de los portales que elijas, por orden de fecha.',
+      'Pulsa uno de tus juegos en "Se habla de tus juegos" para ver solo sus noticias.',
+      'Lo que no te interese, fuera con "No me interesa" (y con Deshacer por si acaso).',
+    ],
+    en: [
+      'News is now the first thing you see: the latest from 24 video game sites.',
+      'For you: news about the games in your library, with the reason for each one.',
+      'Following: the latest from the sites you choose, newest first.',
+      'Tap one of your games in "Your games in the news" to see only its stories.',
+      'Hide what you don\'t care about with "Not interested" (with Undo just in case).',
+    ],
+  },
   '1.5.0': {
     es: [
       'Chats de grupo de hasta 10 personas: crea uno desde "Nuevo mensaje".',

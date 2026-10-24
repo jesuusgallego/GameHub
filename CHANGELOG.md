@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.6.0] - 2026-10-24
 
 Las noticias pasan a ser la portada de GameHub: lo que ves al entrar.
 
