@@ -900,24 +900,50 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* La columna lateral pasa arriba como una franja horizontal compacta que se desliza: así la
+     primera noticia sigue saliendo en la primera pantalla */
   .noticias-lateral {
     position: static;
     order: -1;
-  }
-
-  /* En el móvil, la columna lateral va arriba y en horizontal: lo de tus juegos se desliza */
-  .noticias-juegos {
     flex-direction: row;
+    gap: 0.75rem;
+    margin: 0 -1rem;
+    padding: 0 1rem 0.25rem;
     overflow-x: auto;
-    padding-bottom: 0.25rem;
+    scroll-snap-type: x proximity;
   }
 
-  .noticias-juegos > li {
-    flex: 0 0 13rem;
+  .noticias-lateral > .noticias-bloque {
+    flex: 0 0 min(19rem, 82vw);
+    padding: 0.8rem 0.9rem;
+    scroll-snap-align: start;
   }
 
+  .noticias-lateral .lateral__titulo {
+    font-size: 1.05rem;
+  }
+
+  .noticias-lateral .lateral__ayuda,
   .noticias-nota {
     display: none;
+  }
+
+  .noticias-juegos {
+    gap: 0.15rem;
+  }
+
+  .noticias-juego {
+    padding: 0.25rem;
+  }
+
+  .noticias-juego__portada {
+    width: 1.7rem;
+    height: 2.3rem;
+  }
+
+  .noticias-sellos {
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
 }
 

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import ImagenSuave from './ImagenSuave'
 import { useIdioma } from './IdiomaContext'
 import { tiempoRelativo } from './tiempo'
@@ -46,6 +47,8 @@ export function MotivoNoticia({ motivo }) {
 function TarjetaNoticia({ noticia, destacada = false, orden = 0, refObservar, onAbrir, onOcultar, saliendo = false, onSalida }) {
   const { t, locale } = useIdioma()
   const { source } = noticia
+  // Si la imagen del portal no carga (borrada, bloqueada...), la portada con su color
+  const [imagenRota, setImagenRota] = useState(false)
   return (
     <article
       ref={refObservar}
@@ -56,9 +59,15 @@ function TarjetaNoticia({ noticia, destacada = false, orden = 0, refObservar, on
     >
       <a className="noticia__enlace" href={noticia.url} target="_blank" rel="noopener noreferrer" onClick={onAbrir}>
         <span className="noticia__imagen">
-          {noticia.image ? (
+          {noticia.image && !imagenRota ? (
             // Sin "referrer": algunos portales no sirven sus imágenes a otras webs si saben de dónde viene la petición
-            <ImagenSuave src={noticia.image} alt="" loading={destacada ? 'eager' : 'lazy'} referrerPolicy="no-referrer" />
+            <ImagenSuave
+              src={noticia.image}
+              alt=""
+              loading={destacada ? 'eager' : 'lazy'}
+              referrerPolicy="no-referrer"
+              onError={() => setImagenRota(true)}
+            />
           ) : (
             <span className="noticia__sin-imagen" aria-hidden="true">
               <span>{source.name}</span>

@@ -235,7 +235,8 @@ async function listFollowing(req, res) {
 }
 
 // GET /news/for-you?offset=0&lang=es — "Para ti": la clasificación del recomendador, 20 por página,
-// cada una con su motivo. `fresh=1` rehace la clasificación (al recargar a propósito).
+// cada una con su motivo. `fresh=1` rehace la clasificación (al recargar a propósito); `game=<id>`
+// da solo las de un juego de mi biblioteca.
 // Trae también los juegos de mi biblioteca de los que más se habla estos dos días (`mentioned`).
 async function listForYou(req, res) {
   const offset = req.query.offset === undefined ? 0 : Number(req.query.offset);
@@ -245,6 +246,22 @@ async function listForYou(req, res) {
   try {
     const refrescando = await asegurarFrescas();
     const c = await clasificacionDe(yo, idioma, { nueva: offset === 0 && req.query.fresh === '1' });
+
+    // ?game=<igdb_id>: solo las noticias que mencionan ese juego de mi biblioteca (lo usa "Se
+    // habla de tus juegos"), de la más nueva a la más antigua, sin paginar
+    if (req.query.game !== undefined) {
+      const juego = Number(req.query.game);
+      if (!Number.isInteger(juego)) return res.status(400).json({ error: 'Parámetro no válido' });
+      const delJuego = [...c.porId.values()]
+        .filter((r) => r.juego?.igdb_id === juego && !c.ocultas.has(r.noticia.id))
+        .sort((a, b) => new Date(b.noticia.published_at) - new Date(a.noticia.published_at))
+        .slice(0, 40);
+      return res.json({
+        articles: delJuego.map((r, i) => aNoticia(r.noticia, { reason: aMotivo({ kind: 'juego', game: r.juego }), position: i })),
+        // Sin `mentioned`: la lista de "Se habla de tus juegos" no cambia por filtrar
+        has_more: false, library_size: c.contexto.biblioteca.length, refreshing: refrescando,
+      });
+    }
     // Las que ocultes mientras tanto no se envían, pero la lista no se toca: si se quitaran, las de
     // detrás se correrían un puesto y al pedir la página siguiente se saltaría una
     const pagina = c.lista

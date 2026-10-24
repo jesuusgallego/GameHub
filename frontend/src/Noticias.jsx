@@ -208,7 +208,12 @@ function Noticias({ setToken }) {
       </div>
 
       {gestionando && portales && (
-        <VentanaPortales portales={portales} onGuardado={cambiarPortales} onCerrar={() => setGestionando(false)} />
+        <VentanaPortales
+          portales={portales}
+          // Al guardar, la ventana sale con su animación y después se quita, con la lista nueva
+          onGuardado={(lista) => { cambiarPortales(lista); setGestionando(false) }}
+          onCerrar={() => setGestionando(false)}
+        />
       )}
     </div>
   )
