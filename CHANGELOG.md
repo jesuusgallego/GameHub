@@ -2,6 +2,58 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+Las noticias pasan a ser la portada de GameHub: lo que ves al entrar.
+
+### Añadido
+- **Noticias**, el primer botón de la barra y la página a la que te lleva el inicio de sesión. Lo
+  último de **24 portales** de videojuegos, 10 en español y 14 en inglés (Vandal, 3DJuegos,
+  HobbyConsolas, IGN, Eurogamer, PC Gamer, Rock Paper Shotgun, Nintendo Life…).
+  - Una cabecera de periódico con la fecha y una cinta de **Última hora** con los titulares más
+    recientes, que se desliza sola y se para al pasar el ratón.
+  - **Para ti:** las noticias que te pueden interesar según tu biblioteca: las que hablan de tus
+    juegos (sobre todo de los que juegas ahora o puntuaste alto), de juegos parecidos, de lo que
+    juegan tus amigos y de los portales que sigues, con las más recientes arriba. Cada una dice por
+    qué sale ("Porque tienes Elden Ring", "Tus amigos juegan a Hades", "Para descubrir"…). Para que
+    no sea siempre lo mismo, no salen muchas seguidas del mismo juego o portal, y de vez en cuando
+    hay una "para descubrir", algo distinto a lo de siempre.
+  - **Siguiendo:** lo último de los portales que elijas, por fecha. La primera vez te propone los
+    de tu idioma, para que confirmes o cambies.
+  - La primera noticia sale en grande; el resto, en tarjetas con su imagen, el portal (con su
+    color), cuánto hace, el titular y un extracto. Al bajar se cargan más.
+  - **Se habla de tus juegos:** los juegos de tu biblioteca que salen en las noticias de estos días;
+    pulsa uno para ver solo sus noticias.
+  - **No me interesa:** la noticia se retira con una animación y no te vuelve a salir (con
+    *Deshacer* por si te equivocas).
+  - **Tus portales:** elige cuáles sigues en cualquier momento.
+  - Cada noticia enlaza al artículo en su portal: GameHub enseña el titular y un extracto, no copia
+    los artículos.
+- En **Perfil → Privacidad**, una sección **Noticias** con "Personalizar Para ti con mi
+  actividad": GameHub apunta qué noticias ves y abres para mejorar las recomendaciones. Se puede
+  apagar.
+
+### Cambiado
+- Al iniciar sesión, la app abre Noticias en lugar de Mi biblioteca.
+- Si la imagen de algo no carga, ya no se queda el hueco a medias.
+
+### Interno
+- **API `/news`** (portales, seguir, Siguiendo, Para ti, ocultar y registro de sucesos) y tablas
+  `news_sources`, `news_articles`, `news_follows`, `news_hidden` y `news_events` (se crean solas
+  al arrancar el servidor). Los portales se leen cuando alguien abre las noticias, como mucho cada
+  20 minutos y pidiendo solo lo nuevo, sin temporizador (para no despertar el servidor gratuito).
+- "Para ti" puntúa cada noticia con seis señales y pesos fijos (ver la guía de desarrollo,
+  sección Noticias). Las impresiones, los clics y las noticias ocultadas se guardan con las señales
+  de ese momento: con ellas se entrenará el recomendador de la 1.7.
+- `fast-xml-parser` 5.11.2 para leer los RSS, y `npm audit fix` en el backend (`body-parser` y
+  `follow-redirects`).
+
+### Limitaciones conocidas
+- "Para ti" todavía no aprende de lo que pulsas: los pesos están puestos a mano (eso llega en la 1.7).
+- Un juego se reconoce por su nombre o por las partes de su nombre: una noticia que dice solo
+  "Zelda" no cuenta como de "The Legend of Zelda: Tears of the Kingdom".
+- Si un portal cambia su RSS, sus noticias dejan de llegar hasta que se actualice el catálogo.
+
 ## [1.5.0] - 2026-10-24
 
 Chats de grupo, "escribiendo…", vaciar conversaciones, avisos de Windows para los mensajes nuevos y

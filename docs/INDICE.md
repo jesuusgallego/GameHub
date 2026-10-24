@@ -35,6 +35,7 @@ mantiene fuera del repositorio, en un documento privado; su `bundle.css` se gene
 | [1.2.0](../CHANGELOG.md) | 2026-10-15 | Social: amigos, solicitudes, bloqueos, actividad y perfiles públicos con privacidad dato a dato; inicio de sesión con nombre de usuario y datos personales en el perfil |
 | [1.3.0](../CHANGELOG.md) | 2026-10-16 | Social rediseñado ("la sala"); en el perfil de un amigo, lo que tenéis en común, un cara a cara y la ficha de sus juegos con su partida y sus logros de Steam; ajuste de privacidad "Horas y logros"; la insignia de solicitudes se actualiza sola |
 | [1.4.0](../CHANGELOG.md) | 2026-10-16 | Chat entre amigos (botón y panel en toda la app, "visto", borrado y avisos de no leídos); Social, Mi biblioteca y Buscar mucho más fluidos |
+| [1.5.0](../CHANGELOG.md) | 2026-10-24 | Chats de grupo, "escribiendo…", vaciar conversaciones, avisos de Windows de los mensajes nuevos y edad mínima de 14 años |
 
 ## 3. Qué falta
 
@@ -42,27 +43,29 @@ mantiene fuera del repositorio, en un documento privado; su `bundle.css` se gene
 
 El orden es el acordado; cada fase es una versión con su entrada en el CHANGELOG.
 
-1. **Noticias por RSS (1.5)**: una sección con noticias de portales de videojuegos, con la
-   posibilidad de seguir portales. Solo titular, extracto y enlace al original; no se copian
-   artículos.
-2. **Versión móvil (2.0)**: la misma interfaz React empaquetada con Capacitor, con una PWA como
+1. **Noticias (1.6, hecha, sin publicar)**: la portada de la app, con "Para ti" (recomendadas
+   según tu biblioteca, sin aprendizaje automático) y "Siguiendo" (24 portales por RSS). Ya
+   registra lo que se ve y se pulsa; ver [Noticias](DESARROLLO.md#noticias).
+2. **Recomendador con aprendizaje automático (1.7)**: aprender los pesos de "Para ti" con los
+   clics (regresión logística, *learning to rank*), entrenado fuera del servidor, con evaluación
+   y corrección del sesgo de posición. Se hará con calma, explicando cada paso.
+3. **Versión móvil (2.0)**: la misma interfaz React empaquetada con Capacitor, con una PWA como
    paso intermedio. Android primero; iOS cuesta una cuenta de pago y un Mac o un servicio de
    compilación, así que se decide aparte.
 
 ### Ideas para el chat
 
-Avisos del sistema (hoy, con la app minimizada no llegan avisos), "escribiendo…", imágenes y
-chats de grupo; ver [Chat](DESARROLLO.md#chat).
+Imágenes, reportar mensajes y pasar la administración de un grupo a mano; ver
+[Chat](DESARROLLO.md#chat).
 
 ### Pendientes conocidos
 
 - **Reportar usuarios:** hoy solo se puede bloquear; no hay moderación.
-- **Edad mínima** para registrarse (en España, 14 años).
 - **La lista de solicitudes** de la pestaña *Solicitudes* no se refresca sola; solo la insignia.
 - **Instalador sin firmar:** Windows SmartScreen avisa de "editor desconocido".
 - **Teléfono sin verificar** (ver "Descartado").
-- **Sistema de diseño:** faltan las vistas previas del campo de teléfono, de los ajustes de
-  privacidad y del interruptor.
+- **Sistema de diseño:** faltan las vistas previas del campo de teléfono y de los ajustes de
+  privacidad.
 - **Probar el SQL** sin Docker se explica en la guía, pero el script no está en el repositorio.
 
 ### Descartado

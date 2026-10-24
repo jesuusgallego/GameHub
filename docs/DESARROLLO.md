@@ -62,15 +62,17 @@ GameHub/
 │   │   ├── app.js               # Arranque, seguridad (helmet, CORS, límites) y rutas
 │   │   ├── routes/              # Qué URL llama a qué controlador
 │   │   ├── controllers/         # Lógica de cada ruta: auth, games, profile, accounts, users, friends,
-│   │   │                        # chat (entre dos personas) y grupos (chats de grupo)
+│   │   │                        # chat (entre dos personas), grupos (chats de grupo) y news (noticias)
 │   │   ├── middleware/          # Sesión (JWT, con versión por usuario) y límites de intentos
 │   │   ├── services/            # IGDB, Steam, traducción, correo, recuperación de contraseña,
 │   │   │                        # emisión de tokens, sincronización automática, privacidad
 │   │   │                        # (qué ve cada persona), amistades (SQL común), estadísticas,
-│   │   │                        # chatComun (lo común del chat) y escribiendo (en memoria)
+│   │   │                        # chatComun (lo común del chat), escribiendo (en memoria), rss (leer
+│   │   │                        # feeds), noticias (portales y lectura) y recomendador ("Para ti")
 │   │   ├── models/sql/schema.sql  # Esquema de la BD (idempotente: se aplica al arrancar)
 │   │   └── config/              # db.js (conexión), validacion.js (reglas de email, contraseña,
-│   │                            # usuario y perfil) y paises.js (códigos ISO)
+│   │                            # usuario y perfil), paises.js (códigos ISO) y portales.js (los
+│   │                            # portales de noticias)
 │   ├── test/                    # Pruebas (npm test)
 │   ├── .env.example             # Plantilla de variables de entorno
 │   └── Dockerfile
@@ -379,6 +381,11 @@ Después se añade la regla como `CHECK` (con una comprobación en `pg_constrain
 | `chat_groups` | Los grupos: `name` (50) y `owner_id` (quien administra) |
 | `chat_group_members` | Quién está en cada grupo, con tres marcas por persona (ids de `group_messages`): `since_id` (no ve lo de antes de entrar), `last_read_id` (no leídos y "Visto por") y `cleared_id` (lo que vació) |
 | `group_messages` | Mensajes de los grupos: los de texto (`kind = 'text'`) y los avisos (`kind = 'event'`, con `event`: `created`, `added`, `removed`, `left`, `renamed` u `owner`, y `target_id`) |
+| `news_sources` | Los portales de noticias, copiados de `config/portales.js` al arrancar: nombre, web, RSS, idioma, color (`tono`), si está activo, y lo que dijo el portal la última vez (`etag`, `last_modified`, `fetched_at`, `fetch_error`) |
+| `news_articles` | Las noticias: portal, `guid` (único por portal), enlace, titular (300), extracto (hasta 280), imagen y fecha. Nunca el artículo entero. Se borran a los 30 días, salvo las que tienen interacciones |
+| `news_follows` | Qué portales sigue cada persona |
+| `news_hidden` | Las noticias que alguien ha ocultado ("No me interesa") |
+| `news_events` | Lo que pasa con cada noticia que se enseña, para entrenar el recomendador en la 1.7: `kind` (`impression`, `click`, `hide`), `feed` (`para_ti` o `siguiendo`), `position` y `features` (JSON con las señales y la puntuación de ese momento). Solo con `users.news_personalization`; se borra a los 180 días y con la cuenta |
 
 ### Mirar la base de datos con psql
 
@@ -471,6 +478,12 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | DELETE | `/chat/g/:id/members/:username` | Bearer token | Con tu nombre, sales; con el de otra persona, la sacas (solo quien administra). Si sale quien administra, pasa a quien lleve más tiempo dentro; si sale el último, el grupo se borra (`{ left, group_deleted }`) |
 | POST | `/chat/g/:id/read` · `/typing` · `/clear` | Bearer token | Igual que en la conversación entre dos personas |
 | DELETE | `/chat/g/:id/messages/:mid` | Bearer token | Borra un mensaje tuyo del grupo |
+| GET | `/news/sources` | Bearer token | El catálogo de portales: `slug`, `name`, `site`, `lang`, `tono`, si lo sigues (`following`) y su último titular (`latest`) |
+| PUT | `/news/follows` | Bearer token | Los portales que sigues (`slugs`, sustituye la lista entera). 400 si alguno no existe |
+| GET | `/news/following` | Bearer token | Lo último de tus portales, por fecha, 20 por página (`?before=<fecha>&before_id=<id>` para la siguiente). Trae `following` (cuántos sigues) y `refreshing` (si el servidor está leyendo los portales en ese momento) |
+| GET | `/news/for-you` | Bearer token | "Para ti": la clasificación del recomendador, 20 por página (`?offset=`), cada una con `reason` (`kind` y, si es por un juego, `game`) y `position`. `?lang=es\|en` (idioma de la interfaz), `?fresh=1` rehace la clasificación, `?game=<igdb_id>` solo las de ese juego. En la primera página, `mentioned` (tus juegos de los que más se habla) y `library_size` |
+| POST | `/news/events` | Bearer token | Tanda de sucesos (`events`: `article_id`, `kind` `impression`\|`click`, `feed`, `position`; hasta 50). Se guardan con las señales del momento; con la personalización apagada, nada (204 igual). 120 tandas por minuto y usuario |
+| POST · DELETE | `/news/articles/:id/hide` | Bearer token | "No me interesa" y deshacerlo. Ocultar también deja un suceso `hide` (con la personalización activa) |
 | GET | `/accounts` | Bearer token | Cuentas vinculadas del usuario y `steam_disponible` (si el servidor tiene `STEAM_API_KEY`) |
 | PUT | `/accounts/steam` | Bearer token | Vincula una cuenta de Steam. `perfil` puede ser la URL del perfil, el nombre personalizado o el SteamID de 17 dígitos. No se elige nada más: la sincronización siempre añade los juegos que te faltan. 409 si ya hay una vinculada |
 | POST | `/accounts/steam/sync` | Bearer token | Trae de Steam las horas y los logros de los juegos que ya tienes y añade los que te faltan (siempre). 422 si el perfil es privado; 409 si ya hay una sincronización en curso. No hace falta llamarlo a mano: el servidor lo hace solo cada `STEAM_SYNC_MINUTOS` y el frontend al abrir el perfil si los datos tienen más de 10 minutos |
@@ -978,6 +991,102 @@ sistema). Estilos en `estilos/chat.css`.
 - **No está (por ahora):** imágenes o archivos, reportar mensajes o personas, pasar la
   administración de un grupo a mano y avisos con la app cerrada (eso necesitaría *push* desde el
   servidor).
+
+### Noticias
+
+La portada de la app (1.6). Backend: `config/portales.js` (los 24 portales), `services/rss.js`
+(leer RSS y Atom), `services/noticias.js` (catálogo, cuándo se leen, guardar y purgar),
+`services/recomendador.js` ("Para ti", funciones puras), `controllers/newsController.js` y
+`routes/newsRoutes.js`. Frontend: `Noticias.jsx` (la página), `FeedNoticias.jsx` (cada pestaña),
+`TarjetaNoticia.jsx`, `PortalesNoticias.jsx` (elegir portales), `useEventosNoticias.js` (registrar
+lo que se ve y se pulsa) y `logicaNoticias.js`. Estilos en `estilos/noticias.css`.
+
+- **Qué se guarda de cada noticia:** titular, un extracto de hasta 280 caracteres (cortado en una
+  palabra), la imagen, la fecha y el enlace. Algunos portales (Vandal, 3DJuegos, VidaExtra,
+  GameSpot) meten el artículo entero en el RSS: se descarta. GameHub enlaza, no copia.
+- **Cuándo se leen los portales:** no hay temporizador (mantendría despiertos Render y Neon). Cada
+  petición de noticias llama a `asegurarFrescas()`: si hace más de 20 minutos, se leen en segundo
+  plano y la respuesta lleva `refreshing: true` (la interfaz vuelve a pedir la primera página a los
+  9 segundos si no has cargado más). Si la base de datos no tiene ninguna noticia, espera a la
+  lectura (hasta 25 s). Una lectura a la vez, 4 portales en paralelo con 10 s de tope cada uno, y
+  solo lo nuevo: se manda `If-None-Match` / `If-Modified-Since` con el `ETag` y el
+  `Last-Modified` de la vez anterior. La primera lectura de los 24 tarda unos 3,5 s y guarda unas
+  800 noticias.
+- **Leer los feeds** (`fast-xml-parser` 5.11.2: las 4.x tienen vulnerabilidades de expansión de
+  entidades, y aquí se lee XML de webs ajenas). Rarezas reales que se cubren (con pruebas en
+  `test/noticias.test.js`): la codificación de cada feed (Vandal llega en ISO-8859-1 y se
+  decodifica con la de su cabecera o su declaración XML), CDATA con HTML, HTML escapado dos veces,
+  Atom con varios `<link>` (vale el `alternate`), imágenes en `enclosure`, `media:content`,
+  `media:thumbnail` o dentro del contenido (se descartan los vídeos), fechas futuras (pasan a
+  "ahora"), enlaces `http` (pasan a `https`, o la app los bloquearía). Todo se guarda como texto
+  plano y React lo pinta como texto. Un feed de más de 6 MB se descarta.
+- **"Para ti", nivel 1 (sin aprendizaje):** para cada noticia de los últimos 7 días (hasta 1500)
+  se calculan seis señales entre 0 y 1 y se combinan con pesos fijos:
+
+  | Señal | Qué mide | Peso |
+  |---|---|---|
+  | `juego` | Menciona un juego de tu biblioteca, con lo que te importa (`interes`: jugando 1, completado 0,6, pendiente 0,5, abandonado 0,2; nota de 8 o más, al menos 0,9; de 4 o menos, la mitad; las horas suman hasta 0,2, en logaritmo) | 3 |
+  | `similitud` | Coseno entre el TF-IDF de la noticia (el titular cuenta el doble) y tu perfil (nombres ×2, estudios ×1, géneros de IGDB traducidos a palabras de las noticias ×0,7 y plataformas ×0,5, cada uno por su `interes`), escalado ×4 y con tope en 1 | 1,5 |
+  | `amigos` | Menciona un juego que tus amigos juegan ahora o puntúan con 8 o más (solo de quien deja ver su biblioteca a sus amigos): 0,6 con uno, +0,2 por cada uno más | 1 |
+  | `reciente` | `exp(-horas / 24)` | 1 |
+  | `idioma` | En el idioma de la interfaz | 0,5 |
+  | `portal` | De un portal que sigues | 0,5 |
+
+  El IDF (`ln((N + 1) / (df + 1)) + 1`) se calcula sobre las candidatas de cada clasificación: una
+  palabra que sale en muchas noticias ("tráiler", "ps5") pesa poco y una rara ("silksong") mucho.
+- **Encontrar juegos en un texto** (`aliasDeJuego`, `menciona`): se busca el nombre normalizado
+  (sin tildes ni signos) con palabras enteras y, si tiene subtítulo, también cada parte de dos
+  palabras o más ("The Legend of Zelda: Tears of the Kingdom" → "legend of zelda" y "tears of the
+  kingdom"). Un nombre de una sola palabra corta ("Hades", "Control") tiene que salir con mayúscula
+  inicial en el texto original, y los de tres letras no se buscan. Es un equilibrio entre
+  precisión y exhaustividad con fallos conocidos: "Zelda" a secas no se asocia a ningún juego con
+  subtítulo, y una noticia de otra cosa que nombra un juego de pasada cuenta como suya.
+- **Orden final** (`ordenar`): rendimientos decrecientes para que haya variedad (cada noticia más
+  del mismo juego vale ×0,85 y del mismo portal ×0,9, y nunca tres seguidas del mismo portal o
+  juego) y **exploración**: uno de cada 6 puestos es "para descubrir", una noticia reciente que no
+  coincide contigo. Las de descubrir se apartan antes de clasificar el resto (si no, la
+  clasificación principal se comía las recientes y los huecos se quedaban vacíos); se barajan con
+  una semilla de la persona y el día (estable al recargar, distinta mañana). La exploración no es
+  solo para descubrir: sin ella, un modelo entrenado con los clics solo aprendería de sus propias
+  elecciones.
+- **El motivo** de cada tarjeta es la señal que más aporta (peso × valor) si pasa de 0,45: "Porque
+  tienes X", "Tus amigos juegan a X", "Parecida a lo que juegas", "De un portal que sigues"; si no,
+  "Lo último". Las de exploración dicen "Para descubrir".
+- **La clasificación se guarda en memoria 10 minutos** por persona: al bajar, la página siguiente
+  sale de ella (unos milisegundos) y el orden no cambia por debajo. Al ocultar una noticia, la lista
+  no se toca: simplemente no se envía (si se quitara, las de detrás se correrían un puesto y al
+  pedir la siguiente página se saltaría una). Por eso la interfaz pide la página siguiente desde la
+  posición de la última más uno, no desde cuántas tiene.
+- **Lo que se registra para la 1.7** (`news_events`): una impresión cuando una tarjeta ha estado a
+  la vista (al menos la mitad) un segundo seguido (`IntersectionObserver`), una por noticia y
+  pestaña mientras la página está abierta; un clic al abrirla; un `hide` al ocultarla. Con la
+  posición (para corregir el sesgo de posición: lo de arriba se pulsa más por estar arriba) y las
+  señales con las que se puntuó en ese momento (si se recalcularan al entrenar, la biblioteca habría
+  cambiado). Se mandan por tandas cada 5 s, al ocultar la pestaña y al salir, con `keepalive`. Si
+  la clasificación ya no está en memoria, las señales se calculan al recibir el suceso y llevan
+  `tarde: 1`.
+- **Privacidad:** *Perfil → Privacidad → Noticias* tiene "Personalizar Para ti con mi actividad"
+  (`users.news_personalization`). Apagado, no se registra nada (ocultar sigue funcionando, porque es
+  una preferencia explícita). Los sucesos se borran a los 180 días y con la cuenta (`CASCADE`).
+- **La página:** cabecera de periódico con la cinta de "Última hora" (los titulares más recientes de
+  lo cargado; se para al pasar el ratón o con el foco), pestañas en barra con la pestaña en la URL
+  (`?tab=siguiendo`), la primera noticia en grande y la rejilla, con carga al acercarse al final.
+  Las dos pestañas quedan montadas al cambiar (cada una sigue donde estaba). Cambiar de idioma, de
+  juego o de portales cambia la `key` del feed, que se crea de nuevo desde cero. "No me interesa"
+  sale con su animación (`animationend`, o al instante con "reducir movimiento") y deja un hueco
+  con "Deshacer". La columna lateral: "Se habla de tus juegos" (pulsar uno filtra con `?game=`) y
+  "Tus portales"; en el móvil es una franja horizontal arriba.
+- **Cómo se probó:** `backend/test/noticias.test.js` (RSS y Atom de ejemplo con las rarezas reales,
+  el catálogo y el recomendador) y `frontend/test/noticias.test.js`. La lectura de los 24 portales
+  de verdad y la API (34 comprobaciones: páginas sin repetir, exploración cada 6, variedad,
+  Siguiendo por fecha, eventos con señales, ocultar, personalización, purga y borrado de cuenta)
+  contra el backend real sobre PGlite, y la interfaz con Chromium sin cabeza (capturas en oscuro,
+  claro, móvil e inglés; y los flujos pulsando: impresiones al ver y al bajar, clic, ocultar y
+  deshacer, filtro por juego, cambiar de portales, la primera elección y la personalización
+  apagada).
+- **No está (por ahora):** aprender los pesos (1.7), buscar en las noticias, guardarlas para
+  luego, avisos de noticias de tus juegos y un diccionario de alias a mano ("Zelda", "GTA 6"): hoy solo
+  se reconoce el nombre tal como está en tu biblioteca y sus partes.
 
 ### Tarjetas de la biblioteca
 

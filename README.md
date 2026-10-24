@@ -9,6 +9,12 @@ para traer tus juegos, tus horas y tus logros.
 
 ## Qué puedes hacer
 
+- **Noticias, lo primero al entrar:** lo último de 24 portales de videojuegos en español e inglés
+  (Vandal, 3DJuegos, IGN, Eurogamer, PC Gamer…). En **Para ti**, las que te pueden interesar según
+  los juegos de tu biblioteca, con el motivo a la vista ("Porque tienes Elden Ring"); en
+  **Siguiendo**, las de los portales que elijas, por orden de fecha. Ves de qué juegos tuyos se
+  habla, y lo que no te interese no te vuelve a salir. Cada noticia enlaza al artículo original
+  en su portal.
 - **Buscar juegos** en la base de datos de [IGDB](https://www.igdb.com) y guardarlos en tu
   biblioteca.
 - **Organizarlos:** estado (jugando, completado, abandonado, pendiente), tu nota del 1 al 10,
@@ -146,6 +152,11 @@ Lo que guarda GameHub de ti:
   borra de ella; si vacías una conversación y la otra persona también lo hace (o todo el grupo),
   esos mensajes se borran del servidor; al borrar tu cuenta se borran todos los tuyos.
 - Que estás escribiendo no se guarda: dura unos segundos en la memoria del servidor.
+- Los portales de noticias que sigues y las noticias que ocultas.
+- Para mejorar "Para ti": qué noticias has visto y abierto dentro de la app (y en qué posición
+  estaban). Solo se usa para recomendarte noticias, se borra a los 180 días y al borrar tu cuenta,
+  y puedes desactivarlo en *Perfil → Privacidad → Noticias*. GameHub no sabe qué lees en los
+  portales: solo que abriste el enlace.
 - Tu contraseña **solo como huella irreversible** (bcrypt): ni siquiera el servidor puede leerla.
 - Tu biblioteca: los juegos, su estado, tu nota y tu reseña. Si vinculas Steam, también tus horas
   jugadas y tus logros: por defecto solo los ven tus amigos y, como todo lo demás, puedes
