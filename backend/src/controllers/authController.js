@@ -8,13 +8,13 @@ const { enviarCodigoRecuperacion } = require('../services/correoService');
 const { emitirToken } = require('../services/sesion');
 const {
   EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, MENSAJE_PASSWORD_REGISTRO,
-  USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
+  USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS, errorFechaNacimiento,
 } = require('../config/validacion');
 
 
 // POST /auth/register
 async function register(req, res) {
-  const { username, email, password } = req.body;
+  const { username, email, password, birth_date } = req.body;
 
   // Tienen que ser texto: un objeto o un número haría fallar la consulta con un 500
   if ([username, email, password].some((v) => typeof v !== 'string' || v.trim() === '')) {
@@ -34,6 +34,11 @@ async function register(req, res) {
   if (!PASSWORD_REGEX.test(password)) {
     return res.status(400).json({ error: MENSAJE_PASSWORD_REGISTRO });
   }
+  // Edad mínima: 14 años (ver EDAD_MINIMA en config/validacion.js)
+  const errorFecha = errorFechaNacimiento(birth_date);
+  if (errorFecha) {
+    return res.status(400).json({ error: errorFecha });
+  }
 
   try {
     // Compruebo antes de insertar para poder avisar con un 409 claro
@@ -50,10 +55,10 @@ async function register(req, res) {
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
     const result = await pool.query(
-      `INSERT INTO users (username, email, password_hash)
-       VALUES ($1, $2, $3)
+      `INSERT INTO users (username, email, password_hash, birth_date)
+       VALUES ($1, $2, $3, $4)
        RETURNING id, username, email, created_at`,
-      [username, email, passwordHash]
+      [username, email, passwordHash, birth_date]
     );
 
     res.status(201).json({ user: result.rows[0] });

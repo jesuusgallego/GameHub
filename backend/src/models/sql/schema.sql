@@ -327,3 +327,68 @@ CREATE INDEX IF NOT EXISTS idx_messages_pareja
 -- Contar lo que no he leído: solo indexa las filas sin leer, que son pocas
 CREATE INDEX IF NOT EXISTS idx_messages_sin_leer
     ON messages (recipient_id, sender_id) WHERE read_at IS NULL AND deleted_at IS NULL;
+
+-- "Vaciar conversación" (1 a 1): cada persona puede vaciar SU copia de una conversación sin
+-- tocar la de la otra. Se guarda hasta qué mensaje la vació (cleared_id) y a partir de ahí
+-- solo ve lo nuevo. Cuando las dos la han vaciado, los mensajes que ya nadie puede ver se
+-- borran de verdad (ver chatController.clearConversation).
+CREATE TABLE IF NOT EXISTS chat_clears (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    other_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    cleared_id INTEGER NOT NULL,
+    PRIMARY KEY (user_id, other_id),
+    CHECK (user_id <> other_id)
+);
+
+-- Chats de grupo. Van en tablas propias, aparte de messages: el chat 1 a 1 sigue igual (sus
+-- reglas de amistad y bloqueo son por pareja) y no hay que migrar las conversaciones que ya
+-- existen.
+--  - owner_id: quien administra el grupo (cambia el nombre, añade y quita gente). Si se va,
+--    el grupo pasa a quien lleve más tiempo dentro.
+CREATE TABLE IF NOT EXISTS chat_groups (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL CHECK (length(btrim(name)) > 0),
+    owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Quién está en cada grupo. Tres marcas (ids de group_messages) por persona:
+--  - since_id: lo que había antes de que entrara; no lo ve (quien llega a un grupo empieza
+--    a leer desde ese momento, como en la mayoría de chats)
+--  - last_read_id: hasta dónde ha leído. De ahí salen los no leídos y el "Visto por..."
+--  - cleared_id: hasta dónde vació el chat (solo para ella)
+-- Salir del grupo borra la fila: quien sale deja de verlo.
+CREATE TABLE IF NOT EXISTS chat_group_members (
+    group_id INTEGER NOT NULL REFERENCES chat_groups(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    since_id INTEGER NOT NULL DEFAULT 0,
+    last_read_id INTEGER NOT NULL DEFAULT 0,
+    cleared_id INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (group_id, user_id)
+);
+-- Los grupos de una persona (la lista de conversaciones)
+CREATE INDEX IF NOT EXISTS idx_group_members_user ON chat_group_members (user_id);
+
+-- Los mensajes de los grupos. Además de los de texto (kind 'text') están los avisos del propio
+-- grupo (kind 'event'): "ana creó el grupo", "ana añadió a luis", "luis salió"... Se guardan
+-- como mensajes para que salgan en su sitio de la conversación.
+--  - event: qué pasó ('created', 'added', 'removed', 'left', 'renamed', 'owner')
+--  - sender_id: quien escribe o quien hizo el cambio; target_id: a quién afecta (el añadido,
+--    el expulsado, el nuevo administrador); en 'created' y 'renamed', body lleva el nombre
+-- Al borrar una cuenta se van sus mensajes (CASCADE); si era el objetivo de un aviso, el aviso
+-- se queda sin nombre (SET NULL).
+CREATE TABLE IF NOT EXISTS group_messages (
+    id SERIAL PRIMARY KEY,
+    group_id INTEGER NOT NULL REFERENCES chat_groups(id) ON DELETE CASCADE,
+    sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind VARCHAR(10) NOT NULL DEFAULT 'text' CHECK (kind IN ('text', 'event')),
+    event VARCHAR(10) CHECK (event IN ('created', 'added', 'removed', 'left', 'renamed', 'owner')),
+    target_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    body VARCHAR(2000) NOT NULL DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ,
+    CHECK ((kind = 'event') = (event IS NOT NULL)),
+    CHECK (kind = 'event' OR deleted_at IS NOT NULL OR length(btrim(body)) > 0)
+);
+CREATE INDEX IF NOT EXISTS idx_group_messages_grupo ON group_messages (group_id, id);

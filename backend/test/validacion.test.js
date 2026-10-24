@@ -16,6 +16,8 @@ const { register } = require('../src/controllers/authController');
 const {
   EMAIL_REGEX, PASSWORD_REGEX, USERNAME_REGEX, MENSAJE_USERNAME,
   limpiarTextoPerfil, fechaNacimientoValida, PAISES, normalizarTelefono,
+  edadCumplida, errorFechaNacimiento, EDAD_MINIMA, MENSAJE_EDAD_MINIMA, MENSAJE_FECHA_OBLIGATORIA,
+  MENSAJE_FECHA_NACIMIENTO,
 } = require('../src/config/validacion');
 const { limpiarTelefono } = require('../src/services/telefono');
 
@@ -25,7 +27,7 @@ async function registrar(body) {
   return { status: res.c, error: res.o?.error };
 }
 
-const valido = { username: 'ana', email: 'ana@x.com', password: 'Clave1234' };
+const valido = { username: 'ana', email: 'ana@x.com', password: 'Clave1234', birth_date: '1995-03-20' };
 
 test('el registro rechaza lo que no es texto o está vacío', async () => {
   for (const malo of [
@@ -148,4 +150,42 @@ test('las reglas aceptan lo normal', () => {
   assert.ok(EMAIL_REGEX.test('ana.perez+gh@correo.example.com'));
   assert.ok(PASSWORD_REGEX.test('Clave1234'));
   assert.ok(PASSWORD_REGEX.test('Ñandú-Fuerte9'));
+});
+
+test('edadCumplida cuenta los años cumplidos, también el día del cumpleaños y en bisiestos', () => {
+  const hoy = new Date(Date.UTC(2026, 9, 24)); // 24 de octubre de 2026
+  assert.strictEqual(edadCumplida('2012-10-24', hoy), 14, 'cumple hoy');
+  assert.strictEqual(edadCumplida('2012-10-25', hoy), 13, 'cumple mañana');
+  assert.strictEqual(edadCumplida('2012-11-01', hoy), 13);
+  assert.strictEqual(edadCumplida('1990-01-01', hoy), 36);
+  // 29 de febrero: en un año no bisiesto los cumple el 1 de marzo
+  assert.strictEqual(edadCumplida('2012-02-29', new Date(Date.UTC(2026, 1, 28))), 13);
+  assert.strictEqual(edadCumplida('2012-02-29', new Date(Date.UTC(2026, 2, 1))), 14);
+});
+
+test('errorFechaNacimiento: obligatoria, válida y de alguien con la edad mínima', () => {
+  const hoy = new Date(Date.UTC(2026, 9, 24));
+  assert.strictEqual(EDAD_MINIMA, 14);
+  for (const vacia of [undefined, null, '']) assert.strictEqual(errorFechaNacimiento(vacia, hoy), MENSAJE_FECHA_OBLIGATORIA);
+  for (const mala of ['2020-02-30', '24/10/2000', 20001024, '2999-01-01']) {
+    assert.strictEqual(errorFechaNacimiento(mala, hoy), MENSAJE_FECHA_NACIMIENTO, String(mala));
+  }
+  assert.strictEqual(errorFechaNacimiento('2012-10-25', hoy), MENSAJE_EDAD_MINIMA);
+  assert.strictEqual(errorFechaNacimiento('2012-10-24', hoy), null);
+  assert.strictEqual(errorFechaNacimiento('1950-05-05', hoy), null);
+});
+
+test('el registro exige la fecha de nacimiento y la edad mínima, sin consultar la BD', async () => {
+  const antes = consultas;
+  for (const [birth_date, error] of [
+    [undefined, MENSAJE_FECHA_OBLIGATORIA],
+    ['', MENSAJE_FECHA_OBLIGATORIA],
+    ['2020-02-30', MENSAJE_FECHA_NACIMIENTO],
+    [`${new Date().getUTCFullYear() - 10}-01-01`, MENSAJE_EDAD_MINIMA],
+  ]) {
+    const r = await registrar({ ...valido, birth_date });
+    assert.strictEqual(r.status, 400, String(birth_date));
+    assert.strictEqual(r.error, error, String(birth_date));
+  }
+  assert.strictEqual(consultas, antes);
 });

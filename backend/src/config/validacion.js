@@ -118,6 +118,39 @@ function fechaNacimientoValida(texto, hoy = new Date()) {
 const MENSAJE_MAX = 2000;
 const MENSAJE_CHAT_INVALIDO = 'El mensaje debe tener entre 1 y 2000 caracteres';
 
+// Chats de grupo: nombre de 1 a GRUPO_NOMBRE_MAX caracteres (como la columna de schema.sql) y
+// como mucho GRUPO_MAX_MIEMBROS personas contando a quien lo crea
+const GRUPO_NOMBRE_MAX = 50;
+const GRUPO_MAX_MIEMBROS = 10;
+const MENSAJE_NOMBRE_GRUPO = 'El nombre del grupo debe tener entre 1 y 50 caracteres';
+const MENSAJE_MIEMBROS_GRUPO = 'Un grupo tiene de 3 a 10 personas contándote a ti';
+
+// Edad mínima para tener cuenta. En España, el RGPD y la Ley Orgánica 3/2018 (art. 7) fijan
+// en 14 años la edad para dar el consentimiento al tratamiento de datos sin los padres.
+const EDAD_MINIMA = 14;
+const MENSAJE_EDAD_MINIMA = 'Tienes que tener al menos 14 años para usar GameHub';
+const MENSAJE_FECHA_OBLIGATORIA = 'La fecha de nacimiento es obligatoria';
+
+// Los años cumplidos a fecha de `hoy` por quien nació en "AAAA-MM-DD" (una fecha ya validada
+// con fechaNacimientoValida). Quien nació un 29 de febrero los cumple el 1 de marzo los años
+// que no son bisiestos.
+function edadCumplida(texto, hoy = new Date()) {
+  const [anio, mes, dia] = texto.split('-').map(Number);
+  const mesHoy = hoy.getUTCMonth() + 1;
+  const diaHoy = hoy.getUTCDate();
+  let edad = hoy.getUTCFullYear() - anio;
+  if (mesHoy < mes || (mesHoy === mes && diaHoy < dia)) edad -= 1;
+  return edad;
+}
+
+// Comprueba una fecha de nacimiento obligatoria. Devuelve el mensaje de error, o null si vale.
+function errorFechaNacimiento(texto, hoy = new Date()) {
+  if (texto === undefined || texto === null || texto === '') return MENSAJE_FECHA_OBLIGATORIA;
+  if (typeof texto !== 'string' || !fechaNacimientoValida(texto, hoy)) return MENSAJE_FECHA_NACIMIENTO;
+  if (edadCumplida(texto, hoy) < EDAD_MINIMA) return MENSAJE_EDAD_MINIMA;
+  return null;
+}
+
 // Coste de bcrypt: cada +1 duplica el tiempo de calcular un hash
 const SALT_ROUNDS = 10;
 
@@ -128,4 +161,6 @@ module.exports = {
   VISIBILIDADES, MENSAJE_VISIBILIDAD, CAMPOS_VISIBILIDAD, POLITICAS_SOLICITUD, MENSAJE_POLITICA, MENSAJE_BUSCABLE,
   PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO, normalizarTelefono, MENSAJE_MAX, MENSAJE_CHAT_INVALIDO,
   limpiarTextoPerfil, fechaNacimientoValida,
+  GRUPO_NOMBRE_MAX, GRUPO_MAX_MIEMBROS, MENSAJE_NOMBRE_GRUPO, MENSAJE_MIEMBROS_GRUPO,
+  EDAD_MINIMA, MENSAJE_EDAD_MINIMA, MENSAJE_FECHA_OBLIGATORIA, edadCumplida, errorFechaNacimiento,
 };

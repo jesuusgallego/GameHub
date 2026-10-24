@@ -4,11 +4,12 @@ const { emitirToken } = require('../services/sesion');
 const { estadisticasDe } = require('../services/estadisticas');
 const {
   EMAIL_REGEX, PASSWORD_REGEX, MENSAJE_PASSWORD_DEBIL, USERNAME_REGEX, MENSAJE_USERNAME, SALT_ROUNDS,
-  SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO,
+  SEXOS, TEXTOS_PERFIL, MENSAJE_SEXO, PAISES, MENSAJE_PAIS, MENSAJE_TELEFONO,
   VISIBILIDADES, MENSAJE_VISIBILIDAD, CAMPOS_VISIBILIDAD, POLITICAS_SOLICITUD, MENSAJE_POLITICA, MENSAJE_BUSCABLE,
-  limpiarTextoPerfil, fechaNacimientoValida,
+  limpiarTextoPerfil, errorFechaNacimiento,
 } = require('../config/validacion');
 const { limpiarTelefono } = require('../services/telefono');
+const { alBorrarCuenta } = require('./gruposController');
 
 // La foto llega como data URL: solo admito imágenes de estos tipos en base64
 const avatarRegex = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/;
@@ -85,7 +86,8 @@ async function getStats(req, res) {
 // PATCH /profile — cambiar nombre de usuario, bio, foto y datos personales (nombre,
 // apellidos, fecha de nacimiento, sexo, localización, país y teléfono)
 // Todos los campos son opcionales: solo se tocan los que llegan. Campo ausente = no lo
-// toco; null (o texto vacío) = lo borro, salvo el nombre de usuario, que es obligatorio.
+// toco; null (o texto vacío) = lo borro, salvo el nombre de usuario y la fecha de
+// nacimiento, que son obligatorios.
 async function updateProfile(req, res) {
   const { username, bio, avatar, birth_date, gender, country, phone } = req.body;
 
@@ -133,10 +135,11 @@ async function updateProfile(req, res) {
     cambios[campo] = limpio;
   }
 
+  // La fecha de nacimiento es obligatoria desde que hay edad mínima (14 años): se puede
+  // cambiar, pero no borrar ni poner una de alguien más joven
   if (has('birth_date')) {
-    if (birth_date !== null && (typeof birth_date !== 'string' || !fechaNacimientoValida(birth_date))) {
-      return res.status(400).json({ error: MENSAJE_FECHA_NACIMIENTO });
-    }
+    const error = errorFechaNacimiento(birth_date);
+    if (error) return res.status(400).json({ error });
     cambios.birth_date = birth_date;
   }
 
@@ -282,8 +285,21 @@ async function deleteAccount(req, res) {
   try {
     if (!(await contrasenaCorrecta(req.user.id, password, res))) return;
 
-    // ON DELETE CASCADE (ver schema.sql) borra también todos sus juegos
-    await pool.query('DELETE FROM users WHERE id = $1', [req.user.id]);
+    // En una transacción: sus grupos de chat pasan a otra persona (ver gruposController) y
+    // la cuenta se borra, todo o nada. ON DELETE CASCADE (ver schema.sql) borra también sus
+    // juegos, mensajes y amistades.
+    const db = await pool.connect();
+    try {
+      await db.query('BEGIN');
+      await alBorrarCuenta(db, req.user.id);
+      await db.query('DELETE FROM users WHERE id = $1', [req.user.id]);
+      await db.query('COMMIT');
+    } catch (err) {
+      await db.query('ROLLBACK').catch(() => {});
+      throw err;
+    } finally {
+      db.release();
+    }
 
     res.json({ message: 'Cuenta eliminada' });
   } catch (err) {

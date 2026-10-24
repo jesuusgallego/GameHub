@@ -21,6 +21,7 @@ require.cache[rutaDb] = {
 const { updateProfile } = require('../src/controllers/profileController');
 const {
   MENSAJE_USERNAME, MENSAJE_SEXO, MENSAJE_FECHA_NACIMIENTO, MENSAJE_PAIS, MENSAJE_TELEFONO, TEXTOS_PERFIL,
+  MENSAJE_FECHA_OBLIGATORIA, MENSAJE_EDAD_MINIMA,
   MENSAJE_VISIBILIDAD, MENSAJE_POLITICA, MENSAJE_BUSCABLE, CAMPOS_VISIBILIDAD,
 } = require('../src/config/validacion');
 
@@ -61,11 +62,28 @@ test('país y teléfono se pueden borrar con null o vacío', async () => {
 });
 
 test('null y vacío borran el dato (NULL); el resto de campos no se toca', async () => {
-  await editar({ gender: null, last_name: '   ', birth_date: null, location: '' });
+  await editar({ gender: null, last_name: '   ', location: '' });
   const { sql, params } = consultas[0];
-  assert.match(sql, /SET last_name = \$1, location = \$2, birth_date = \$3, gender = \$4 WHERE id = \$5/);
-  assert.deepStrictEqual(params, [null, null, null, null, 7]);
+  assert.match(sql, /SET last_name = \$1, location = \$2, gender = \$3 WHERE id = \$4/);
+  assert.deepStrictEqual(params, [null, null, null, 7]);
   assert.doesNotMatch(sql, /first_name = /);
+});
+
+test('la fecha de nacimiento es obligatoria: no se borra ni se pone la de un menor de 14', async () => {
+  for (const birth_date of [null, '']) {
+    const r = await editar({ birth_date });
+    assert.strictEqual(r.status, 400, JSON.stringify(birth_date));
+    assert.strictEqual(r.cuerpo.error, MENSAJE_FECHA_OBLIGATORIA);
+  }
+  const hoy = new Date();
+  const hace13 = `${hoy.getUTCFullYear() - 13}-01-01`;
+  const r = await editar({ birth_date: hace13 });
+  assert.strictEqual(r.status, 400);
+  assert.strictEqual(r.cuerpo.error, MENSAJE_EDAD_MINIMA);
+  assert.strictEqual(consultas.length, 0);
+
+  await editar({ birth_date: '1990-06-15' });
+  assert.deepStrictEqual(consultas[0].params, ['1990-06-15', 7]);
 });
 
 test('el nombre de usuario sigue siendo obligatorio y en minúsculas', async () => {
@@ -92,7 +110,6 @@ test('rechaza datos personales que no valen, sin consultar la base de datos', as
     [{ birth_date: '2999-01-01' }, MENSAJE_FECHA_NACIMIENTO],
     [{ birth_date: '2020-02-30' }, MENSAJE_FECHA_NACIMIENTO],
     [{ birth_date: 19900615 }, MENSAJE_FECHA_NACIMIENTO],
-    [{ birth_date: '' }, MENSAJE_FECHA_NACIMIENTO],
     [{ gender: 'xyz' }, MENSAJE_SEXO],
     [{ gender: '' }, MENSAJE_SEXO],
     [{ gender: 'Hombre' }, MENSAJE_SEXO],

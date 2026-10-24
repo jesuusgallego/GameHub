@@ -51,22 +51,25 @@ const limitadorLogros = limitador({ ventanaMinutos: 10, maximo: 40 });
 // minuto; el tope corta a quien envíe mensajes en bucle a sus amigos.
 const limitadorMensajes = limitador({ ventanaMinutos: 1, maximo: 60 });
 
-// Leer el chat (lista de conversaciones, mensajes nuevos, no leídos): la interfaz lo repite
-// cada pocos segundos mientras se usa (ver sondeo.js), unas 20 veces por minuto con una
-// conversación abierta. Por eso no cuenta en el tope general por IP, donde dos amigos
-// chateando desde la misma casa se lo comerían; tiene el suyo, POR USUARIO (90 por minuto, algo
-// más de cuatro veces lo normal). Va después de verifyToken: necesita saber quién es.
+// Leer el chat (lista de conversaciones, mensajes nuevos, no leídos, avisos de "escribiendo"):
+// la interfaz lo repite cada pocos segundos mientras se usa (ver sondeo.js), unas 20 veces por
+// minuto con una conversación abierta y otras 20 mientras escribes. Por eso no cuenta en el
+// tope general por IP, donde dos amigos chateando desde la misma casa se lo comerían; tiene el
+// suyo, POR USUARIO (90 por minuto, el doble de lo normal). Va después de verifyToken: necesita
+// saber quién es.
 const limitadorLecturaChat = limitador({
   ventanaMinutos: 1,
   maximo: 90,
   keyGenerator: (req) => `chat-${req.user.id}`,
 });
 
-// ¿Es una lectura del chat con sesión? Esas peticiones las limita limitadorLecturaChat.
+// ¿Es una lectura del chat con sesión? Esas peticiones las limita limitadorLecturaChat. Los
+// avisos de "escribiendo" (POST .../typing, uno cada pocos segundos mientras escribes) cuentan
+// como lecturas por lo mismo: se repiten mucho y no guardan nada.
 function esLecturaChat(req) {
-  return req.method === 'GET'
-    && (req.path === '/chat' || req.path.startsWith('/chat/'))
-    && Boolean(req.headers.authorization?.startsWith('Bearer '));
+  const delChat = req.path === '/chat' || req.path.startsWith('/chat/');
+  const esLectura = req.method === 'GET' || (req.method === 'POST' && req.path.endsWith('/typing'));
+  return delChat && esLectura && Boolean(req.headers.authorization?.startsWith('Bearer '));
 }
 
 // Tope general para todo lo demás. Es alto a propósito (un uso normal ni se acerca);
