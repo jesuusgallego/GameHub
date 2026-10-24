@@ -35,7 +35,61 @@ function colocarLinea(nav, linea, conAnimacion) {
   }
 }
 
-// Barra superior. NavLink añade la clase "active" al enlace de la página actual.
+// Los enlaces de la barra: a dónde llevan, su nombre (clave de traducción) y su icono. Los iconos
+// son trazos sobre una cuadrícula de 24x24 en el estilo de los demás de la app (líneas de 2 px
+// con las puntas redondeadas); el color lo pone el CSS con currentColor.
+const ENLACES = [
+  {
+    to: '/noticias',
+    texto: 'menu.noticias',
+    // Un periódico doblado
+    icono: (
+      <>
+        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+        <path d="M18 14h-8M15 18h-5" />
+        <path d="M10 6h8v4h-8z" />
+      </>
+    ),
+  },
+  {
+    to: '/biblioteca',
+    texto: 'menu.biblioteca',
+    // Un libro de pie y otro inclinado, como en una estantería
+    icono: (
+      <>
+        <rect x="3" y="3" width="8" height="18" rx="1" />
+        <path d="M7 3v18" />
+        <path d="M20.4 18.9c.2.5-.1 1.1-.6 1.3l-1.9.7c-.5.2-1.1-.1-1.3-.6L11.1 5.1c-.2-.5.1-1.1.6-1.3l1.9-.7c.5-.2 1.1.1 1.3.6Z" />
+      </>
+    ),
+  },
+  {
+    to: '/buscar',
+    texto: 'menu.buscar',
+    // Una lupa
+    icono: (
+      <>
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-3.9-3.9" />
+      </>
+    ),
+  },
+  {
+    to: '/social',
+    texto: 'menu.social',
+    // Dos personas
+    icono: (
+      <>
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+      </>
+    ),
+  },
+]
+
+// Barra superior: el logo a la izquierda, los enlaces (solo iconos) en el centro y los menús a la
+// derecha. NavLink añade la clase "active" al enlace de la página actual.
 // Perfil y cerrar sesión viven en el desplegable de la foto (MenuUsuario); el
 // idioma y el tema claro/oscuro, en el de las tres líneas (MenuAjustes).
 //  - solicitudes: cuántas solicitudes de amistad esperan respuesta
@@ -77,17 +131,21 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
         <Marca to="/noticias" />
 
         <nav className="barra__nav" ref={navRef}>
-          <NavLink to="/noticias">{t('menu.noticias')}</NavLink>
-          <NavLink to="/biblioteca">{t('menu.biblioteca')}</NavLink>
-          <NavLink to="/buscar">{t('menu.buscar')}</NavLink>
-          <NavLink to="/social">
-            {t('menu.social')}
-            {avisos > 0 && (
-              <span className="insignia" role="status" aria-label={t('menu.avisosSocial', { n: avisos })}>
-                {avisos > 9 ? '9+' : avisos}
-              </span>
-            )}
-          </NavLink>
+          {ENLACES.map(({ to, texto, icono }) => (
+            <NavLink key={to} to={to} aria-label={t(texto)}>
+              <svg className="barra__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {icono}
+              </svg>
+              {/* El nombre de la página, que aparece debajo al pasar el ratón o al llegar con el
+                  teclado. aria-hidden porque el lector de pantalla ya lo lee del aria-label. */}
+              <span className="barra__pista" aria-hidden="true">{t(texto)}</span>
+              {to === '/social' && avisos > 0 && (
+                <span className="insignia insignia--icono" role="status" aria-label={t('menu.avisosSocial', { n: avisos })}>
+                  {avisos > 9 ? '9+' : avisos}
+                </span>
+              )}
+            </NavLink>
+          ))}
           <span className="barra__linea" ref={lineaRef} aria-hidden="true" />
         </nav>
 

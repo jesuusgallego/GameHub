@@ -2,7 +2,10 @@
 
 /* ---- Móvil --------------------------------------------------------------- */
 @media (max-width: 640px) {
+  /* En el móvil no caben las tres columnas en una fila: arriba el logo y los menús, y debajo los
+     iconos, centrados y repartidos a lo ancho como una barra de pestañas */
   .barra__interior {
+    display: flex;
     flex-wrap: wrap;
     gap: 0.5rem 0.75rem;
     padding: 0.5rem 1rem 0;
@@ -11,17 +14,22 @@
   .barra__nav {
     order: 3;
     flex: 1 0 100%;
-  }
-
-  /* Con cuatro enlaces (Biblioteca, Buscar, Social, Chat) hay que apretar el hueco para que
-     "Mi biblioteca" no se parta en dos líneas ni en pantallas de 360 px */
-  .barra__nav {
-    gap: 0.9rem;
+    justify-content: space-around;
+    gap: 0;
   }
 
   .barra__nav a {
-    height: 44px;
-    white-space: nowrap;
+    height: 48px;
+  }
+
+  /* Más arriba que en el escritorio, porque el enlace es más bajo */
+  .barra__nav .insignia--icono {
+    top: 8px;
+  }
+
+  /* En pantallas táctiles no hay "pasar el ratón": el rótulo no hace falta */
+  .barra__pista {
+    display: none;
   }
 
   .barra__acciones {

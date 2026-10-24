@@ -13,21 +13,28 @@
   transition: background-color var(--transicion);
 }
 
+/* Tres columnas: el logo, los enlaces y los menús. Las de los lados miden lo mismo (1fr cada una)
+   y la del medio lo que ocupen los iconos (auto): así los enlaces quedan justo en el centro de la
+   barra aunque el logo sea más ancho que los menús de la derecha. */
 .barra__interior {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 2.5rem;
+  gap: 1.5rem;
   max-width: 1320px;
   min-height: 64px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
 
+.barra__interior > .marca {
+  justify-self: start;
+}
+
 .barra__nav {
   position: relative; /* la línea se coloca respecto a este contenedor */
   display: flex;
-  gap: 1.75rem;
-  flex: 1;
+  gap: 0.75rem;
 }
 
 /* Línea del enlace activo. Menu.jsx le pone la posición y el ancho con transform (translateX y
@@ -49,18 +56,25 @@
 
 /* Hago que los enlaces midan lo mismo que la barra (64px) para que la línea,
    pegada al borde inferior, quede como en Steam. Mantengo el borde transparente
-   para que el texto siga centrado igual. */
+   para que el icono siga centrado igual. Son anchos (56px) para que sean fáciles
+   de pulsar y la línea de debajo se vea bien. */
 .barra__nav a {
+  position: relative; /* el rótulo y la insignia se colocan respecto al enlace */
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 56px;
   height: 64px;
   box-sizing: border-box;
-  padding: 0 0.25rem;
-  font-weight: 600;
-  font-size: 0.95rem;
   color: var(--texto-suave);
   border-bottom: 3px solid transparent;
   transition: color var(--transicion);
+}
+
+.barra__icono {
+  width: 22px;
+  height: 22px;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), scale 0.12s ease;
 }
 
 .barra__nav a:hover {
@@ -68,12 +82,67 @@
   text-decoration: none;
 }
 
+/* Al pasar el ratón el icono sube un poco, con un pequeño rebote */
+.barra__nav a:is(:hover, :focus-visible) .barra__icono {
+  transform: translateY(-2px);
+}
+
+/* Y al pulsarlo se encoge, como el resto de cosas pulsables (respuesta-al-pulsar.css) */
+.barra__nav a:active .barra__icono {
+  scale: 0.88;
+}
+
+/* La página en la que estás lleva el icono en el color de acento, a juego con la línea */
 .barra__nav a.active {
+  color: var(--acento);
+}
+
+/* El nombre de la página: una etiqueta que aparece debajo del icono al pasar el ratón o al
+   llegar con el teclado. Entra y sale con un fundido y bajando un poco (son transiciones, así
+   que al quitar el ratón vuelve por el mismo camino). Con un retraso corto al entrar, para que
+   no se encienda al cruzar la barra de paso. */
+.barra__pista {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
   color: var(--texto-h);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.barra__nav a:is(:hover, :focus-visible) .barra__pista {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  transition-delay: 0.25s;
 }
 
 .barra__acciones {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+
+/* La insignia de avisos de Social, sin texto al lado: va encima del icono, en su esquina de arriba
+   a la derecha, con un borde del color de la barra para que se separe del dibujo. Como no empuja a
+   nada, entra solo creciendo (no hace falta que vaya ocupando su hueco como antes). Con
+   .barra__nav delante para ganar a .insignia, que está en social.css y se carga después. */
+.barra__nav .insignia--icono {
+  position: absolute;
+  top: 13px;
+  right: 7px;
+  margin-left: 0;
+  box-shadow: 0 0 0 2px var(--barra);
+  animation: insignia-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
 }
