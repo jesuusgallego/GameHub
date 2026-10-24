@@ -27,8 +27,12 @@ para traer tus juegos, tus horas y tus logros.
   un cara a cara con vuestras cifras y, al abrir uno de sus juegos, su partida con los logros
   que ha conseguido. Puedes bloquear a quien quieras.
 - **Chat:** escribe a tus amigos y recibe sus mensajes sin recargar. Ves cuándo han leído lo
-  que les mandaste, puedes eliminar tus mensajes (desaparecen para los dos) y la barra te avisa
-  de lo que no has leído.
+  que les mandaste y cuándo te están escribiendo, puedes eliminar tus mensajes (desaparecen para
+  los dos) o vaciar una conversación solo para ti, y la barra te avisa de lo que no has leído.
+  Si quieres, te llega un **aviso de Windows** cuando te escriben y tienes GameHub en segundo plano.
+- **Grupos:** crea chats de grupo de hasta 10 personas con tus amigos, ponles nombre y ve quién
+  ha leído cada mensaje. Quien crea el grupo lo administra: cambia el nombre, añade gente y saca
+  a quien quiera; cualquiera puede salir.
 - **Tú decides qué ve cada persona:** la privacidad es dato a dato (nombre, edad, biblioteca,
   reseñas, horas y logros, lista de amigos...) y también eliges quién puede enviarte solicitudes y si apareces
   en las búsquedas.
@@ -128,14 +132,20 @@ flowchart LR
 Lo que guarda GameHub de ti:
 
 - Tu nombre de usuario y tu email.
-- Si los rellenas, tu nombre y apellidos, fecha de nacimiento, sexo, localización, país y teléfono.
+- Tu fecha de nacimiento, que es obligatoria: para usar GameHub hay que tener al menos 14 años (la
+  edad a la que en España se puede dar el consentimiento sin los padres). Solo sirve para calcular
+  tu edad, y tú decides si alguien ve esa edad.
+- Si los rellenas, tu nombre y apellidos, sexo, localización, país y teléfono.
   Son opcionales y por defecto no los ve nadie más que tú: eliges, dato a dato, si los ven tus
   amigos o todo el mundo. El teléfono, el email y la fecha de nacimiento no los ve nadie más, ni con la
   opción más abierta; el teléfono no se verifica.
 - Tus amigos, las solicitudes que envías y recibes y a quién has bloqueado.
-- Tus mensajes del chat, que solo ven tú y la persona a la que se los escribes. No están cifrados
-  de extremo a extremo: se guardan como texto en la base de datos del servidor. Si eliminas uno,
-  su texto se borra de ella; al borrar tu cuenta se borran todos.
+- Tus mensajes del chat, que solo ven tú y la persona a la que se los escribes (o, en un grupo,
+  quienes estén dentro; quien entra después no ve lo anterior). No están cifrados de extremo a
+  extremo: se guardan como texto en la base de datos del servidor. Si eliminas uno, su texto se
+  borra de ella; si vacías una conversación y la otra persona también lo hace (o todo el grupo),
+  esos mensajes se borran del servidor; al borrar tu cuenta se borran todos los tuyos.
+- Que estás escribiendo no se guarda: dura unos segundos en la memoria del servidor.
 - Tu contraseña **solo como huella irreversible** (bcrypt): ni siquiera el servidor puede leerla.
 - Tu biblioteca: los juegos, su estado, tu nota y tu reseña. Si vinculas Steam, también tus horas
   jugadas y tus logros: por defecto solo los ven tus amigos y, como todo lo demás, puedes

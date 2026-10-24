@@ -2,6 +2,69 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+Chats de grupo, "escribiendo…", vaciar conversaciones, avisos de Windows para los mensajes nuevos y
+edad mínima de 14 años.
+
+### Añadido
+- **Chats de grupo**, de 3 a 10 personas. En **Nuevo mensaje** hay ahora dos modos, *Mensaje* y
+  *Grupo* (una pastilla de color que se desliza de uno a otro): en *Grupo* eliges a tus amigos
+  (cada uno se marca con un círculo que entra girando) y le pones nombre; mientras no escribas
+  otro, se propone uno con sus nombres ("ana, luis y marta").
+  - La "foto" del grupo junta las caras de hasta tres miembros en un anillo con el color del grupo,
+    y al pasar el ratón se separan un poco. En la lista se ve cuántas personas hay.
+  - En la conversación, cada tanda lleva el nombre y la foto de quien escribe, y sus burbujas, SU
+    color. Debajo de tu último mensaje pone quién lo ha leído ("Visto por ana y luis", "Visto por
+    todos").
+  - Los cambios del grupo salen en la propia conversación: "ana creó el grupo", "Añadiste a luis",
+    "marta te añadió", "luis salió del grupo", "Cambiaste el nombre a…".
+  - Pulsando la cabecera se abre la **información del grupo**, que entra desde la derecha: quién
+    está, quién lo administra, *Vaciar chat* y *Salir del grupo*. Quien lo creó lo administra:
+    cambia el nombre, añade a amigos suyos y saca a quien quiera. Si se va, el grupo pasa a quien
+    lleve más tiempo dentro.
+  - Quien entra en un grupo no ve lo que se dijo antes. No se puede juntar en un grupo a dos
+    personas que se han bloqueado; si bloqueas a alguien que ya está en un grupo contigo, sus
+    mensajes te salen ocultos.
+- **"Escribiendo…"**: tres puntitos en una burbuja al final de la conversación, en la cabecera y
+  en la lista de conversaciones mientras tu amigo escribe. En un grupo dice quién ("luis está
+  escribiendo…", "ana y luis están escribiendo…").
+- **Vaciar chat**, en el nuevo menú **⋯** de la cabecera de cada conversación: la vacía solo para
+  ti (la otra persona, o el resto del grupo, la sigue teniendo entera). Cuando todos la han vaciado,
+  esos mensajes se borran también del servidor.
+- **Avisos de Windows** para los mensajes nuevos cuando GameHub está en segundo plano: "ana" con
+  su mensaje, o "Viernes de Mario Kart" con "luis: …". Varios de la misma conversación se juntan
+  en uno ("ana (3)") y, al pulsarlo, se abre esa conversación. Se activan desde una tarjeta (con
+  una campana que se mueve) en la lista de conversaciones, o en el menú de ajustes, en **Avisos**.
+- **Edad mínima de 14 años.** Al crear una cuenta se pide la fecha de nacimiento (es la edad a la
+  que en España se puede dar el consentimiento sin los padres). Si tu cuenta es de antes, al
+  entrar te la pedirá una vez. Nadie la ve: solo sirve para calcular tu edad, y tú decides quién
+  ve la edad.
+
+### Cambiado
+- La fecha de nacimiento del perfil ya no se puede borrar (sí cambiar).
+- El menú de la barra ya no queda tapado por el panel del chat cuando está abierto.
+
+### Interno
+- **API de grupos** bajo `/chat/g` (crear, leer, escribir, visto, borrar, renombrar, añadir, sacar,
+  salir, vaciar y escribiendo) y nuevas rutas `/chat/:usuario/typing` y `/chat/:usuario/clear`.
+  `/chat` mezcla personas y grupos, y `/chat/unread` trae los últimos mensajes sin leer para los
+  avisos. Tablas nuevas `chat_groups`, `chat_group_members`, `group_messages` y `chat_clears` (se
+  crean solas al arrancar el servidor; las conversaciones que ya había no se tocan).
+- "Escribiendo" vive en la memoria del servidor unos segundos: no toca la base de datos.
+- `POST /auth/register` exige `birth_date`; las versiones anteriores de la app no la mandan, así
+  que hay que actualizarlas para registrarse.
+- App de escritorio: un `preload.js` mínimo para traer la ventana al frente al pulsar un aviso, y
+  el identificador de la app en Windows (`AppUserModelID`) para que los avisos salgan a su nombre.
+
+### Limitaciones conocidas
+- Con los avisos activos, la app sigue preguntando por mensajes nuevos con la ventana minimizada,
+  pero solo hasta 15 minutos después de la última vez que la usaste (para no mantener despierto el
+  servidor gratuito todo el día). Con la app cerrada no llegan avisos.
+- "Escribiendo…" puede tardar unos segundos en aparecer y en irse.
+- Los avisos de Windows de la app de escritorio no se han podido probar en el entorno de
+  desarrollo; en el navegador, sí.
+
 ## [1.4.0] - 2026-10-16
 
 El chat entre amigos, y una app mucho más fluida: Social, Mi biblioteca y Buscar ya no dan saltos.

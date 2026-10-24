@@ -61,11 +61,13 @@ GameHub/
 │   ├── src/
 │   │   ├── app.js               # Arranque, seguridad (helmet, CORS, límites) y rutas
 │   │   ├── routes/              # Qué URL llama a qué controlador
-│   │   ├── controllers/         # Lógica de cada ruta: auth, games, profile, accounts, users, friends, chat
+│   │   ├── controllers/         # Lógica de cada ruta: auth, games, profile, accounts, users, friends,
+│   │   │                        # chat (entre dos personas) y grupos (chats de grupo)
 │   │   ├── middleware/          # Sesión (JWT, con versión por usuario) y límites de intentos
 │   │   ├── services/            # IGDB, Steam, traducción, correo, recuperación de contraseña,
 │   │   │                        # emisión de tokens, sincronización automática, privacidad
-│   │   │                        # (qué ve cada persona), amistades (SQL común) y estadísticas
+│   │   │                        # (qué ve cada persona), amistades (SQL común), estadísticas,
+│   │   │                        # chatComun (lo común del chat) y escribiendo (en memoria)
 │   │   ├── models/sql/schema.sql  # Esquema de la BD (idempotente: se aplica al arrancar)
 │   │   └── config/              # db.js (conexión), validacion.js (reglas de email, contraseña,
 │   │                            # usuario y perfil) y paises.js (códigos ISO)
@@ -75,12 +77,14 @@ GameHub/
 ├── frontend/                # Interfaz React, para web y escritorio
 │   ├── src/                     # Componentes .jsx, y sesion.js / validacion.js / telefono.js /
 │   │                            # paises.js / privacidad.js / tiempo.js / terminosIgdb.js /
-│   │                            # tono.js / comparar.js / juegoAjeno.js / sondeo.js / logicaChat.js
+│   │                            # tono.js / comparar.js / juegoAjeno.js / sondeo.js / logicaChat.js /
+│   │                            # avisos.js (avisos del sistema del chat)
 │   │   ├── estilos/             # CSS por zonas (ver estilos/LEEME.md)
 │   │   └── textos/              # Traducciones es/en
 │   └── test/                    # Pruebas (npm test)
 ├── desktop/                 # App de escritorio con Electron
 │   ├── main.js                  # Ventana, interfaz, seguridad y actualizaciones
+│   ├── preload.js               # Solo window.gamehubEscritorio.enfocar() (para los avisos)
 │   ├── actualizaciones.js       # Textos y reglas de los avisos de actualización
 │   ├── scripts/                 # build-web.mjs (compila la interfaz) y notas-release.js
 │   └── test/                    # Pruebas (npm test)
@@ -362,7 +366,7 @@ Después se añade la regla como `CHECK` (con una comprobación en `pg_constrain
 
 | Tabla | Qué guarda |
 |-------|------------|
-| `users` | Usuarios: nombre de usuario, email, hash de la contraseña (bcrypt), foto (`avatar`, data URL), bio, `token_version` y datos personales opcionales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, `country`, `phone`). Se guarda la fecha de nacimiento y no la edad, que se calcularía mal con el tiempo. También la privacidad: un nivel `nadie`/`amigos`/`todos` por dato (`visibility_name`, `visibility_age`, `visibility_gender`, `visibility_location`, `visibility_library`, `visibility_reviews`, `visibility_achievements`, `visibility_friends`), `request_policy` (quién puede enviarte solicitudes) y `searchable` (si sales en las búsquedas) |
+| `users` | Usuarios: nombre de usuario, email, hash de la contraseña (bcrypt), foto (`avatar`, data URL), bio, `token_version`, `birth_date` (obligatoria desde la 1.5: edad mínima de 14 años; las cuentas anteriores la tienen a `NULL` hasta que la indican) y datos personales opcionales (`first_name`, `last_name`, `gender`, `location`, `country`, `phone`). Se guarda la fecha de nacimiento y no la edad, que se calcularía mal con el tiempo. También la privacidad: un nivel `nadie`/`amigos`/`todos` por dato (`visibility_name`, `visibility_age`, `visibility_gender`, `visibility_location`, `visibility_library`, `visibility_reviews`, `visibility_achievements`, `visibility_friends`), `request_policy` (quién puede enviarte solicitudes) y `searchable` (si sales en las búsquedas) |
 | `user_games` | Un juego en la biblioteca de un usuario: `igdb_id`, estado, nota, reseña, plataforma, metadatos de IGDB (`genres`, `developers`, `publishers`, `release_date`, `igdb_rating`) y el progreso de Steam (`steam_appid`, `playtime_minutes`, `achievements_*`, `imported_from`) |
 | `translations` | Caché de traducciones de descripciones, por huella SHA-256 del texto y idioma |
 | `translation_usage` | Caracteres enviados a Azure cada mes (para respetar el tope propio) |
@@ -371,6 +375,10 @@ Después se añade la regla como `CHECK` (con una comprobación en `pg_constrain
 | `friendships` | Amistades y solicitudes: una fila por pareja (índice único sobre `LEAST/GREATEST` de los dos ids, así (1,2) y (2,1) son la misma), con `status` `pendiente` o `aceptada` |
 | `blocks` | Bloqueos: quién ha bloqueado a quién |
 | `messages` | Mensajes del chat: `sender_id`, `recipient_id`, `body` (1 a 2000 caracteres), `created_at`, `read_at` (cuándo lo vio quien lo recibió; `NULL` = sin leer) y `deleted_at`. No hay tabla de conversaciones: una conversación es el conjunto de mensajes entre dos personas, y el índice `idx_messages_pareja` (sobre `LEAST/GREATEST` de los dos ids, como en `friendships`) la lee ordenada. Borrar un mensaje **vacía `body`** y rellena `deleted_at`. Un índice parcial (`idx_messages_sin_leer`) sirve para contar los no leídos |
+| `chat_clears` | Hasta qué mensaje vació cada persona cada conversación de dos (`user_id`, `other_id`, `cleared_id`) |
+| `chat_groups` | Los grupos: `name` (50) y `owner_id` (quien administra) |
+| `chat_group_members` | Quién está en cada grupo, con tres marcas por persona (ids de `group_messages`): `since_id` (no ve lo de antes de entrar), `last_read_id` (no leídos y "Visto por") y `cleared_id` (lo que vació) |
+| `group_messages` | Mensajes de los grupos: los de texto (`kind = 'text'`) y los avisos (`kind = 'event'`, con `event`: `created`, `added`, `removed`, `left`, `renamed` u `owner`, y `target_id`) |
 
 ### Mirar la base de datos con psql
 
@@ -410,7 +418,7 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/health` | No | Comprueba servidor y conexión a la base de datos |
-| POST | `/auth/register` | No | Crea un usuario (`username` de 3 a 20 caracteres con solo `a-z`, `0-9` y `_`, **ya en minúsculas**; `email` con formato válido y `password` de 8+ con mayúscula, minúscula y número; 400 si no, 409 si el email o el nombre ya existen) |
+| POST | `/auth/register` | No | Crea un usuario (`username` de 3 a 20 caracteres con solo `a-z`, `0-9` y `_`, **ya en minúsculas**; `email` con formato válido, `password` de 8+ con mayúscula, minúscula y número y `birth_date` obligatoria (`AAAA-MM-DD`, de alguien con **14 años o más**); 400 si no, 409 si el email o el nombre ya existen) |
 | POST | `/auth/login` | No | Inicia sesión y devuelve un token JWT. `identifier` es el email o el nombre de usuario (este se acepta también con mayúsculas: se busca en minúsculas). Sigue valiendo el campo antiguo `email`, que mandan las apps de escritorio ya instaladas |
 | POST | `/auth/forgot-password` | No | Envía al email un código de 6 dígitos para restablecer la contraseña (`email`, y `idioma` opcional: `es` o `en`). Responde siempre `{ ok: true }`, exista o no la cuenta, para no revelar qué emails están registrados. Un código por minuto como máximo y cinco peticiones por hora y IP |
 | POST | `/auth/reset-password` | No | Cambia la contraseña con el código recibido (`email`, `code`, `new_password`). El código caduca a los 15 minutos, se invalida a los 5 intentos fallidos y solo sirve una vez. 400 con "El código no es válido o ha caducado" para cualquier fallo del código. Cierra todas las sesiones abiertas |
@@ -423,7 +431,7 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | DELETE | `/games/:id` | Bearer token | Elimina un juego de tu biblioteca |
 | GET | `/profile` | Bearer token | Tus datos: usuario, email, bio, foto, fecha de alta y datos personales (`first_name`, `last_name`, `birth_date`, `gender`, `location`, `country`, `phone`, y `age`, que se calcula con la fecha de nacimiento) |
 | GET | `/profile/stats` | Bearer token | Estadísticas de tu biblioteca (juegos por estado, nota media) y tus 5 juegos mejor valorados |
-| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) los datos personales (todos opcionales) y la privacidad (`visibility_name`, `visibility_age`, `visibility_gender`, `visibility_location`, `visibility_library`, `visibility_reviews`, `visibility_achievements` y `visibility_friends`, cada una `nadie`/`amigos`/`todos`; `request_policy`: `todos`/`amigos_de_amigos`/`nadie`; `searchable`: booleano). Datos personales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años), `gender` (`hombre`, `mujer` u `otro`), `country` (código ISO 3166-1 de dos letras en mayúsculas, de la lista de `config/paises.js`) y `phone` (internacional y válido: el servidor quita espacios, guiones y paréntesis, cambia un `00` inicial por `+` y lo comprueba con libphonenumber; se guarda como `+34600123456`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username`. 409 si el usuario ya existe |
+| PATCH | `/profile` | Bearer token | Cambia `username` (mismas reglas que en el registro), `bio`, `avatar` (data URL JPG/PNG/WebP) los datos personales (todos opcionales) y la privacidad (`visibility_name`, `visibility_age`, `visibility_gender`, `visibility_location`, `visibility_library`, `visibility_reviews`, `visibility_achievements` y `visibility_friends`, cada una `nadie`/`amigos`/`todos`; `request_policy`: `todos`/`amigos_de_amigos`/`nadie`; `searchable`: booleano). Datos personales: `first_name` (50), `last_name` (100), `location` (100), `birth_date` (`AAAA-MM-DD`, real, no futura y de hace menos de 120 años), `gender` (`hombre`, `mujer` u `otro`), `country` (código ISO 3166-1 de dos letras en mayúsculas, de la lista de `config/paises.js`) y `phone` (internacional y válido: el servidor quita espacios, guiones y paréntesis, cambia un `00` inicial por `+` y lo comprueba con libphonenumber; se guarda como `+34600123456`). Campo ausente = no se toca; `null` (o texto vacío) borra el dato, salvo `username` y `birth_date`, que son obligatorios (`birth_date` tiene que ser de alguien con 14 años o más). 409 si el usuario ya existe |
 | PATCH | `/profile/email` | Bearer token | Cambia el email (`email` + `current_password`). 403 si la contraseña es incorrecta |
 | PATCH | `/profile/password` | Bearer token | Cambia la contraseña (`current_password` + `new_password`). Cierra todas las demás sesiones abiertas y devuelve un `token` nuevo para la actual |
 | DELETE | `/profile` | Bearer token | Borra tu cuenta y toda tu biblioteca (`password`) |
@@ -447,12 +455,22 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | GET | `/friends/blocks` | Bearer token | A quién has bloqueado |
 | POST | `/friends/blocks` | Bearer token | Bloquea (`username`) y borra la amistad o solicitud que hubiera |
 | DELETE | `/friends/blocks/:username` | Bearer token | Desbloquea (no devuelve la amistad) |
-| GET | `/chat` | Bearer token | Tus conversaciones, la más reciente primero: persona, `last` (último mensaje: `id`, `mine`, `body` recortado, `deleted`, `created_at`), `unread` e `is_friend`. No salen las personas con un bloqueo de por medio |
-| GET | `/chat/unread` | Bearer token | `{ unread, conversations }`: cuántos mensajes tienes sin leer y de cuántas personas. Lo consulta la barra cada minuto |
+| GET | `/chat` | Bearer token | Tus conversaciones (personas y grupos mezclados), la más reciente primero. Cada una lleva `type` (`user` o `group`), `key` (el nombre de la persona o `g:<id>`), `at` (por la que se ordena), `last` (último mensaje: `id`, `mine`, `body` recortado, `deleted`, `created_at`; en los grupos también `sender`, `kind`, `event`, `target` y `hidden`, o `null` si lo vaciaste), `unread` y `typing`. Las personas traen `is_friend` y `typing: true/false`; los grupos `name`, `members` (hasta 3, sin ti), `member_count` y `typing` (nombres). No salen las personas con un bloqueo ni las conversaciones que vaciaste (hasta que llegue algo nuevo) |
+| GET | `/chat/unread` | Bearer token | `{ unread, conversations, latest }`: cuántos mensajes tienes sin leer (personas y grupos) y en cuántas conversaciones, y los 10 más recientes (`ref` único, `key`, `from`, `group`, `body`, `created_at`) para los avisos del sistema. Lo consulta la barra cada minuto (cada 30 s con los avisos activos) |
 | GET | `/chat/:username` | Bearer token | La conversación. Sin parámetros, los últimos 50; `?before=<id>` los 50 anteriores; `?after=<id>` solo lo que ha llegado desde ese mensaje (es lo que repite el sondeo). Trae también `has_more`, `is_friend`, `peer_read` (`{ id, at }`: hasta qué mensaje tuyo ha leído la otra persona) y `deleted` (ids borrados entre los últimos 200). 404 si no existe, es uno mismo o hay un bloqueo. **No marca nada como leído** |
 | POST | `/chat/:username` | Bearer token | Envía un mensaje (`body`). Se limpia (saltos de línea unificados, sin caracteres de control, como mucho una línea en blanco seguida) y se valida: 400 si queda vacío o pasa de 2000. 403 si no sois amigos (la comprobación va dentro del propio `INSERT`), 404 con un bloqueo; 60 por minuto |
 | POST | `/chat/:username/read` | Bearer token | Marca como leídos los mensajes que te envió esa persona (`{ read }`). Lo llama el cliente solo cuando de verdad los está viendo |
 | DELETE | `/chat/:username/messages/:id` | Bearer token | Borra un mensaje **tuyo** de esa conversación (vacía su texto). 404 si es ajeno, de otra conversación o ya estaba borrado |
+| POST | `/chat/:username/typing` | Bearer token | "Estoy escribiendo" (`{ active: false }`: "ya no"). Dura 5 s; 204. Solo entre amigos (403). Ver *Chat → Escribiendo* |
+| POST | `/chat/:username/clear` | Bearer token | Vacía la conversación **solo para ti** (`{ cleared_id }`). Lo vaciado no vuelve a salir ni cuenta como sin leer, pero no se marca como leído. Si la otra persona también la vació, se borra de verdad lo que ya no ve ninguna |
+| POST | `/chat/g` | Bearer token | Crea un grupo: `name` (1 a 50, una línea) y `members` (de 2 a 9 nombres de **amigos tuyos**, sin repetir). 400 si no, 403 si alguno no es tu amigo o hay un bloqueo entre dos de ellos. Responde `{ group: { id, key, name } }` |
+| GET | `/chat/g/:id` | Bearer token | Un grupo (paginado igual que `/chat/:username`): `group` (`name`, `is_owner`, `members` con `is_owner`), `messages` (con `sender`, `kind` `text`/`event`; los avisos llevan `event` y `target`; los de alguien a quien bloqueaste, `hidden` y sin texto), `has_more`, `reads` (`last_read_id` de cada uno, para el "Visto por"), `deleted` y `typing` (nombres). 404 si no estás dentro |
+| POST | `/chat/g/:id` | Bearer token | Escribe en el grupo (mismas reglas del texto). 404 si ya no estás dentro (se comprueba en el `INSERT`) |
+| PATCH | `/chat/g/:id` | Bearer token | Cambia el nombre (`name`). Solo quien administra (403) |
+| POST | `/chat/g/:id/members` | Bearer token | Añade amigos tuyos (`members`). Solo quien administra; 409 si ya estaban todos, 400 si se pasa de 10, 403 con un bloqueo con alguien de dentro. Quien entra no ve lo anterior |
+| DELETE | `/chat/g/:id/members/:username` | Bearer token | Con tu nombre, sales; con el de otra persona, la sacas (solo quien administra). Si sale quien administra, pasa a quien lleve más tiempo dentro; si sale el último, el grupo se borra (`{ left, group_deleted }`) |
+| POST | `/chat/g/:id/read` · `/typing` · `/clear` | Bearer token | Igual que en la conversación entre dos personas |
+| DELETE | `/chat/g/:id/messages/:mid` | Bearer token | Borra un mensaje tuyo del grupo |
 | GET | `/accounts` | Bearer token | Cuentas vinculadas del usuario y `steam_disponible` (si el servidor tiene `STEAM_API_KEY`) |
 | PUT | `/accounts/steam` | Bearer token | Vincula una cuenta de Steam. `perfil` puede ser la URL del perfil, el nombre personalizado o el SteamID de 17 dígitos. No se elige nada más: la sincronización siempre añade los juegos que te faltan. 409 si ya hay una vinculada |
 | POST | `/accounts/steam/sync` | Bearer token | Trae de Steam las horas y los logros de los juegos que ya tienes y añade los que te faltan (siempre). 422 si el perfil es privado; 409 si ya hay una sincronización en curso. No hace falta llamarlo a mano: el servidor lo hace solo cada `STEAM_SYNC_MINUTOS` y el frontend al abrir el perfil si los datos tienen más de 10 minutos |
@@ -725,6 +743,17 @@ Epic se descartaron), por eso es la única que se puede vincular.
   avatar.
 - Al vincular Steam, `ConexionSteam.jsx` anima la conexión y avisa con `animationend` (no con
   temporizadores) cuando termina.
+- **Edad mínima (14 años).** El RGPD y la LOPDGDD (art. 7) fijan en 14 años la edad para dar en
+  España el consentimiento sin los padres. Por eso la fecha de nacimiento es **obligatoria**: el
+  registro la pide y el servidor rechaza a quien no llega (`errorFechaNacimiento` en
+  `config/validacion.js`; `EDAD_MINIMA` es la misma en el frontend, con una prueba que lo
+  comprueba). En el perfil se puede cambiar pero no borrar. A las cuentas creadas antes,
+  `Layout` les enseña `PedirFechaNacimiento.jsx`, una ventana que no se cierra con Esc ni pulsando
+  fuera hasta que guardan una fecha válida; quien no llega a la edad solo puede cerrar sesión. El
+  campo de fecha ya no deja elegir fechas de hace menos de 14 años (`limitesFechaNacimiento`). Es
+  una declaración: no se verifica con ningún documento. Las apps de escritorio anteriores a la 1.5
+  no mandan la fecha al registrarse, así que el registro les falla con "La fecha de nacimiento es
+  obligatoria" hasta que se actualizan.
 
 ### Social y perfiles públicos
 
@@ -805,13 +834,23 @@ Epic se descartaron), por eso es la única que se puede vincular.
 
 ### Chat
 
-Mensajes de uno a uno **solo entre amigos**, con consultas periódicas (no WebSockets: Render
-gratuito se duerme y no mantiene conexiones abiertas). Backend: `controllers/chatController.js`
-y `routes/chatRoutes.js`. Frontend: `ChatDock.jsx` (el botón y el panel flotante, montados por `Layout.jsx`),
-`Chat.jsx` (su contenido: lista o conversación), `ListaChats.jsx` (conversaciones y el panel
-"Nuevo mensaje"),
-`Conversacion.jsx` (una conversación: carga, sondeo, envío, borrado, scroll), `Burbuja.jsx` (un
-mensaje) y `logicaChat.js` (la lógica sin React, con pruebas). Estilos en `estilos/chat.css`.
+Mensajes entre dos personas **solo entre amigos** y **chats de grupo** de 3 a 10, con consultas
+periódicas (no WebSockets: Render gratuito se duerme y no mantiene conexiones abiertas). Backend:
+`controllers/chatController.js` (entre dos), `controllers/gruposController.js` (grupos),
+`services/chatComun.js` (lo que comparten), `services/escribiendo.js` y `routes/chatRoutes.js`.
+Frontend: `ChatDock.jsx` (el botón y el panel flotante, montados por `Layout.jsx`), `Chat.jsx`
+(su contenido: lista o conversación), `ListaChats.jsx` (conversaciones, la hoja "Nuevo mensaje"
+y la tarjeta de los avisos), `SelectorAmigos.jsx` (los amigos como círculos, para elegir a uno o
+a varios), `Conversacion.jsx` (una conversación, de dos o de grupo: carga, sondeo, envío, borrado,
+scroll), `InfoGrupo.jsx` (el panel del grupo), `AvatarGrupo.jsx`, `Burbuja.jsx` (un mensaje),
+`logicaChat.js` (la lógica sin React, con pruebas), `avisos.js` + `useAvisos.js` (avisos del
+sistema). Estilos en `estilos/chat.css`.
+
+- **Claves de conversación.** Cada conversación se identifica con una "clave": el nombre de la
+  persona (`ana`) o `g:<id>` para un grupo. Un nombre de usuario no puede llevar `:`, así que no
+  chocan. Es lo que guarda `Layout` en `chat.con`, lo que recibe `abrirChat(clave)` y lo que
+  traduce `rutaConversacion` a `/chat/ana` o `/chat/g/12`. Las rutas de grupos van bajo
+  `/chat/g` porque `g` no puede ser un nombre de usuario (mínimo 3 caracteres).
 
 - **El botón y el panel (`ChatDock.jsx`).** Lo monta `Layout.jsx`, así que está en **todas** las
   páginas con sesión y sigue abierto al navegar. El botón (`.chat-lanzador`) es una pastilla de
@@ -835,9 +874,66 @@ mensaje) y `logicaChat.js` (la lógica sin React, con pruebas). Estilos en `esti
   sin leer cerrado gracias al sondeo de `Layout` (cada minuto). La insignia de **Social** suma
   solicitudes y mensajes. Esc cierra primero la hoja "Nuevo mensaje" si está abierta y luego el
   panel, y el foco vuelve al botón.
-- **"Nuevo mensaje".** El botón (`.chat-componer`) y la hoja `ElegirAmigo` (en `ListaChats.jsx`):
-  una capa `position: absolute` sobre la lista que sube con `transform`, con los amigos como
-  `AvatarTono` en una rejilla (los que juegan primero) que entran escalonados con `--orden`.
+- **"Nuevo mensaje".** El botón (`.chat-componer`) y la hoja `HojaNuevo` (en `ListaChats.jsx`):
+  una capa `position: absolute` sobre la lista que sube con `transform`, con dos modos (una
+  pastilla que se desliza, `.chat-modos`): *Mensaje* (eliges a un amigo y se abre su
+  conversación) y *Grupo* (eliges de 2 a 9, con una marca que entra girando, y abajo el nombre,
+  que se propone con los elegidos —`nombreSugerido`— hasta que escribes otro). Los amigos salen
+  con `SelectorAmigos`: `AvatarTono` en una rejilla (los que juegan primero) que entran
+  escalonados con `--orden`.
+- **Grupos: el modelo.** Tablas propias (`chat_groups`, `chat_group_members`, `group_messages`),
+  aparte de `messages`: el chat entre dos sigue igual y no hubo que migrar nada en producción.
+  Cada miembro tiene tres marcas: `since_id` (quien entra no ve lo anterior), `last_read_id` (no
+  leídos y "Visto por") y `cleared_id` (lo que vació). Los avisos del grupo ("ana añadió a luis")
+  son filas de `group_messages` con `kind = 'event'`, así salen en su sitio de la conversación y
+  llegan con el mismo sondeo. Los textos los escribe `textoEvento`, con la forma que toca según
+  quién lo hizo y a quién afecta ("Añadiste a luis", "ana te añadió").
+- **Grupos: las reglas.** Crea un grupo quien quiera, con amigos suyos; quien lo crea lo
+  administra (renombra, añade amigos suyos, saca a quien quiera) y cualquiera puede salir. Dentro
+  no hace falta ser amigo de todos, pero no se puede juntar a dos personas con un bloqueo entre
+  ellas (ni al crear ni al añadir). Si bloqueas a alguien que ya está en un grupo contigo, sus
+  mensajes te llegan ocultos (`hidden`, sin texto) y no cuentan como sin leer. Si sale quien
+  administra, pasa a quien lleve más tiempo dentro (aviso `owner`); si sale el último, el grupo se
+  borra; al borrar una cuenta, `alBorrarCuenta` hace lo mismo dentro de la transacción del
+  borrado. Los cambios de miembros van en una **transacción con `SELECT ... FOR UPDATE`** sobre el
+  grupo: dos cambios a la vez se hacen uno detrás de otro y no se cuela nadie por encima de 10.
+- **Grupos: la interfaz.** En un grupo, cada tanda lleva el nombre y la foto de quien escribe, y
+  las burbujas toman SU color (`.chat-bloque--con-autor` redefine `--burbuja-suya` con su
+  `--tono`). `agrupar` corta la tanda al cambiar de autor o al llegar un aviso. El "Visto" dice
+  quién ha leído tu último mensaje (`vistoPor`: "Visto por ana y luis" o "Visto por todos"). La
+  cabecera es un botón que abre `InfoGrupo` (entra desde la derecha sobre toda la conversación).
+  `AvatarGrupo` junta hasta tres caras en un anillo con el color del grupo; al pasar el ratón se
+  separan un poco.
+- **Vaciar.** *Vaciar chat* (menú `⋯` de la cabecera, `MenuContextual`) es solo para ti: se guarda
+  hasta qué mensaje (`chat_clears` o `cleared_id`) y a partir de ahí solo ves lo nuevo. Lo vaciado
+  deja de contar como sin leer pero **no se marca como leído** (la otra persona no verá un "Visto"
+  que no ha pasado). Lo que ya no puede ver nadie se borra de verdad: en una conversación de dos,
+  cuando las dos la han vaciado (por debajo de la marca más baja); en un grupo, por debajo de la
+  marca más baja de los que quedan (`purgar`, también al salir alguien). Una conversación de dos
+  vaciada desaparece de la lista hasta que llega algo nuevo; un grupo vaciado sigue en ella.
+- **Escribiendo.** Mientras hay texto en el cuadro, `Conversacion.jsx` avisa como mucho cada 2,5 s
+  (`POST .../typing`); al vaciarlo manda `{ active: false }` y al enviar el servidor lo borra
+  solo. El aviso vive **en la memoria del servidor** (`services/escribiendo.js`, 5 s), no en la
+  base de datos: serían escrituras cada pocos segundos y Neon gratis tiene las horas de cómputo
+  contadas. Llega a los demás con el sondeo de siempre (`typing` en la conversación y en la lista),
+  así que puede tardar hasta unos 4 s en aparecer y en irse. Con varias copias del servidor no
+  funcionaría (cada una tendría su memoria); en Render gratis hay una. Estos avisos cuentan en el
+  límite de lecturas del chat, no en el general.
+- **Avisos del sistema.** `GET /chat/unread` trae, además de la cuenta, los 10 últimos sin leer con
+  un `ref` único. `Layout` los pasa por `avisosNuevos` (`avisos.js`): la primera consulta solo
+  apunta (lo que ya estaba sin leer no salta al abrir la app), se agrupan por conversación ("ana
+  (3)") y solo se avisa si la ventana **no está delante** (`document.hasFocus()`): si estás usando
+  la app ya ves el número del botón. Se activan desde una tarjeta de la lista de conversaciones o
+  desde el menú de ajustes (`Notification.requestPermission` tiene que ir en un clic); la
+  preferencia se guarda en `localStorage` (`avisosChat`) y el estado lo comparten todos con
+  `useSyncExternalStore` (`useAvisos.js`). Con los avisos activos, el sondeo de la barra es cada
+  30 s y **sigue con la ventana oculta o minimizada** (`seguirOculto` de `iniciarSondeo`), pero se
+  para a los 15 minutos de la última actividad: ese es el precio, el servidor y la base de datos
+  no se duermen ese rato. En el escritorio, Windows asocia las notificaciones a la app por el
+  `AppUserModelID` (`app.setAppUserModelId`, el mismo `appId` del instalador), y al pulsar un aviso
+  `preload.js` deja pedir al proceso principal que traiga la ventana al frente
+  (`window.gamehubEscritorio.enfocar()`): desde la página, `window.focus()` no saca una ventana
+  minimizada.
 - **Reglas.** Escribir exige amistad y ningún bloqueo; si dejáis de ser amigos el historial
   sigue ahí (solo lectura), y con un bloqueo la conversación no existe para ninguno de los dos
   (404, igual que el perfil). Al desbloquear vuelve el historial. Al borrar una cuenta se van sus
@@ -846,9 +942,8 @@ mensaje) y `logicaChat.js` (la lógica sin React, con pruebas). Estilos en `esti
   conversaciones se pone al día cada 12 s; la lista trae los no leídos de cada una y de ella sale
   la insignia de la barra y el botón mientras el panel está abierto (cerrado, `Layout.jsx` pide
   `/chat/unread` cada minuto junto a las solicitudes). Ambos usan `iniciarSondeo`, así que **se paran con la
-  pestaña oculta o tras 5 minutos sin actividad**. Consecuencia buscada: con la app minimizada no
-  llegan avisos de mensajes nuevos hasta que vuelves; para eso haría falta una conexión
-  permanente (SSE o WebSocket) y un servidor siempre despierto.
+  pestaña oculta o tras 5 minutos sin actividad**. La excepción es el sondeo de la barra con los
+  avisos del sistema activos (ver *Avisos del sistema*).
 - **Cambios en mensajes viejos.** El sondeo con `after` solo trae mensajes nuevos, pero también
   devuelve `peer_read` (para el "Visto") y `deleted` (los ids borrados entre los últimos 200), y
   el cliente los aplica sobre lo que ya tiene (`fusionar`, `marcarBorrados`).
@@ -869,13 +964,20 @@ mensaje) y `logicaChat.js` (la lógica sin React, con pruebas). Estilos en `esti
   `partirEnlaces` (solo `http`/`https` con un dominio con punto; nada de `javascript:`), con
   `rel="noopener noreferrer"`. El tope (2000) está en `config/validacion.js` y `validacion.js`
   del frontend, con una prueba que comprueba que coinciden.
-- **Cómo se probó.** `backend/test/chat.test.js` y `frontend/test/chat.test.js` cubren la
-  validación y la lógica sin base de datos. El SQL (no leídos, visto, borrado, paginación,
-  amistad y bloqueos, el índice y la migración desde el esquema anterior) se comprobó contra
-  PGlite con varios usuarios, y la interfaz con Chromium sin cabeza (enviar, recibir por
-  sondeo, borrar, paginar, móvil, tema claro e inglés).
-- **No está (por ahora):** avisos del sistema, "escribiendo...", imágenes o archivos, chats de
-  grupo, borrar una conversación entera y reportar mensajes.
+- **Cómo se probó.** `backend/test/chat.test.js`, `backend/test/grupos.test.js`,
+  `frontend/test/chat.test.js`, `frontend/test/avisos.test.js` y `frontend/test/sondeo.test.js`
+  cubren la validación y la lógica sin base de datos. El SQL (no leídos, visto, borrado,
+  paginación, amistad y bloqueos; y en la 1.5, crear grupos, el máximo de 10, bloqueos dentro y
+  fuera, añadir sin ver lo anterior, sacar, salir y traspaso, vaciar y el borrado de lo que ya no
+  ve nadie, "escribiendo", `latest` y el traspaso al borrar una cuenta: ~100 comprobaciones) se
+  probó contra el backend real sobre PGlite, y la interfaz con Chromium sin cabeza (capturas en
+  oscuro, claro, móvil e inglés, y los flujos pulsando: crear un grupo, renombrar, sacar, añadir,
+  salir, vaciar y la fecha de nacimiento; también que salta un aviso del sistema con la ventana
+  "detrás"). La app de escritorio no arranca en el WSL de desarrollo: el `preload.js` y las
+  notificaciones de Windows se comprueban en una instalación real.
+- **No está (por ahora):** imágenes o archivos, reportar mensajes o personas, pasar la
+  administración de un grupo a mano y avisos con la app cerrada (eso necesitaría *push* desde el
+  servidor).
 
 ### Tarjetas de la biblioteca
 
