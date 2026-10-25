@@ -1,32 +1,38 @@
 import { useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 
-// La "lente" de la barra de pestañas de abajo (la de la app instalada en el iPhone, ver
-// estilos/cristal-ios.css): la gota de cristal que marca la pestaña activa y que se puede arrastrar
-// con el dedo de una pestaña a otra, como en Instagram o en las apps de iOS 26.
+// La "lente" de una barra de pestañas: la gota de cristal que marca la pestaña elegida y que se
+// puede arrastrar con el dedo de una pestaña a otra, como en Instagram o en las apps de iOS 26. La
+// usan la barra de abajo del iPhone (Menu.jsx) y las pestañas de Noticias, Social y Perfil
+// (PestanasPerfil.jsx).
 //
 // Cómo se mueve: con un MUELLE simulado fotograma a fotograma (requestAnimationFrame), en lugar de
 // transiciones de CSS. Cada valor (posición, ancho, cuánto se hincha) tiene un objetivo y una
 // velocidad; en cada fotograma un muelle tira de él hacia su objetivo y un rozamiento lo frena. Así
 // el movimiento es continuo aunque el objetivo cambie a mitad de camino (el dedo se mueve, sueltas,
-// cambias de página): nunca salta, siempre parte de donde está y con la velocidad que llevaba.
+// cambias de pestaña): nunca salta, siempre parte de donde está y con la velocidad que llevaba.
 //
-// Los valores se escriben como variables en la <nav> (--lx, --lw, --lgx, --lgy) y el CSS dibuja con
-// ellas la lente Y la capa de color de dentro (.barra__tinta: los mismos iconos en color de acento,
-// recortados con la forma de la lente). Por eso hay UN solo selector: un icono a medio tapar por la
-// lente se ve medio coloreado, y el color viaja con ella.
+// Los valores se escriben como variables en el contenedor (--lx, --lw, --lgx, --lgy) y el CSS
+// dibuja con ellas la lente Y una capa de color encima (los mismos iconos en el color de la pestaña
+// elegida, recortados con la forma de la lente). Por eso hay UN solo selector: un icono a medio
+// tapar por la lente se ve medio coloreado, y el color viaja con ella.
 //
-// Gestos (solo con el dedo y solo en la barra de abajo; en la de arriba del ordenador no hace nada):
-//  - un toque: es un clic normal en el enlace (la lente va luego a la página nueva);
+// Gestos (solo con el dedo):
+//  - un toque: es un clic normal en la pestaña (la lente va luego a la nueva);
 //  - arrastrar: la lente sigue al dedo, se hincha un poco y se estira según la velocidad; al soltar
-//    se desliza hasta la pestaña más cercana y se abre esa página.
-//  - navRef: la <nav> (sus enlaces llevan data-to="/ruta")
-//  - pathname: la ruta actual (al cambiar, la lente va a la pestaña activa)
+//    se desliza hasta la pestaña más cercana y se elige esa.
+//
+// Opciones:
+//  - contenedorRef: el elemento que contiene las pestañas (y donde se escriben las variables)
+//  - selector: cómo encontrar las pestañas dentro de él ('a[data-to]', '[role="tab"]'...)
+//  - selectorActiva: cómo encontrar la elegida ('a.active', '.pestana--activa'...)
+//  - activa: cualquier valor que cambie al cambiar de pestaña (la ruta, el id): la lente va a ella
+//  - alElegir(pestana): al soltar el dedo sobre otra pestaña (navegar, cambiar de panel...)
+//  - activo(): si la lente funciona ahora (p. ej., solo cuando la barra está abajo); por defecto, sí
 
 // Lo que hay que mover el dedo (en píxeles) para que cuente como arrastre y no como un toque
 const UMBRAL = 8
 // Rigidez del muelle: más alta, más rápido llega. Al arrastrar va casi pegada al dedo; al soltar o
-// al cambiar de página, un poco más suelta, para que se vea deslizarse.
+// al cambiar de pestaña, un poco más suelta, para que se vea deslizarse.
 const RIGIDEZ_DEDO = 1100
 const RIGIDEZ_LIBRE = 320
 // Rozamiento, en proporción al "justo" para no pasarse (1). Un poco menos de 1: un rebote mínimo,
@@ -38,27 +44,29 @@ const HINCHADO_X = 5
 const HINCHADO_Y = 3
 const ESTIRON_MAX = 9
 
-export function useLenteLiquida(navRef, pathname) {
-  // navigate cambia en cada cambio de página (React Router da una función nueva): si fuera una
-  // dependencia del efecto, el motor se reiniciaría al navegar y la lente saltaría de golpe a su
-  // sitio en vez de deslizarse. La guardo en una referencia y el motor se crea una sola vez.
-  const navigate = useNavigate()
-  const navigateRef = useRef(navigate)
+export function useLente({ contenedorRef, selector, selectorActiva, activa, alElegir, activo }) {
+  // Las funciones que llegan de fuera cambian en cada pintado (o, como navigate, en cada cambio de
+  // página): si fueran dependencias del efecto, el motor se reiniciaría y la lente saltaría de golpe
+  // a su sitio en vez de deslizarse. Las guardo en referencias y el motor se crea una sola vez.
+  const alElegirRef = useRef(alElegir)
+  const activoRef = useRef(activo)
   useEffect(() => {
-    navigateRef.current = navigate
-  }, [navigate])
-  // irA(enlace, saltar): lo usa el efecto de la ruta para mover la lente a la pestaña activa
+    alElegirRef.current = alElegir
+    activoRef.current = activo
+  })
+  // irA(pestaña, saltar): lo usa el efecto de "activa" para mover la lente a la elegida
   const motorRef = useRef(null)
 
   useEffect(() => {
-    const nav = navRef.current
+    const caja = contenedorRef.current
     const reducido = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const esBarraDeAbajo = () => getComputedStyle(nav).position === 'fixed'
-    const enlaces = () => [...nav.querySelectorAll('a[data-to]')]
+    const funciona = () => (activoRef.current ? activoRef.current() : true)
+    const pestanas = () => [...caja.querySelectorAll(selector)]
+    const elegida = () => caja.querySelector(selectorActiva)
 
     // Cada valor: dónde está (v), a qué velocidad va (vel) y a dónde quiere ir (obj)
     const valores = {
-      lx: { v: 0, vel: 0, obj: 0 }, // borde izquierdo (px desde el borde interior de la barra)
+      lx: { v: 0, vel: 0, obj: 0 }, // borde izquierdo (px desde el borde interior del contenedor)
       lw: { v: 0, vel: 0, obj: 0 }, // ancho
       lgx: { v: 0, vel: 0, obj: 0 }, // hinchado/estirado a cada lado
       lgy: { v: 0, vel: 0, obj: 0 }, // hinchado hacia arriba y abajo
@@ -69,12 +77,12 @@ export function useLenteLiquida(navRef, pathname) {
     let colocada = false
 
     function pintar() {
-      for (const [nombre, valor] of Object.entries(valores)) nav.style.setProperty(`--${nombre}`, `${valor.v.toFixed(2)}px`)
+      for (const [nombre, valor] of Object.entries(valores)) caja.style.setProperty(`--${nombre}`, `${valor.v.toFixed(2)}px`)
     }
 
     // Que la lente no se salga de la primera ni de la última pestaña
     function limites() {
-      const lista = enlaces()
+      const lista = pestanas()
       return { minimo: lista[0].offsetLeft, maximo: lista.at(-1).offsetLeft + lista.at(-1).offsetWidth }
     }
 
@@ -112,10 +120,10 @@ export function useLenteLiquida(navRef, pathname) {
 
     // La lente, a la pestaña indicada: deslizándose o, la primera vez (y con "reducir movimiento"),
     // directamente
-    function irA(enlace, saltar = false) {
-      if (!enlace) return
-      Object.assign(valores.lx, { obj: enlace.offsetLeft })
-      Object.assign(valores.lw, { obj: enlace.offsetWidth })
+    function irA(pestana, saltar = false) {
+      if (!pestana || !funciona()) return
+      valores.lx.obj = pestana.offsetLeft
+      valores.lw.obj = pestana.offsetWidth
       valores.lgx.obj = 0
       valores.lgy.obj = 0
       if (saltar || !colocada || reducido.matches) {
@@ -129,29 +137,31 @@ export function useLenteLiquida(navRef, pathname) {
       rigidez = RIGIDEZ_LIBRE
       animar()
     }
-    motorRef.current = { irA }
+    motorRef.current = { irA: (saltar) => irA(elegida(), saltar) }
 
     // ---- El dedo ----
     let gesto = null // { id, x0, arrastrando, ultimaX, ultimoT, velocidad }
 
     // La pestaña cuyo centro queda más cerca del dedo
-    function enlaceMasCercano(x) {
+    function masCercana(x) {
       let mejor = null
       let distancia = Infinity
-      for (const enlace of enlaces()) {
-        const caja = enlace.getBoundingClientRect()
-        const d = Math.abs(x - (caja.left + caja.width / 2))
+      for (const pestana of pestanas()) {
+        const r = pestana.getBoundingClientRect()
+        const d = Math.abs(x - (r.left + r.width / 2))
         if (d < distancia) {
           distancia = d
-          mejor = enlace
+          mejor = pestana
         }
       }
       return mejor
     }
 
+    // La lente, centrada bajo el dedo. --lx se mide desde el borde interior del contenedor y con su
+    // scroll (como offsetLeft), de ahí el clientLeft (el borde) y el scrollLeft.
     function seguirDedo(x) {
       const ancho = valores.lw.obj
-      const origen = nav.getBoundingClientRect().left + nav.clientLeft
+      const origen = caja.getBoundingClientRect().left + caja.clientLeft - caja.scrollLeft
       const { minimo, maximo } = limites()
       valores.lx.obj = Math.min(maximo - ancho, Math.max(minimo, x - origen - ancho / 2))
       // Hinchada mientras la arrastras, y más estirada cuanto más rápido va el dedo
@@ -161,14 +171,14 @@ export function useLenteLiquida(navRef, pathname) {
       animar()
     }
 
-    // Tras un arrastre, el navegador puede lanzar además un clic sobre la barra: no debe contar
+    // Tras un arrastre, el navegador puede lanzar además un clic: no debe contar
     function anularClic(e) {
       e.preventDefault()
       e.stopPropagation()
     }
 
     function alBajar(e) {
-      if (e.pointerType === 'mouse' || !esBarraDeAbajo()) return
+      if (e.pointerType === 'mouse' || !funciona()) return
       gesto = { id: e.pointerId, x0: e.clientX, arrastrando: false, ultimaX: e.clientX, ultimoT: e.timeStamp, velocidad: 0 }
     }
 
@@ -183,8 +193,8 @@ export function useLenteLiquida(navRef, pathname) {
         if (Math.abs(e.clientX - gesto.x0) < UMBRAL) return
         gesto.arrastrando = true
         // A partir de aquí, el dedo es de la barra aunque se salga de ella
-        nav.setPointerCapture(e.pointerId)
-        nav.classList.add('barra__nav--arrastrando')
+        caja.setPointerCapture(e.pointerId)
+        caja.classList.add('lente--arrastrando')
       }
       seguirDedo(e.clientX)
     }
@@ -194,41 +204,43 @@ export function useLenteLiquida(navRef, pathname) {
       const eraArrastre = gesto.arrastrando
       gesto = null
       if (!eraArrastre) return
-      nav.classList.remove('barra__nav--arrastrando')
-      const destino = cancelado ? nav.querySelector('a.active') : enlaceMasCercano(e.clientX)
+      caja.classList.remove('lente--arrastrando')
+      const destino = cancelado ? elegida() : masCercana(e.clientX)
       irA(destino)
       if (cancelado) return
-      nav.addEventListener('click', anularClic, { capture: true, once: true })
-      setTimeout(() => nav.removeEventListener('click', anularClic, { capture: true }), 400)
-      if (destino && !destino.classList.contains('active')) navigateRef.current(destino.dataset.to)
+      caja.addEventListener('click', anularClic, { capture: true, once: true })
+      setTimeout(() => caja.removeEventListener('click', anularClic, { capture: true }), 400)
+      if (destino && destino !== elegida()) alElegirRef.current?.(destino)
     }
     const alSoltar = (e) => soltar(e, false)
-    // El sistema se queda con el gesto (llega una llamada, etc.): la lente vuelve a la activa
+    // El sistema se queda con el gesto (llega una llamada, empieza un scroll...): la lente vuelve
     const alCancelar = (e) => soltar(e, true)
 
-    nav.addEventListener('pointerdown', alBajar)
-    nav.addEventListener('pointermove', alMover)
-    nav.addEventListener('pointerup', alSoltar)
-    nav.addEventListener('pointercancel', alCancelar)
+    caja.addEventListener('pointerdown', alBajar)
+    caja.addEventListener('pointermove', alMover)
+    caja.addEventListener('pointerup', alSoltar)
+    caja.addEventListener('pointercancel', alCancelar)
 
-    // Si cambia el tamaño de la barra (giras el móvil, carga la tipografía), la lente se recoloca
-    const observador = new ResizeObserver(() => irA(nav.querySelector('a.active'), true))
-    observador.observe(nav)
+    // Si cambia el tamaño del contenedor o de las pestañas (giras el móvil, carga la tipografía, la
+    // pestaña elegida enseña su nombre), la lente va a su nuevo sitio deslizándose
+    const observador = new ResizeObserver(() => irA(elegida()))
+    observador.observe(caja)
+    pestanas().forEach((pestana) => observador.observe(pestana))
 
     return () => {
       cancelAnimationFrame(fotograma)
       observador.disconnect()
-      nav.removeEventListener('pointerdown', alBajar)
-      nav.removeEventListener('pointermove', alMover)
-      nav.removeEventListener('pointerup', alSoltar)
-      nav.removeEventListener('pointercancel', alCancelar)
-      nav.removeEventListener('click', anularClic, { capture: true })
+      caja.removeEventListener('pointerdown', alBajar)
+      caja.removeEventListener('pointermove', alMover)
+      caja.removeEventListener('pointerup', alSoltar)
+      caja.removeEventListener('pointercancel', alCancelar)
+      caja.removeEventListener('click', anularClic, { capture: true })
       motorRef.current = null
     }
-  }, [navRef])
+  }, [contenedorRef, selector, selectorActiva])
 
-  // Al cambiar de página (con un toque, con el teclado o al soltar), la lente va a la pestaña activa
+  // Al cambiar de pestaña (con un toque, con el teclado o al soltar), la lente va a la elegida
   useEffect(() => {
-    motorRef.current?.irA(navRef.current.querySelector('a.active'))
-  }, [pathname, navRef])
+    motorRef.current?.irA()
+  }, [activa])
 }

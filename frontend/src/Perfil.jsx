@@ -121,6 +121,7 @@ function Perfil({ setToken }) {
     {
       id: 'cuentas',
       etiqueta: t('perfil.vinculadas'),
+      corta: t('perfil.vinculadasCorta'),
       ayuda: t('perfil.vinculadasAyuda'),
       contenido: <CuentasVinculadas cerrarSesion={cerrarSesion} onSincronizado={() => setVersion((v) => v + 1)} />,
     },
@@ -142,7 +143,7 @@ function Perfil({ setToken }) {
 
       <div className="perfil__cuerpo">
         <PestanasPerfil
-          pestanas={paneles.map(({ id, etiqueta }) => ({ id, etiqueta }))}
+          pestanas={paneles.map(({ id, etiqueta, corta }) => ({ id, etiqueta, corta }))}
           activa={seleccion}
           onCambiar={irA}
           etiqueta={t('perfil.secciones')}

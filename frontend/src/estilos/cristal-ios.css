@@ -121,23 +121,25 @@
   border-radius: 999px;
 }
 
-/* ---- Pestañas de Noticias y Social: un selector de cristal ---- */
-/* Como los filtros de WhatsApp: la pestaña elegida se tiñe del color de acento (fondo suave y
-   texto de color) en vez de llevar el degradado macizo. Al cambiar de pestaña, la lente se desliza
-   con un pequeño rebote ("líquido") y, al pulsar, la pestaña se hunde un poco. */
+/* ---- Pestañas de Noticias, Social y Perfil: la misma lente que la barra de abajo ---- */
+/* Una gota de cristal más clara que la cápsula, y el color de acento dentro de ella (la capa de
+   color, .pestanas__tinta en sala.css). La mueve el mismo muelle (useLente.js). */
 :root.ios .pestanas--barra .pestanas__indicador {
-  background: color-mix(in srgb, var(--acento) 20%, transparent);
-  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px color-mix(in srgb, var(--acento) 25%, transparent);
-  transition-timing-function: cubic-bezier(0.34, 1.3, 0.64, 1);
+  background: var(--cristal-lente);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.18), inset -1px -1px 0 rgba(255, 255, 255, 0.06);
 }
 
-:root.ios .pestanas--barra .pestana--activa,
-:root.ios .pestanas--barra .pestana--activa:hover {
+:root.ios .pestanas--barra.lente--arrastrando .pestanas__indicador {
+  filter: none;
+  background: color-mix(in srgb, var(--cristal-lente), white 9%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+:root.ios .pestanas--barra .pestanas__tinta {
   color: var(--acento);
-}
-
-:root.ios .pestanas--barra .pestana:active {
-  scale: 0.94;
 }
 
 /* =====================================================================================
@@ -373,7 +375,7 @@
   }
 
   /* La línea de la pestaña activa se convierte en la lente: una gota de cristal más clara. La
-     mueve useLenteLiquida.js con un muelle, fotograma a fotograma, escribiendo en la barra su
+     mueve useLente.js con un muelle, fotograma a fotograma, escribiendo en la barra su
      borde izquierdo (--lx), su ancho (--lw) y cuánto se hincha (--lgx a los lados, --lgy arriba y
      abajo). Por eso aquí no hay transiciones de posición ni de tamaño: el muelle ya es la
      animación. El "transform: none" anula el que Menu.jsx pone para la línea del escritorio. */
@@ -392,7 +394,7 @@
   }
 
   /* Con el dedo encima, la lente se aclara y brilla un poco más, como una gota bajo el dedo */
-  :root.ios.app-instalada .barra__nav--arrastrando .barra__linea {
+  :root.ios.app-instalada .lente--arrastrando .barra__linea {
     background: color-mix(in srgb, var(--cristal-lente), white 9%);
     box-shadow:
       inset 1px 1px 0 rgba(255, 255, 255, 0.3),

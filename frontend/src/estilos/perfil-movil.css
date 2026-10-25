@@ -6,21 +6,10 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* Las pestañas pasan a una fila con scroll horizontal, pegada bajo la barra */
-  .pestanas {
-    top: var(--alto-barra);
-    z-index: 5;
-    flex-direction: row;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .pestana {
-    flex: none;
-  }
-
-  .pestanas__indicador {
-    box-shadow: inset 0 -3px 0 var(--acento);
+  /* Las pestañas pasan a ser la cápsula de Noticias y Social (PestanasPerfil.jsx usa la variante
+     "barra" en pantallas estrechas; sus estilos están en sala.css), centrada sobre los paneles */
+  .perfil__cuerpo > .pestanas--barra {
+    justify-self: center;
   }
 }
 

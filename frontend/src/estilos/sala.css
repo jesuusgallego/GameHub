@@ -272,10 +272,78 @@
   display: none;
 }
 
+/* La lente (el fondo de la pestaña elegida). La mueve useLente.js con un muelle, fotograma a
+   fotograma, escribiendo en la cápsula su borde izquierdo (--lx), su ancho (--lw) y cuánto se
+   hincha al arrastrarla (--lgx a los lados, --lgy arriba y abajo): aquí no hay transiciones de
+   posición ni de tamaño, el muelle ya es la animación. */
 .pestanas--barra .pestanas__indicador {
+  top: calc(0.3rem - var(--lgy, 0px));
+  bottom: calc(0.3rem - var(--lgy, 0px));
+  left: calc(var(--lx, 0px) - var(--lgx, 0px));
+  width: calc(var(--lw, 0px) + 2 * var(--lgx, 0px));
+  height: auto;
   background: var(--degradado);
   border-radius: 999px;
   box-shadow: 0 6px 18px var(--resplandor);
+  transition: box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+/* Con el dedo encima, la lente brilla un poco más */
+.pestanas--barra.lente--arrastrando .pestanas__indicador {
+  filter: brightness(1.12);
+  box-shadow: 0 8px 24px var(--resplandor);
+}
+
+/* La capa de color (PestanasPerfil.jsx): las mismas pestañas, en el color de la elegida, justo
+   encima de las de verdad y recortadas con la forma exacta de la lente (las mismas variables). Lo
+   que la lente tapa se ve de ese color; lo de fuera, no. Así solo hay UN selector, y el color se
+   mueve con él de forma continua. Mide lo mismo que las pestañas (max-content), también cuando la
+   cápsula tiene scroll. No recibe toques. */
+.pestanas__tinta {
+  display: none;
+}
+
+.pestanas--barra .pestanas__tinta {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  gap: 0.15rem;
+  width: max-content;
+  min-width: 100%;
+  padding: 0.3rem;
+  color: var(--sobre-degradado, #fff);
+  pointer-events: none;
+  clip-path: inset(
+    calc(0.3rem - var(--lgy, 0px))
+    calc(100% - var(--lx, 0px) - var(--lw, 0px) - var(--lgx, 0px))
+    calc(0.3rem - var(--lgy, 0px))
+    calc(var(--lx, 0px) - var(--lgx, 0px))
+    round 999px
+  );
+}
+
+.pestanas--barra .pestanas__tinta .pestana {
+  color: inherit;
+}
+
+/* La tipografía de las pestañas, con dos clases para que ninguna regla de página la pise (en
+   Noticias, ".noticias button { font: inherit }" las dejaba a 16 px y sin negrita): la copia de
+   color tiene que medir exactamente lo mismo que las pestañas de verdad, o el texto se ve doble */
+.pestanas .pestana {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* El dedo arrastra la lente de lado (useLente.js): el navegador solo se queda con el scroll vertical,
+   y sin seleccionar texto ni sacar menús al mantener pulsado */
+.pestanas--barra {
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .pestanas--barra .pestana {
@@ -287,9 +355,11 @@
   border-radius: 999px;
 }
 
+/* Las pestañas de debajo, todas del mismo color: el de la elegida lo pone la capa de color de la
+   lente (.pestanas__tinta), que viaja con ella */
 .pestanas--barra .pestana--activa,
 .pestanas--barra .pestana--activa:hover {
-  color: var(--sobre-degradado, #fff);
+  color: var(--texto);
 }
 
 .pestana__contador {
@@ -2039,16 +2109,25 @@
   .cara__barra--yo { grid-row: 2; grid-column: 1; }
   .cara__barra--otro { grid-row: 2; grid-column: 2; }
 
-  /* Las pestañas inactivas se quedan en el icono (y el número): el texto sigue ahí para los
-     lectores de pantalla, pero no se ve. La activa lo enseña entero. */
-  .pestanas--barra .pestana:not(.pestana--activa) > span:not(.pestana__contador) {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
+  /* Las pestañas inactivas se quedan en el icono (y el número); la activa enseña su nombre. El
+     nombre se despliega y se recoge (ancho de 0 a su tope, con el hueco que lo separa del icono),
+     en vez de aparecer de golpe: así los iconos se apartan con suavidad y la lente, que los sigue,
+     se desliza sin saltos. Como sigue en la página (solo recortado), el lector de pantalla lo lee. */
+  .pestanas--barra .pestana > span:not(.pestana__contador) {
+    display: inline-block;
+    max-width: 9rem;
     overflow: hidden;
-    clip-path: inset(50%);
     white-space: nowrap;
+    transition:
+      max-width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      margin 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.25s ease;
+  }
+
+  .pestanas--barra .pestana:not(.pestana--activa) > span:not(.pestana__contador) {
+    max-width: 0;
+    margin-left: calc(var(--hueco) * -1);
+    opacity: 0;
   }
 
   .pestanas--barra .pestana {
@@ -2057,7 +2136,7 @@
   }
 
   /* Para que quepan las cinco: solo se queda el número de las solicitudes (el que avisa) */
-  .pestanas--barra .pestana:not(.pestana--activa):not(#pestana-solicitudes) .pestana__contador {
+  .pestanas--barra .pestana:not(.pestana--activa):not([data-id="solicitudes"]) .pestana__contador {
     display: none;
   }
 

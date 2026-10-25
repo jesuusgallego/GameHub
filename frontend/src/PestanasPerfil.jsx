@@ -1,5 +1,6 @@
-import { useRef, useLayoutEffect, useState } from 'react'
+import { useEffect, useRef, useLayoutEffect, useState } from 'react'
 import { usePresencia } from './usePresencia'
+import { useLente } from './useLente'
 
 // Dibujos de las pestañas (trazos de un viewBox de 24x24)
 const ICONOS = {
@@ -105,7 +106,8 @@ function ContadorPestana({ valor }) {
 // Barra de pestañas del perfil. Es una columna a la izquierda en pantallas anchas y
 // una fila con scroll en las estrechas (lo decide el CSS). Un indicador de fondo se
 // desliza hasta la pestaña activa.
-//  - pestanas: [{ id, etiqueta, contador? }]; `contador` es un número que sale al lado
+//  - pestanas: [{ id, etiqueta, corta?, contador? }]; `corta` es un nombre más breve para la
+//    cápsula del móvil; `contador` es un número que sale al lado
 //    (solicitudes pendientes, juegos en común...); 0 o ausente no pinta nada
 //  - activa: id de la pestaña seleccionada
 //  - onCambiar(id): el padre cambia de pestaña
@@ -114,7 +116,25 @@ function ContadorPestana({ valor }) {
 //    subrayado (la usa la parte social)
 // Teclado (patrón "tabs" de ARIA): las flechas pasan de una pestaña a otra, Inicio y
 // Fin saltan a la primera y la última, y solo la activa entra con Tab (tabIndex).
-function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lateral' }) {
+// En pantallas estrechas (hasta 820 px) la columna del perfil no cabe al lado de los paneles: pasa
+// a ser la misma cápsula que usan Noticias y Social (variante "barra")
+const ESTRECHA = '(max-width: 820px)'
+
+function useEstrecha() {
+  const [estrecha, setEstrecha] = useState(() => window.matchMedia(ESTRECHA).matches)
+  useEffect(() => {
+    const consulta = window.matchMedia(ESTRECHA)
+    const alCambiar = () => setEstrecha(consulta.matches)
+    consulta.addEventListener('change', alCambiar)
+    return () => consulta.removeEventListener('change', alCambiar)
+  }, [])
+  return estrecha
+}
+
+function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante: varianteElegida = 'lateral' }) {
+  const estrecha = useEstrecha()
+  const variante = estrecha ? 'barra' : varianteElegida
+  const esBarra = variante === 'barra'
   const navRef = useRef(null)
   const botonesRef = useRef({})
   // Posición y tamaño del indicador (null hasta la primera medida)
@@ -129,8 +149,9 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lat
   const primeraRef = useRef(true)
 
   // Mido el botón activo antes de pintar. Lo repito si cambia el tamaño de la barra
-  // o de algún botón.
+  // o de algún botón. Solo en la columna: en la cápsula, la lente la mueve useLente.js.
   useLayoutEffect(() => {
+    if (esBarra) return undefined
     // Este efecto corre al montar y cada vez que cambia la pestaña activa
     if (primeraRef.current) primeraRef.current = false
     else {
@@ -158,7 +179,18 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lat
     Object.values(botonesRef.current).forEach((boton) => boton && observador.observe(boton))
 
     return () => observador.disconnect()
-  }, [activa])
+  }, [activa, esBarra])
+
+  // En la cápsula, la lente (el fondo de la pestaña elegida) la mueve un muelle y se puede arrastrar
+  // con el dedo de una pestaña a otra, como la barra de abajo del iPhone (useLente.js)
+  useLente({
+    contenedorRef: navRef,
+    selector: '[role="tab"]',
+    selectorActiva: '.pestana--activa',
+    activa: `${variante}:${activa}`,
+    alElegir: (boton) => onCambiar(boton.dataset.id),
+    activo: () => navRef.current.classList.contains('pestanas--barra'),
+  })
 
   function alPulsarTecla(e) {
     const actual = pestanas.findIndex((p) => p.id === activa)
@@ -177,7 +209,11 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lat
 
   return (
     <div ref={navRef} className={variante === 'barra' ? "pestanas pestanas--barra" : "pestanas"} role="tablist" aria-label={etiqueta} onKeyDown={alPulsarTecla}>
-      {indicador && (
+      {/* En la cápsula, el indicador es la lente: lo coloca el CSS con las variables que escribe
+          useLente.js. En la columna del perfil, lo coloca este componente al medir la pestaña. */}
+      {esBarra ? (
+        <span className="pestanas__indicador" aria-hidden="true" />
+      ) : indicador && (
         <span
           className={deslizar ? "pestanas__indicador pestanas__indicador--lista" : "pestanas__indicador"}
           style={{
@@ -189,26 +225,50 @@ function PestanasPerfil({ pestanas, activa, onCambiar, etiqueta, variante = 'lat
         />
       )}
 
-      {pestanas.map(({ id, etiqueta: texto, contador }) => (
-        <button
-          key={id}
-          ref={(el) => { botonesRef.current[id] = el }}
-          type="button"
-          role="tab"
-          id={`pestana-${id}`}
-          aria-selected={id === activa}
-          aria-controls={`panel-${id}`}
-          tabIndex={id === activa ? 0 : -1}
-          className={id === activa ? "pestana pestana--activa" : "pestana"}
-          onClick={() => onCambiar(id)}
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            {ICONOS[id]}
-          </svg>
-          <span>{texto}</span>
-          <ContadorPestana valor={contador ?? 0} />
-        </button>
-      ))}
+      {pestanas.map(({ id, etiqueta: larga, corta, contador }) => {
+        // En la cápsula, el nombre corto si lo hay (cabe mejor en el móvil)
+        const texto = esBarra && corta ? corta : larga
+        return (
+          <button
+            key={id}
+            ref={(el) => { botonesRef.current[id] = el }}
+            type="button"
+            role="tab"
+            id={`pestana-${id}`}
+            aria-selected={id === activa}
+            aria-controls={`panel-${id}`}
+            tabIndex={id === activa ? 0 : -1}
+            className={id === activa ? "pestana pestana--activa" : "pestana"}
+            data-id={id}
+            // Con el nombre corto a la vista, el lector de pantalla sigue diciendo el completo
+            aria-label={texto !== larga ? larga : undefined}
+            onClick={() => onCambiar(id)}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {ICONOS[id]}
+            </svg>
+            <span>{texto}</span>
+            <ContadorPestana valor={contador ?? 0} />
+          </button>
+        )
+      })}
+
+      {/* Solo en la cápsula: las mismas pestañas en el color de la elegida, recortadas con la forma
+          de la lente. Lo que la lente tapa se ve de ese color, y el color viaja con ella (ver
+          .pestanas__tinta en sala.css). Es una copia para la vista: no se lee ni se pulsa. */}
+      {esBarra && (
+        <span className="pestanas__tinta" aria-hidden="true">
+          {pestanas.map(({ id, etiqueta: larga, corta, contador }) => (
+            <span key={id} className={id === activa ? "pestana pestana--activa" : "pestana"} data-id={id}>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {ICONOS[id]}
+              </svg>
+              <span>{corta ?? larga}</span>
+              {contador > 0 && <span className="pestana__contador">{contador}</span>}
+            </span>
+          ))}
+        </span>
+      )}
     </div>
   )
 }

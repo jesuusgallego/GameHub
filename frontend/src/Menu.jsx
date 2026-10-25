@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import Marca from './Marca'
 import MenuUsuario from './MenuUsuario'
 import MenuAjustes from './MenuAjustes'
 import { useIdioma } from './IdiomaContext'
-import { useLenteLiquida } from './useLenteLiquida'
+import { useLente } from './useLente'
 
 // Ancho base de la línea (el del CSS): se estira con scaleX para llegar al ancho del enlace. Así
 // la línea solo cambia transform, que anima la tarjeta gráfica sin pasar por el hilo principal;
@@ -116,8 +116,17 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
   }, [])
 
   // En el iPhone (barra de pestañas abajo), la línea es una lente de cristal que se mueve con un
-  // muelle y se puede arrastrar con el dedo de una pestaña a otra (useLenteLiquida.js)
-  useLenteLiquida(navRef, pathname)
+  // muelle y se puede arrastrar con el dedo de una pestaña a otra (useLente.js). Solo cuando la
+  // barra está abajo (position: fixed): en la de arriba del ordenador sigue la línea de siempre.
+  const navigate = useNavigate()
+  useLente({
+    contenedorRef: navRef,
+    selector: 'a[data-to]',
+    selectorActiva: 'a.active',
+    activa: pathname,
+    alElegir: (enlace) => navigate(enlace.dataset.to),
+    activo: () => getComputedStyle(navRef.current).position === 'fixed',
+  })
 
   // La altura real de la barra, en la variable --alto-barra: lo que se queda pegado debajo de ella
   // al hacer scroll (las pestañas de Noticias y Social, los laterales) se coloca con ella. El CSS
@@ -161,7 +170,7 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
           <span className="barra__linea" ref={lineaRef} aria-hidden="true" />
           {/* Solo en el iPhone (barra de abajo): los mismos iconos en color de acento, recortados
               con la forma de la lente. Lo que queda debajo de la lente se ve de color, y el color
-              viaja con ella (ver useLenteLiquida.js y .barra__tinta en cristal-ios.css). */}
+              viaja con ella (ver useLente.js y .barra__tinta en cristal-ios.css). */}
           <span className="barra__tinta" aria-hidden="true">
             {ENLACES.map(({ to, texto, icono }) => (
               <span key={to} className="barra__tinta-pestana">

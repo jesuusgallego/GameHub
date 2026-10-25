@@ -224,6 +224,7 @@ export default {
   'perfil.calculando': 'Calculating statistics...',
   'perfil.editar': 'Edit profile',
   'perfil.vinculadas': 'Linked accounts',
+  'perfil.vinculadasCorta': 'Accounts',
   'perfil.secciones': 'Profile sections',
   'perfil.seguridad': 'Security',
   'perfil.editarBoton': 'Edit profile',

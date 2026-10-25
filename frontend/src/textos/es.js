@@ -225,6 +225,7 @@ export default {
   'perfil.calculando': 'Calculando estadísticas...',
   'perfil.editar': 'Editar perfil',
   'perfil.vinculadas': 'Cuentas vinculadas',
+  'perfil.vinculadasCorta': 'Cuentas',
   'perfil.secciones': 'Secciones del perfil',
   'perfil.seguridad': 'Seguridad',
   'perfil.editarBoton': 'Editar perfil',

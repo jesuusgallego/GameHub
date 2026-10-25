@@ -2,6 +2,25 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Mejorado
+- **La lente fluida, en todos los menús de pestañas.** Las pestañas de Noticias («Para ti» /
+  «Siguiendo»), Social y Perfil se mueven igual que la barra de abajo del iPhone: el color va
+  dentro de la lente, se desliza con un movimiento de muelle y se puede arrastrar con el dedo de
+  una pestaña a otra. En el móvil, el nombre de la pestaña elegida se despliega con suavidad en vez
+  de aparecer de golpe.
+- **Las secciones del perfil en el móvil**: en lugar de una barra a todo el ancho que había que
+  deslizar (y en la que «Privacidad» se cortaba), son la misma cápsula de Noticias y Social, con
+  iconos y el nombre de la elegida.
+
+### Corregido
+- Las pestañas de Noticias tenían una letra distinta a las de Social (más grande y sin negrita).
+
+### Interno
+- `useLente.js`: el motor de la lente, compartido por `Menu.jsx` y `PestanasPerfil.jsx`.
+- `PestanasPerfil` usa la variante «barra» por debajo de 820 px y admite un nombre `corta`.
+
 ## [1.8.5] - 2026-10-25
 
 La barra de abajo del iPhone, fluida como en Instagram.
