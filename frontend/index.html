@@ -17,8 +17,8 @@
     <!-- SIN apple-mobile-web-app-status-bar-style: con "black-translucent" (lo que había hasta la
          1.8.0), iOS 26.1 y posteriores pintan un degradado borroso encima de la app, en la franja de
          la hora, y la web no lo puede quitar. Sin la etiqueta (lo que recomienda Apple), la franja
-         es opaca, del color de theme-color, y la app empieza debajo. El script de abajo pone
-         theme-color a juego con el tema. OJO: iOS lee esto al instalar; hay que quitar la app de la
+         es opaca y la app empieza debajo. Su color: el de theme-color (que el script de abajo pone a
+         juego con el tema) o, desde iOS 26, el de la franja fija de arriba (.franja-ios). OJO: iOS lee esto al instalar; hay que quitar la app de la
          pantalla de inicio y volver a añadirla para que cambie. -->
     <link rel="apple-touch-icon" href="/iconos/apple-touch-icon.png" />
     <!-- Pantallas de arranque del iPhone: iOS no las genera solo y, sin ellas, la app abre con un
@@ -57,9 +57,9 @@
           tema = 'oscuro'
         }
         document.documentElement.dataset.tema = tema
-        // La franja de la hora (y la barra de Android) del color de la barra de GameHub en cada tema.
+        // La franja de la hora (y la barra de Android) del color de fondo de GameHub en cada tema.
         // Misma lógica que colorBarraEstado() de src/tema.js.
-        document.querySelector('meta[name="theme-color"]').content = tema === 'claro' ? '#ffffff' : '#0b121c'
+        document.querySelector('meta[name="theme-color"]').content = tema === 'claro' ? '#e8edf3' : '#111a27'
         // iPhone y iPad: el CSS les da el aspecto "Liquid Glass" de iOS 26 (estilos/cristal-ios.css).
         // El iPad con iPadOS se presenta como un Mac: se le reconoce por la pantalla táctil.
         if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
@@ -75,6 +75,10 @@
     </script>
   </head>
   <body>
+    <!-- Solo en el iPhone con la app instalada (ver .franja-ios en estilos/cristal-ios.css): una
+         franja fija y opaca pegada al borde de arriba. Sin ella, iOS 27 desenfoca la parte de arriba
+         de las apps web instaladas. -->
+    <div class="franja-ios" aria-hidden="true"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

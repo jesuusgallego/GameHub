@@ -2,6 +2,24 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Cambiado
+- **Liquid Glass de verdad, al estilo de WhatsApp.** Con la app instalada en el iPhone ya no hay
+  barra arriba: el logo y los menús flotan en cápsulas de cristal y el contenido pasa por debajo,
+  con un fundido suave arriba y abajo. El cristal es más transparente y brilla en los cantos; la
+  pestaña elegida es una «lente» que se desliza y se hincha al pulsarla, y el selector «Para ti» /
+  «Siguiendo» se tiñe del color de acento como los filtros de WhatsApp.
+
+### Corregido
+- **La parte de arriba seguía borrosa en el iPhone** (iOS 27): iOS desenfoca el borde de arriba de
+  las apps web instaladas si no encuentra ahí un elemento fijo y opaco. Ahora hay una franja fija
+  del color del fondo, y la franja de la hora toma ese mismo color.
+
+### Interno
+- `<div class="franja-ios">` en `index.html` (fijo, 12 px, encima de todo, sin recibir toques).
+- `theme-color` = `--bg` de cada tema.
+
 ## [1.8.1] - 2026-10-25
 
 GameHub en el iPhone, más pulida y con el aspecto «Liquid Glass» de iOS 26.
