@@ -67,3 +67,44 @@ export function crearCola(max = 50) {
     },
   }
 }
+
+// ---- Orden y filtros de las listas (OpcionesNoticias.jsx) ----
+// Los valores son los que entiende el servidor (backend/src/services/filtrosNoticias.js):
+//  - orden: 'recent' (lo más nuevo primero; lo normal), 'oldest' o 'relevance' (el orden del
+//    recomendador; solo en "Para ti")
+//  - periodo: 'all', '24h', '3d' o '7d'
+//  - portal: el slug de un portal, o '' para todos
+//  - misJuegos: solo las que hablan de un juego de tu biblioteca (solo en "Para ti")
+export const ORDENES = ['recent', 'oldest', 'relevance']
+export const PERIODOS = ['all', '24h', '3d', '7d']
+export const OPCIONES_INICIALES = Object.freeze({ orden: 'recent', periodo: 'all', portal: '', misJuegos: false })
+
+// Unas opciones sanas a partir de lo que sea (lo guardado en el navegador puede ser de otra versión
+// o estar roto): lo que no vale vuelve a su valor inicial
+export function limpiarOpciones(opciones) {
+  const o = opciones && typeof opciones === 'object' ? opciones : {}
+  return {
+    orden: ORDENES.includes(o.orden) ? o.orden : OPCIONES_INICIALES.orden,
+    periodo: PERIODOS.includes(o.periodo) ? o.periodo : OPCIONES_INICIALES.periodo,
+    portal: typeof o.portal === 'string' && /^[a-z0-9-]{1,40}$/.test(o.portal) ? o.portal : '',
+    misJuegos: o.misJuegos === true,
+  }
+}
+
+// Lo que se añade a la dirección de la lista para pedirla con estas opciones (solo lo que no es
+// el valor por defecto). En "Siguiendo" no hay "Recomendadas" ni "Solo de mis juegos".
+export function parametrosNoticias(tipo, opciones) {
+  const o = limpiarOpciones(opciones)
+  const p = {}
+  if (o.orden === 'oldest' || (o.orden === 'relevance' && tipo === 'para_ti')) p.sort = o.orden
+  if (o.periodo !== 'all') p.period = o.periodo
+  if (o.portal) p.source = o.portal
+  if (o.misJuegos && tipo === 'para_ti') p.mine = '1'
+  return p
+}
+
+// Cuántos filtros hay puestos (el orden no cuenta: siempre hay uno)
+export function filtrosActivos(tipo, opciones) {
+  const o = limpiarOpciones(opciones)
+  return (o.periodo !== 'all' ? 1 : 0) + (o.portal ? 1 : 0) + (o.misJuegos && tipo === 'para_ti' ? 1 : 0)
+}

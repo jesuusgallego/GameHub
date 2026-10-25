@@ -126,6 +126,8 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
     activa: pathname,
     alElegir: (enlace) => navigate(enlace.dataset.to),
     activo: () => getComputedStyle(navRef.current).position === 'fixed',
+    // Sus pestañas son enlaces: así, al mantenerlas pulsadas, iOS no enseña la vista previa
+    toquesPropios: true,
   })
 
   // La altura real de la barra, en la variable --alto-barra: lo que se queda pegado debajo de ella

@@ -8,7 +8,8 @@ import { useEventosNoticias } from './useEventosNoticias'
 import { useIdioma } from './IdiomaContext'
 import { borrarToken } from './sesion'
 import { tiempoRelativo } from './tiempo'
-import { masReciente } from './logicaNoticias'
+import { masReciente, limpiarOpciones, OPCIONES_INICIALES } from './logicaNoticias'
+import OpcionesNoticias from './OpcionesNoticias'
 import { logoPortal } from './logosPortales'
 import FondoCabecera from './FondoCabecera'
 
@@ -55,6 +56,20 @@ function CabeceraNoticias({ frase, ultima, imagenes, portales, onPortales }) {
   )
 }
 
+// El orden y los filtros de cada pestaña se recuerdan en este navegador (si no se puede, solo duran
+// la visita). Por defecto: lo más nuevo primero y sin filtros.
+const CLAVE_OPCIONES = 'noticias.opciones'
+
+function leerOpciones() {
+  let guardadas = null
+  try {
+    guardadas = JSON.parse(localStorage.getItem(CLAVE_OPCIONES))
+  } catch {
+    // Sin localStorage o con algo roto dentro: las de por defecto
+  }
+  return { para_ti: limpiarOpciones(guardadas?.para_ti), siguiendo: limpiarOpciones(guardadas?.siguiendo) }
+}
+
 // La página de noticias: lo primero que ves al entrar en GameHub. Dos pestañas, "Para ti"
 // (recomendadas según tu biblioteca, ver backend/src/services/recomendador.js) y "Siguiendo" (lo
 // último de tus portales), y al lado "Se habla de tus juegos" (pulsar uno enseña sus noticias) y
@@ -78,6 +93,20 @@ function Noticias({ setToken }) {
   // una está donde la dejaste)
   const [abiertas, setAbiertas] = useState(() => new Set([tab]))
   if (!abiertas.has(tab)) setAbiertas(new Set(abiertas).add(tab))
+  // El orden y los filtros de cada pestaña ({ para_ti, siguiendo }, ver OpcionesNoticias.jsx)
+  const [opciones, setOpciones] = useState(leerOpciones)
+
+  function cambiarOpciones(id, nuevas) {
+    setOpciones((previas) => {
+      const todas = { ...previas, [id]: limpiarOpciones(nuevas) }
+      try {
+        localStorage.setItem(CLAVE_OPCIONES, JSON.stringify(todas))
+      } catch {
+        // Sin localStorage: valen hasta que cierres la página
+      }
+      return todas
+    })
+  }
 
   const cerrarSesion = useCallback(() => {
     borrarToken()
@@ -139,6 +168,17 @@ function Noticias({ setToken }) {
 
       <div className="noticias-cuerpo">
         <div className="noticias-paneles">
+          {/* El orden y los filtros de la pestaña abierta (en "Siguiendo", solo si sigues algún
+              portal: si no, lo que sale es la elección de portales). Los portales que se pueden
+              elegir: en "Siguiendo", los tuyos; en "Para ti", todos. */}
+          {(tab === 'para_ti' || seguidos.length > 0) && (
+            <OpcionesNoticias
+              tipo={tab}
+              opciones={opciones[tab]}
+              portales={portales && (tab === 'siguiendo' ? seguidos : portales)}
+              onCambiar={(nuevas) => cambiarOpciones(tab, nuevas)}
+            />
+          )}
           {['para_ti', 'siguiendo'].filter((id) => abiertas.has(id)).map((id) => (
             <section
               key={id}
@@ -150,8 +190,10 @@ function Noticias({ setToken }) {
             >
               <FeedNoticias
                 // Cambiar la key lo crea de nuevo, desde cero: al cambiar de portales, de idioma o de juego
-                key={`${id}:${recarga}:${idioma}:${id === 'para_ti' ? juego?.igdb_id ?? '' : ''}`}
+                key={`${id}:${recarga}:${idioma}:${id === 'para_ti' ? juego?.igdb_id ?? '' : ''}:${JSON.stringify(opciones[id])}`}
                 tipo={id}
+                opciones={opciones[id]}
+                onQuitarFiltros={() => cambiarOpciones(id, { ...OPCIONES_INICIALES, orden: opciones[id].orden })}
                 juego={id === 'para_ti' ? juego : null}
                 portales={portales}
                 eventos={eventos}

@@ -398,9 +398,13 @@
   flex: none;
 }
 
-.pestana:hover {
-  color: var(--texto-h);
-  background: color-mix(in srgb, var(--texto) 7%, transparent);
+/* Solo con ratón: en una pantalla táctil, "pasar por encima" es mantener el dedo, y la pestaña se
+   quedaba resaltada como si se fuera a abrir */
+@media (hover: hover) {
+  .pestana:hover {
+    color: var(--texto-h);
+    background: color-mix(in srgb, var(--texto) 7%, transparent);
+  }
 }
 
 .pestana--activa,

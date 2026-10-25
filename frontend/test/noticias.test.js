@@ -1,10 +1,11 @@
 // Pruebas de la lógica de las noticias en la interfaz: motivos, portales por idioma, juntar
 // páginas, el cursor de Siguiendo, la noticia más reciente, la cola de sucesos y que no falte ningún
-// logo de portal. npm test
+// logo de portal, y el orden y los filtros de las listas. npm test
 import { test } from 'node:test'
 import assert from 'node:assert'
 import {
   claveMotivo, portalesPorIdioma, preseleccion, juntarNoticias, cursorSiguiente, masReciente, crearCola,
+  limpiarOpciones, parametrosNoticias, filtrosActivos, OPCIONES_INICIALES,
 } from '../src/logicaNoticias.js'
 import es from '../src/textos/es.js'
 import en from '../src/textos/en.js'
@@ -66,4 +67,20 @@ test('cada portal del catálogo tiene su logo en src/logos-portales', () => {
   const portales = createRequire(import.meta.url)('../../backend/src/config/portales.js')
   const sinLogo = portales.filter((p) => !existsSync(new URL(`../src/logos-portales/${p.slug}.png`, import.meta.url)))
   assert.deepStrictEqual(sinLogo.map((p) => p.slug), [], 'falta el PNG de estos portales')
+})
+
+test('opciones de las noticias: limpiar, parámetros y filtros activos', () => {
+  // Lo guardado roto o de otra versión vuelve a lo normal (por fecha, sin filtros)
+  assert.deepStrictEqual(limpiarOpciones(null), { ...OPCIONES_INICIALES })
+  assert.deepStrictEqual(limpiarOpciones({ orden: 'popular', periodo: '1y', portal: 'X Y', misJuegos: 'sí' }), { ...OPCIONES_INICIALES })
+  // Por defecto no se añade nada a la dirección
+  assert.deepStrictEqual(parametrosNoticias('para_ti', {}), {})
+  const todo = { orden: 'relevance', periodo: '3d', portal: 'vandal', misJuegos: true }
+  assert.deepStrictEqual(parametrosNoticias('para_ti', todo), { sort: 'relevance', period: '3d', source: 'vandal', mine: '1' })
+  // En "Siguiendo" no hay recomendadas ni "solo de mis juegos"
+  assert.deepStrictEqual(parametrosNoticias('siguiendo', todo), { period: '3d', source: 'vandal' })
+  assert.deepStrictEqual(parametrosNoticias('siguiendo', { orden: 'oldest' }), { sort: 'oldest' })
+  assert.strictEqual(filtrosActivos('para_ti', todo), 3)
+  assert.strictEqual(filtrosActivos('siguiendo', todo), 2)
+  assert.strictEqual(filtrosActivos('para_ti', { orden: 'oldest' }), 0)
 })

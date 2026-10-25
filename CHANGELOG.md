@@ -2,6 +2,28 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Añadido
+- **Ordenar y filtrar las noticias.** Encima de cada lista, «Ordenar» (más recientes, más antiguas
+  y, en «Para ti», recomendadas) y un botón «Filtros» que despliega: la fecha (últimas 24 h, 3 días
+  o esta semana), el portal y, en «Para ti», «Solo de mis juegos». El botón dice cuántos filtros
+  hay puestos, y lo que elijas en cada pestaña se recuerda para la próxima vez.
+
+### Cambiado
+- **«Para ti» sale por orden cronológico**, de la más nueva a la más antigua. El orden del
+  recomendador sigue disponible como «Recomendadas».
+
+### Corregido
+- En el iPhone, mantener pulsada una pestaña de la barra de abajo enseñaba una vista previa de la
+  sección. Ahora no pasa nada al mantenerla pulsada, y mantener pulsado un botón tampoco
+  selecciona su texto ni deja la pestaña resaltada.
+
+### Interno
+- `backend/src/services/filtrosNoticias.js` (con pruebas): `sort`, `period`, `source` y `mine` en
+  `GET /news/for-you` y `GET /news/following` (con `sort=oldest`, el cursor pide las siguientes).
+- `useLente`: opción `toquesPropios` (cancela el `touchstart` y convierte el toque en navegación).
+
 ## [1.8.6] - 2026-10-25
 
 La lente fluida llega a todas las pestañas, y el perfil se ordena en el móvil.

@@ -238,6 +238,202 @@
   border-color: var(--acento);
 }
 
+/* ---- Orden y filtros de la lista (OpcionesNoticias.jsx) ---- */
+/* Arriba, "Ordenar" con su desplegable y el botón "Filtros"; debajo se despliega (Plegable) una
+   tarjeta con la fecha, el portal y "Solo de mis juegos". Las reglas de los botones llevan dos
+   clases para ganar a ".noticias button { font: inherit }" (de arriba). */
+.opciones-noticias {
+  margin-bottom: 1.25rem;
+}
+
+.opciones-noticias__fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.opciones-noticias__orden {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.opciones-noticias__etiqueta,
+.opciones-noticias__titulo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.opciones-noticias__campo {
+  width: 11.5rem;
+}
+
+.opciones-noticias .opciones-noticias__boton {
+  gap: 0.45rem;
+  transition: color var(--transicion), border-color var(--transicion), background-color var(--transicion), scale 0.12s ease;
+}
+
+/* Las tres rayas del icono dan media vuelta al abrir y al cerrar */
+.opciones-noticias__boton svg {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.opciones-noticias .opciones-noticias__boton--abierto {
+  color: var(--acento);
+  border-color: var(--acento);
+}
+
+.opciones-noticias__boton--abierto svg {
+  transform: rotate(180deg);
+}
+
+/* Cuántos filtros hay puestos: entra creciendo, como las insignias */
+.opciones-noticias__cuenta {
+  display: inline-grid;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  padding: 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--sobre-degradado, #fff);
+  background: var(--degradado);
+  border-radius: 999px;
+  animation: insignia-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+.opciones-noticias__panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  align-items: start;
+  gap: 1.1rem 1.5rem;
+  margin-top: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-grande);
+}
+
+.opciones-noticias__grupo {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.opciones-noticias__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.opciones-noticias .opciones-noticias__chip {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--texto);
+  background: var(--superficie-2);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  transition: color var(--transicion), background-color var(--transicion), border-color var(--transicion), scale 0.12s ease;
+}
+
+@media (hover: hover) {
+  .opciones-noticias .opciones-noticias__chip:hover {
+    color: var(--texto-h);
+    border-color: var(--acento);
+  }
+}
+
+.opciones-noticias .opciones-noticias__chip:active {
+  scale: 0.95;
+}
+
+.opciones-noticias .opciones-noticias__chip--activo {
+  color: var(--acento);
+  background: var(--acento-suave);
+  border-color: color-mix(in srgb, var(--acento) 45%, transparent);
+}
+
+.opciones-noticias__grupo--interruptor {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  align-self: center;
+}
+
+.opciones-noticias__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.opciones-noticias__texto strong {
+  font-size: 0.92rem;
+  color: var(--texto-h);
+}
+
+.opciones-noticias__texto small {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.opciones-noticias .opciones-noticias__limpiar {
+  grid-column: 1 / -1;
+  justify-self: start;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+  background: none;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  transition: color var(--transicion), border-color var(--transicion), opacity var(--transicion), scale 0.12s ease;
+}
+
+.opciones-noticias .opciones-noticias__limpiar:hover:not(:disabled) {
+  color: var(--peligro);
+  border-color: var(--peligro);
+}
+
+.opciones-noticias .opciones-noticias__limpiar:active:not(:disabled) {
+  scale: 0.95;
+}
+
+.opciones-noticias .opciones-noticias__limpiar:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* En el móvil, sin la palabra "Ordenar" (el desplegable ya se entiende, y el lector de pantalla
+   la dice igual): así el orden y "Filtros" caben en una fila */
+@media (max-width: 640px) {
+  .opciones-noticias__etiqueta {
+    display: none;
+  }
+
+  .opciones-noticias__campo {
+    width: 11rem;
+  }
+}
+
+/* El logo de cada portal en el desplegable */
+.opciones-noticias__logo {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 4px;
+}
+
 /* ---- La rejilla y las noticias ---- */
 .noticias-rejilla {
   display: grid;

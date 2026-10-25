@@ -6,7 +6,7 @@ import Mensaje from './Mensaje'
 import TarjetaNoticia from './TarjetaNoticia'
 import { ElegirPortalesInicio } from './PortalesNoticias'
 import { useIdioma } from './IdiomaContext'
-import { juntarNoticias, cursorSiguiente } from './logicaNoticias'
+import { juntarNoticias, cursorSiguiente, parametrosNoticias, filtrosActivos } from './logicaNoticias'
 
 // Si el servidor estaba leyendo los portales al responder, se vuelve a pedir la primera página al
 // cabo de este rato (solo si no has cargado más: así no se te mueve nada mientras lees)
@@ -22,7 +22,10 @@ const REPETIR_MS = 9000
 //  - onPortales(lista): has elegido portales en la elección inicial
 //  - onDatos({ mencionados, noticias }): lo que la página enseña al lado (juegos y titulares)
 //  - onQuitarJuego(): quita el filtro por juego
-function FeedNoticias({ tipo, juego, portales, eventos, onPortales, onDatos, onQuitarJuego, cerrarSesion }) {
+//  - opciones: el orden y los filtros ({ orden, periodo, portal, misJuegos }, ver OpcionesNoticias.jsx);
+//    al cambiarlas, el padre cambia la `key` y la lista empieza de nuevo
+//  - onQuitarFiltros(): quita los filtros (desde el aviso de "no hay noticias con estos filtros")
+function FeedNoticias({ tipo, juego, portales, eventos, onPortales, onDatos, onQuitarJuego, cerrarSesion, opciones, onQuitarFiltros }) {
   const { t, idioma } = useIdioma()
   const [noticias, setNoticias] = useState([])
   const [estado, setEstado] = useState('cargando') // 'cargando' | 'listo' | 'error'
@@ -45,12 +48,19 @@ function FeedNoticias({ tipo, juego, portales, eventos, onPortales, onDatos, onQ
 
   const feed = tipo
   const ruta = useCallback((offset, actuales, fresca) => {
-    if (tipo === 'siguiendo') return `/news/following${offset > 0 ? `?${cursorSiguiente(actuales)}` : ''}`
+    // El orden y los filtros (solo lo que no es lo de por defecto)
+    const filtros = new URLSearchParams(parametrosNoticias(tipo, opciones))
+    if (tipo === 'siguiendo') {
+      const partes = [filtros.toString(), offset > 0 ? cursorSiguiente(actuales) : ''].filter(Boolean)
+      return `/news/following${partes.length > 0 ? `?${partes.join('&')}` : ''}`
+    }
     const params = new URLSearchParams({ lang: idioma, offset: String(offset) })
     if (juego) params.set('game', String(juego.igdb_id))
     if (fresca) params.set('fresh', '1')
+    for (const [clave, valor] of filtros) params.set(clave, valor)
     return `/news/for-you?${params}`
-  }, [tipo, idioma, juego])
+  }, [tipo, idioma, juego, opciones])
+  const hayFiltros = filtrosActivos(tipo, opciones) > 0
 
   // La primera página. `pedir` solo trae los datos y `aplicar` los pone en pantalla: así el efecto
   // de abajo no cambia ningún estado de forma síncrona (el estado inicial ya es 'cargando').
@@ -216,7 +226,14 @@ function FeedNoticias({ tipo, juego, portales, eventos, onPortales, onDatos, onQ
 
       {noticias.length === 0 ? (
         <div className="noticias-estado">
-          <p>{juego ? t('noticias.vacioJuego') : t('noticias.vacio')}</p>
+          {hayFiltros ? (
+            <>
+              <p>{t('noticias.vacioFiltros')}</p>
+              <button type="button" className="btn btn--secundario" onClick={onQuitarFiltros}>{t('noticias.quitarFiltros')}</button>
+            </>
+          ) : (
+            <p>{juego ? t('noticias.vacioJuego') : t('noticias.vacio')}</p>
+          )}
         </div>
       ) : (
         <div className="noticias-rejilla">

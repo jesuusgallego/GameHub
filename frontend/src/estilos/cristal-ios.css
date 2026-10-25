@@ -116,6 +116,17 @@
   backdrop-filter: blur(10px) saturate(140%);
 }
 
+/* Mantener pulsado un botón o un enlace de la app no hace nada: sin el menú ni la vista previa de
+   iOS y sin seleccionar el texto del botón (en los campos de texto sí se puede seleccionar) */
+:root.ios :is(a, button, [role="tab"], [role="button"]) {
+  -webkit-touch-callout: none;
+}
+
+:root.ios :is(button, [role="tab"], [role="button"]) {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* Botones en forma de cápsula, como los de iOS 26 */
 :root.ios .btn {
   border-radius: 999px;

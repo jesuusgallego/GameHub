@@ -28,6 +28,11 @@ import { useEffect, useRef } from 'react'
 //  - activa: cualquier valor que cambie al cambiar de pestaña (la ruta, el id): la lente va a ella
 //  - alElegir(pestana): al soltar el dedo sobre otra pestaña (navegar, cambiar de panel...)
 //  - activo(): si la lente funciona ahora (p. ej., solo cuando la barra está abajo); por defecto, sí
+//  - toquesPropios: el dedo lo gestiona todo este motor, también los toques (la barra de abajo del
+//    iPhone). Sus pestañas son enlaces y, al mantenerlos pulsados, iOS enseña una vista previa de
+//    la página; en iOS 26 la propiedad CSS que debería quitarla (-webkit-touch-callout) no siempre
+//    funciona. Cancelando el "touchstart" el sistema no ve ni el toque ni la pulsación larga, y el
+//    toque lo convierte en navegación este motor. Con el ratón y el teclado, los enlaces van igual.
 
 // Lo que hay que mover el dedo (en píxeles) para que cuente como arrastre y no como un toque
 const UMBRAL = 8
@@ -44,7 +49,7 @@ const HINCHADO_X = 5
 const HINCHADO_Y = 3
 const ESTIRON_MAX = 9
 
-export function useLente({ contenedorRef, selector, selectorActiva, activa, alElegir, activo }) {
+export function useLente({ contenedorRef, selector, selectorActiva, activa, alElegir, activo, toquesPropios = false }) {
   // Las funciones que llegan de fuera cambian en cada pintado (o, como navigate, en cada cambio de
   // página): si fueran dependencias del efecto, el motor se reiniciaría y la lente saltaría de golpe
   // a su sitio en vez de deslizarse. Las guardo en referencias y el motor se crea una sola vez.
@@ -203,7 +208,17 @@ export function useLente({ contenedorRef, selector, selectorActiva, activa, alEl
       if (!gesto || e.pointerId !== gesto.id) return
       const eraArrastre = gesto.arrastrando
       gesto = null
-      if (!eraArrastre) return
+      if (!eraArrastre) {
+        // Un toque, con los toques a cargo de este motor: elige la pestaña que hay bajo el dedo
+        if (toquesPropios && !cancelado) {
+          const tocada = e.target.closest?.(selector)
+          if (tocada && caja.contains(tocada) && tocada !== elegida()) {
+            irA(tocada)
+            alElegirRef.current?.(tocada)
+          }
+        }
+        return
+      }
       caja.classList.remove('lente--arrastrando')
       const destino = cancelado ? elegida() : masCercana(e.clientX)
       irA(destino)
@@ -215,6 +230,18 @@ export function useLente({ contenedorRef, selector, selectorActiva, activa, alEl
     const alSoltar = (e) => soltar(e, false)
     // El sistema se queda con el gesto (llega una llamada, empieza un scroll...): la lente vuelve
     const alCancelar = (e) => soltar(e, true)
+
+    // Con los toques a cargo de este motor, el sistema no ve el dedo: ni vista previa de enlace al
+    // mantener pulsado, ni menú, ni el clic que lanzaría después (los "pointer" sí siguen llegando)
+    function anularToque(e) {
+      if (funciona()) e.preventDefault()
+    }
+    if (toquesPropios) caja.addEventListener('touchstart', anularToque, { passive: false })
+    // Mantener pulsado nunca abre el menú del sistema sobre las pestañas
+    function anularMenu(e) {
+      if (funciona()) e.preventDefault()
+    }
+    caja.addEventListener('contextmenu', anularMenu)
 
     caja.addEventListener('pointerdown', alBajar)
     caja.addEventListener('pointermove', alMover)
@@ -235,9 +262,11 @@ export function useLente({ contenedorRef, selector, selectorActiva, activa, alEl
       caja.removeEventListener('pointerup', alSoltar)
       caja.removeEventListener('pointercancel', alCancelar)
       caja.removeEventListener('click', anularClic, { capture: true })
+      caja.removeEventListener('touchstart', anularToque)
+      caja.removeEventListener('contextmenu', anularMenu)
       motorRef.current = null
     }
-  }, [contenedorRef, selector, selectorActiva])
+  }, [contenedorRef, selector, selectorActiva, toquesPropios])
 
   // Al cambiar de pestaña (con un toque, con el teclado o al soltar), la lente va a la elegida
   useEffect(() => {

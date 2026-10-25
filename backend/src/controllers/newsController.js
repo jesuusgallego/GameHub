@@ -2,6 +2,7 @@ const pool = require('../config/db');
 const { asegurarFrescas } = require('../services/noticias');
 const R = require('../services/recomendador');
 const { amigosDe } = require('../services/amistades');
+const { leerOpciones, filtrarYOrdenar } = require('../services/filtrosNoticias');
 
 // Las noticias: el catálogo de portales, "Siguiendo" (tus portales, por fecha), "Para ti"
 // (recomendadas, ver services/recomendador.js) y el registro de lo que pasa con cada noticia que
@@ -199,14 +200,20 @@ async function setFollows(req, res) {
 }
 
 // GET /news/following?before=<fecha ISO>&before_id=<id> — lo último de mis portales, por fecha
-// (20 por página; para la siguiente, la fecha y el id de la última recibida)
+// (20 por página; para la siguiente, la fecha y el id de la última recibida). Admite sort ('recent'
+// u 'oldest'), period y source (ver services/filtrosNoticias.js).
 async function listFollowing(req, res) {
   const { before, before_id: antesId } = req.query;
   const fecha = before === undefined ? null : new Date(before);
   const id = antesId === undefined ? null : Number(antesId);
-  if ((fecha && Number.isNaN(fecha.getTime())) || (antesId !== undefined && !Number.isInteger(id))) {
+  const opciones = leerOpciones(req.query);
+  if ((fecha && Number.isNaN(fecha.getTime())) || (antesId !== undefined && !Number.isInteger(id)) || !opciones) {
     return res.status(400).json({ error: 'Parámetro no válido' });
   }
+  // "Siguiendo" va siempre por fecha: 'relevance' (que es de "Para ti") cuenta como 'recent'. Con
+  // 'oldest', al revés, y el cursor (la última que ya tienes) pide las de DESPUÉS en vez de antes.
+  const antiguas = opciones.sort === 'oldest';
+  const sentido = antiguas ? 'ASC' : 'DESC';
   const yo = req.user.id;
   try {
     const refrescando = await asegurarFrescas();
@@ -216,10 +223,12 @@ async function listFollowing(req, res) {
          JOIN news_sources s ON s.id = a.source_id AND s.active
          JOIN news_follows f ON f.source_id = s.id AND f.user_id = $1
         WHERE NOT EXISTS (SELECT 1 FROM news_hidden h WHERE h.user_id = $1 AND h.article_id = a.id)
-          AND ($2::timestamptz IS NULL OR (a.published_at, a.id) < ($2::timestamptz, $3::int))
-        ORDER BY a.published_at DESC, a.id DESC
+          AND ($2::timestamptz IS NULL OR (a.published_at, a.id) ${antiguas ? '>' : '<'} ($2::timestamptz, $3::int))
+          AND ($4::text IS NULL OR s.slug = $4)
+          AND ($5::int IS NULL OR a.published_at > NOW() - make_interval(hours => $5))
+        ORDER BY a.published_at ${sentido}, a.id ${sentido}
         LIMIT ${POR_PAGINA + 1}`,
-      [yo, fecha ? fecha.toISOString() : null, id ?? 2147483647]
+      [yo, fecha ? fecha.toISOString() : null, id ?? (antiguas ? 0 : 2147483647), opciones.source, opciones.horas]
     );
     const seguidos = await pool.query('SELECT COUNT(*)::int AS n FROM news_follows WHERE user_id = $1', [yo]);
     const filas = r.rows.slice(0, POR_PAGINA);
@@ -234,13 +243,17 @@ async function listFollowing(req, res) {
   }
 }
 
-// GET /news/for-you?offset=0&lang=es — "Para ti": la clasificación del recomendador, 20 por página,
-// cada una con su motivo. `fresh=1` rehace la clasificación (al recargar a propósito); `game=<id>`
-// da solo las de un juego de mi biblioteca.
+// GET /news/for-you?offset=0&lang=es — "Para ti": las noticias que el recomendador elige para mí,
+// 20 por página, cada una con su motivo. Por defecto, de la más nueva a la más antigua; con
+// `sort=relevance`, en el orden del recomendador. Admite los filtros de services/filtrosNoticias.js
+// (sort, period, source, mine). `fresh=1` rehace la clasificación (al recargar a propósito);
+// `game=<id>` da solo las de un juego de mi biblioteca.
 // Trae también los juegos de mi biblioteca de los que más se habla estos dos días (`mentioned`).
 async function listForYou(req, res) {
   const offset = req.query.offset === undefined ? 0 : Number(req.query.offset);
   if (!Number.isInteger(offset) || offset < 0 || offset > 1000) return res.status(400).json({ error: 'Parámetro no válido' });
+  const opciones = leerOpciones(req.query);
+  if (!opciones) return res.status(400).json({ error: 'Parámetro no válido' });
   const idioma = idiomaDe(req.query.lang);
   const yo = req.user.id;
   try {
@@ -252,10 +265,11 @@ async function listForYou(req, res) {
     if (req.query.game !== undefined) {
       const juego = Number(req.query.game);
       if (!Number.isInteger(juego)) return res.status(400).json({ error: 'Parámetro no válido' });
-      const delJuego = [...c.porId.values()]
-        .filter((r) => r.juego?.igdb_id === juego && !c.ocultas.has(r.noticia.id))
-        .sort((a, b) => new Date(b.noticia.published_at) - new Date(a.noticia.published_at))
-        .slice(0, 40);
+      // (Por fecha aunque se haya pedido 'relevance': son todas del mismo juego)
+      const delJuego = filtrarYOrdenar(
+        [...c.porId.values()].filter((r) => r.juego?.igdb_id === juego && !c.ocultas.has(r.noticia.id)),
+        { ...opciones, sort: opciones.sort === 'oldest' ? 'oldest' : 'recent' }
+      ).slice(0, 40);
       return res.json({
         articles: delJuego.map((r, i) => aNoticia(r.noticia, { reason: aMotivo({ kind: 'juego', game: r.juego }), position: i })),
         // Sin `mentioned`: la lista de "Se habla de tus juegos" no cambia por filtrar
@@ -264,7 +278,10 @@ async function listForYou(req, res) {
     }
     // Las que ocultes mientras tanto no se envían, pero la lista no se toca: si se quitaran, las de
     // detrás se correrían un puesto y al pedir la página siguiente se saltaría una
-    const pagina = c.lista
+    // La lista con el orden y los filtros pedidos; las posiciones son las de esta lista (con ellas
+    // se pide la página siguiente)
+    const lista = filtrarYOrdenar(c.lista, opciones);
+    const pagina = lista
       .map((r, i) => ({ r, posicion: i }))
       .slice(offset, offset + POR_PAGINA)
       .filter(({ r }) => !c.ocultas.has(r.noticia.id));
@@ -287,7 +304,7 @@ async function listForYou(req, res) {
 
     res.json({
       articles: pagina.map(({ r, posicion }) => aNoticia(r.noticia, { reason: aMotivo(r.motivo), position: posicion })),
-      has_more: offset + POR_PAGINA < c.lista.length,
+      has_more: offset + POR_PAGINA < lista.length,
       mentioned: mencionados,
       library_size: c.contexto.biblioteca.length,
       refreshing: refrescando,

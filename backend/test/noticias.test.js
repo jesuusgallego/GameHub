@@ -188,3 +188,42 @@ test('ordenar: exploración cada 6, variedad y sin perder noticias', () => {
   const pocas = R.ordenar(R.puntuar(ns.slice(30, 34), { biblioteca: [], idioma: 'es', ahora: AHORA }), { clave: 'x' });
   assert.strictEqual(pocas.length, 4);
 });
+
+// ---- Orden y filtros de las listas (services/filtrosNoticias.js) ----
+const { leerOpciones, filtrarYOrdenar } = require('../src/services/filtrosNoticias');
+
+test('leerOpciones: por defecto, por fecha y sin filtros; lo que no vale es null', () => {
+  assert.deepStrictEqual(leerOpciones({}), { sort: 'recent', horas: null, source: null, mine: false });
+  assert.deepStrictEqual(
+    leerOpciones({ sort: 'relevance', period: '3d', source: 'vandal', mine: '1' }),
+    { sort: 'relevance', horas: 72, source: 'vandal', mine: true }
+  );
+  assert.strictEqual(leerOpciones({ sort: 'popular' }), null);
+  assert.strictEqual(leerOpciones({ period: '1y' }), null);
+  assert.strictEqual(leerOpciones({ period: 'toString' }), null); // no vale nada heredado del objeto
+  assert.strictEqual(leerOpciones({ source: 'Vandal; DROP' }), null);
+  assert.strictEqual(leerOpciones({ mine: 'si' }), null);
+});
+
+test('filtrarYOrdenar: fecha, portal, mis juegos y los tres órdenes', () => {
+  const ahora = Date.parse('2026-10-25T12:00:00Z');
+  const hace = (h) => new Date(ahora - h * 3_600_000).toISOString();
+  // En el orden del recomendador: la primera es la más recomendada, no la más nueva
+  const lista = [
+    { noticia: { id: 1, slug: 'ign', published_at: hace(30) }, juego: { igdb_id: 9 } },
+    { noticia: { id: 2, slug: 'vandal', published_at: hace(2) } },
+    { noticia: { id: 3, slug: 'vandal', published_at: hace(100) }, juego: { igdb_id: 9 } },
+    { noticia: { id: 4, slug: 'ign', published_at: hace(2) } }, // misma hora que la 2: manda el id
+  ];
+  const ids = (l) => l.map((r) => r.noticia.id);
+  const op = (o) => ({ sort: 'recent', horas: null, source: null, mine: false, ...o });
+
+  assert.deepStrictEqual(ids(filtrarYOrdenar(lista, op({ sort: 'relevance' }), ahora)), [1, 2, 3, 4]);
+  assert.deepStrictEqual(ids(filtrarYOrdenar(lista, op(), ahora)), [4, 2, 1, 3]);
+  assert.deepStrictEqual(ids(filtrarYOrdenar(lista, op({ sort: 'oldest' }), ahora)), [3, 1, 2, 4]);
+  assert.deepStrictEqual(ids(filtrarYOrdenar(lista, op({ horas: 24 }), ahora)), [4, 2]);
+  assert.deepStrictEqual(ids(filtrarYOrdenar(lista, op({ source: 'vandal' }), ahora)), [2, 3]);
+  assert.deepStrictEqual(ids(filtrarYOrdenar(lista, op({ mine: true, sort: 'relevance' }), ahora)), [1, 3]);
+  // No toca la lista original (la clasificación guardada en memoria)
+  assert.deepStrictEqual(ids(lista), [1, 2, 3, 4]);
+});
