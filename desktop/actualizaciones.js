@@ -11,6 +11,16 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.6': {
+    es: [
+      'Las pestañas de Noticias, Social y Perfil se mueven ahora con la misma animación fluida que la barra de abajo del iPhone.',
+      'En el móvil, las secciones del perfil caben en una cápsula, como las de Noticias y Social.',
+    ],
+    en: [
+      'The News, Social and Profile tabs now move with the same smooth animation as the iPhone bottom bar.',
+      'On mobile, the profile sections fit in a capsule, like the News and Social ones.',
+    ],
+  },
   '1.8.5': {
     es: [
       'En el iPhone, la pestaña elegida de la barra de abajo se mueve ahora de forma fluida al arrastrar el dedo, como en Instagram.',

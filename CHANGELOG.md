@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.8.6] - 2026-10-25
+
+La lente fluida llega a todas las pestañas, y el perfil se ordena en el móvil.
 
 ### Mejorado
 - **La lente fluida, en todos los menús de pestañas.** Las pestañas de Noticias («Para ti» /
