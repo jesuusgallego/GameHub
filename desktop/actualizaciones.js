@@ -11,6 +11,16 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.2': {
+    es: [
+      'En el iPhone, el aspecto «Liquid Glass» se parece ahora al de WhatsApp: los botones flotan en cápsulas de cristal sobre el contenido.',
+      'Arreglado el borroso de la parte de arriba en el iPhone con iOS 27.',
+    ],
+    en: [
+      'On iPhone, the "Liquid Glass" look now resembles WhatsApp: buttons float in glass capsules over the content.',
+      'Fixed the blurry top on iPhone with iOS 27.',
+    ],
+  },
   '1.8.1': {
     es: [
       'En el iPhone, GameHub estrena el aspecto «Liquid Glass» de iOS 26 y las pestañas pasan abajo, como en una app de iOS.',

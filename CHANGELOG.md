@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.8.2] - 2026-10-25
+
+Liquid Glass al estilo de WhatsApp en el iPhone, y por fin sin la parte de arriba borrosa.
 
 ### Cambiado
 - **Liquid Glass de verdad, al estilo de WhatsApp.** Con la app instalada en el iPhone ya no hay
