@@ -11,6 +11,16 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.3': {
+    es: [
+      'En el iPhone, el logo y los menús de arriba ya no se ven cortados.',
+      'La pestaña elegida de la barra de abajo del iPhone ya no se sale de su sitio.',
+    ],
+    en: [
+      'On iPhone, the logo and menus at the top are no longer cut off.',
+      'The selected tab in the iPhone bottom bar no longer slips out of place.',
+    ],
+  },
   '1.8.2': {
     es: [
       'En el iPhone, el aspecto «Liquid Glass» se parece ahora al de WhatsApp: los botones flotan en cápsulas de cristal sobre el contenido.',
