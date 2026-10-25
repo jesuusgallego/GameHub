@@ -11,6 +11,16 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.4': {
+    es: [
+      'En el iPhone puedes cambiar de sección arrastrando el dedo por la barra de abajo, como en Instagram.',
+      'En el iPhone, el botón del chat también lo cierra, y la foto de perfil de arriba ya sale centrada.',
+    ],
+    en: [
+      'On iPhone you can switch sections by sliding your finger along the bottom bar, like on Instagram.',
+      'On iPhone, the chat button also closes it, and the profile picture at the top is now centred.',
+    ],
+  },
   '1.8.3': {
     es: [
       'En el iPhone, el logo y los menús de arriba ya no se ven cortados.',

@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.8.4] - 2026-10-25
+
+Navegar arrastrando el dedo y un chat más cómodo en el iPhone.
 
 ### Añadido
 - **Cambiar de sección arrastrando el dedo** por la barra de abajo del iPhone, como en Instagram:
