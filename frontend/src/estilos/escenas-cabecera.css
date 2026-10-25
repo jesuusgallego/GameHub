@@ -1,0 +1,375 @@
+/* Las escenas ilustradas del fondo de las cabeceras grandes (EscenasCabecera.jsx): periódicos en
+   Noticias, una estantería en Mi biblioteca y amigos jugando en Social. Las tres con el mismo
+   tratamiento: a la derecha, detrás del contenido, desvanecidas hacia el título y algo apagadas
+   para que no compitan con él. */
+
+/* ---- Común ---- */
+.escena {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  mask-image: linear-gradient(90deg, transparent, #000 42%);
+}
+
+/* El hueco de una foto que falta: su color y un mando dibujado */
+.escena__sin-foto {
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.55);
+  background: linear-gradient(135deg, #5b3df5, #1b74c8);
+}
+
+.escena__sin-foto svg {
+  width: 40%;
+  max-width: 3rem;
+}
+
+/* ---- Noticias: periódicos y una revista sobre la mesa ---- */
+.escena--noticias {
+  --papel: #efe9dc;
+  --tinta: #262632;
+  top: -14%;
+  right: 1.5%;
+  bottom: -40%;
+  width: 56%;
+  opacity: 0.62;
+  filter: saturate(0.95);
+}
+
+:root[data-tema="claro"] .escena--noticias {
+  --papel: #fffdf8;
+  opacity: 0.72;
+}
+
+.periodico,
+.revista {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 3px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-tema="claro"] .periodico,
+:root[data-tema="claro"] .revista {
+  box-shadow: 0 14px 30px rgba(70, 30, 20, 0.22);
+}
+
+/* El papel: cabecera con doble filete, fecha, titulares (barras), foto y columnas de texto */
+.periodico {
+  top: 12%;
+  left: 24%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 13.5rem;
+  height: 18rem;
+  padding: 0.65rem 0.75rem;
+  color: var(--tinta);
+  background: var(--papel);
+  transform: rotate(-7deg);
+}
+
+.periodico--atras {
+  top: 6%;
+  left: 54%;
+  width: 12.5rem;
+  transform: rotate(5deg);
+  filter: brightness(0.92);
+}
+
+.periodico__cabecera {
+  padding-bottom: 0.2rem;
+  font-family: var(--display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 3px double var(--tinta);
+}
+
+.periodico__fecha {
+  height: 2px;
+  background: color-mix(in srgb, var(--tinta) 35%, transparent);
+}
+
+.periodico__titular {
+  height: 0.55rem;
+  width: 92%;
+  background: var(--tinta);
+  border-radius: 1px;
+}
+
+.periodico__titular--corto {
+  width: 62%;
+}
+
+.periodico__foto {
+  width: 100%;
+  height: 5.6rem;
+  flex: none;
+  object-fit: cover;
+}
+
+.periodico__foto--pequena {
+  height: 4.4rem;
+}
+
+/* Tres columnas de líneas de texto: líneas que se repiten, cortadas en columnas con la máscara */
+.periodico__texto {
+  flex: 1;
+  background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--tinta) 38%, transparent) 0 2px, transparent 2px 6px);
+  mask-image: repeating-linear-gradient(90deg, #000 0 30%, transparent 30% 35%);
+}
+
+/* La revista: foto a toda página, la cabecera grande encima, el número y los titulares */
+.revista {
+  top: 30%;
+  right: 3%;
+  width: 11rem;
+  height: 14.5rem;
+  transform: rotate(9deg);
+}
+
+.revista__foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.revista__cabecera {
+  position: absolute;
+  top: 0.35rem;
+  left: 0.6rem;
+  font-family: var(--display);
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+}
+
+.revista__numero {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.6rem;
+  display: grid;
+  width: 2.1rem;
+  height: 2.1rem;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #1c1917;
+  background: #fbbf24;
+  border-radius: 50%;
+  transform: rotate(-12deg);
+}
+
+.revista__lineas {
+  position: absolute;
+  bottom: 0.8rem;
+  left: 0.6rem;
+  width: 58%;
+  height: 2.4rem;
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0 0.4rem, transparent 0.4rem 0.75rem);
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+}
+
+/* ---- Mi biblioteca: la estantería ---- */
+.escena--biblioteca {
+  /* A la izquierda del botón "Añadir juegos", para no quedar debajo de él */
+  right: 13rem;
+  bottom: 9%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 54%;
+  opacity: 0.8;
+}
+
+:root[data-tema="claro"] .escena--biblioteca {
+  opacity: 0.7;
+}
+
+/* Una balda: los juegos de pie, apoyados abajo, y la luz esmeralda de la balda debajo */
+.balda {
+  position: relative;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+  gap: 0.2rem;
+  height: 4.3rem;
+}
+
+.balda::after {
+  position: absolute;
+  right: -1rem;
+  bottom: -6px;
+  left: 0;
+  height: 4px;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(110, 231, 183, 1) 70%, rgba(110, 231, 183, 0.4));
+  border-radius: 2px;
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.6), 0 8px 16px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-tema="claro"] .balda::after {
+  background: linear-gradient(90deg, transparent, rgba(5, 150, 105, 0.85) 70%, rgba(5, 150, 105, 0.3));
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4), 0 6px 12px rgba(15, 42, 40, 0.18);
+}
+
+/* Una caja de frente: la portada con la franja de color de arriba, como las cajas de consola */
+.caja {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  /* 3:4 contando la franja de arriba, como una caja de verdad */
+  width: 3.3rem;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 3px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+}
+
+.caja::before {
+  height: 0.4rem;
+  flex: none;
+  content: "";
+  background: var(--franja);
+}
+
+.caja--azul { --franja: #2563eb; }
+.caja--roja { --franja: #e11d48; }
+.caja--verde { --franja: #16a34a; }
+
+.caja__portada {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  object-fit: cover;
+}
+
+/* Un lomo: su color, su alto y su ancho (en el style, desde EscenasCabecera.jsx), con un par de
+   rayas claras como el título y el logo */
+.lomo {
+  flex: none;
+  width: calc(var(--ancho) * 1rem);
+  height: calc(var(--alto) * 1%);
+  background:
+    linear-gradient(180deg, transparent 14%, rgba(255, 255, 255, 0.55) 14% 17%, transparent 17% 76%, rgba(255, 255, 255, 0.4) 76% 84%, transparent 84%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.25), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.3)),
+    hsl(var(--tono) 45% 38%);
+  border-radius: 2px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-tema="claro"] .lomo {
+  background:
+    linear-gradient(180deg, transparent 14%, rgba(255, 255, 255, 0.6) 14% 17%, transparent 17% 76%, rgba(255, 255, 255, 0.45) 76% 84%, transparent 84%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.15)),
+    hsl(var(--tono) 50% 55%);
+}
+
+/* ---- Social: amigos jugando juntos (un SVG) ---- */
+.escena--sala {
+  --escena-luz: #4cc9f0;
+  --escena-silueta: #0b1222;
+  --escena-borde: rgba(140, 215, 255, 0.55);
+  top: 0;
+  right: 24%;
+  bottom: 0;
+  width: 44%;
+  height: 100%;
+  opacity: 0.85;
+  mask-image: linear-gradient(90deg, transparent, #000 30%, #000 85%, transparent);
+}
+
+:root[data-tema="claro"] .escena--sala {
+  --escena-luz: #7c60ff;
+  --escena-silueta: #33405e;
+  --escena-borde: rgba(255, 255, 255, 0.7);
+  opacity: 0.6;
+}
+
+.escena__tele {
+  fill: #070b14;
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 2;
+}
+
+/* Un velo de cristal sobre la pantalla */
+.escena__reflejo {
+  fill: rgba(255, 255, 255, 0.06);
+}
+
+/* Los amigos, en silueta, con el borde iluminado por la tele */
+.escena__amigo circle,
+.escena__amigo > rect:not(.escena__mando) {
+  fill: var(--escena-silueta);
+  stroke: var(--escena-borde);
+  stroke-width: 2;
+}
+
+.escena__mando {
+  fill: #1f2a44;
+  stroke: var(--escena-borde);
+  stroke-width: 1.5;
+}
+
+.escena__cascos {
+  fill: none;
+  stroke: #1f2a44;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.escena__sofa {
+  fill: var(--escena-silueta);
+  stroke: var(--escena-borde);
+  stroke-width: 2;
+}
+
+.escena__bocadillo path {
+  fill: rgba(255, 255, 255, 0.92);
+}
+
+.escena__bocadillo text {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 700;
+  fill: #5b3df5;
+}
+
+.escena__corazon {
+  fill: #f472b6;
+  opacity: 0.85;
+}
+
+/* ---- Pantallas estrechas: las escenas, más tenues, detrás del texto ---- */
+@media (max-width: 640px) {
+  .escena--noticias,
+  .escena--biblioteca,
+  .escena--sala {
+    opacity: 0.28;
+  }
+
+  .escena--noticias {
+    width: 100%;
+  }
+
+  .escena--biblioteca {
+    right: 1rem;
+    width: 100%;
+  }
+
+  .escena--sala {
+    right: 0;
+    width: 100%;
+  }
+}

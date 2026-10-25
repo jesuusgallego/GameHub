@@ -5,11 +5,26 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Sin publicar]
 
 ### Cambiado
-- **La barra de arriba** enseña iconos en lugar de texto (Noticias, Mi biblioteca, Buscar y
-  Social), centrados en medio de la barra. Al pasar el ratón sale el nombre de cada uno.
+- **La barra de arriba** enseña iconos en lugar de texto (Noticias, Mi biblioteca y Social),
+  centrados en medio de la barra. Al pasar el ratón sale el nombre de cada uno.
+- **Añadir juegos, dentro de Mi biblioteca:** Buscar deja de ser una página aparte. El botón
+  **+ Añadir juegos** de Mi biblioteca abre una ventana para buscar en IGDB y guardar juegos sin
+  salir de ella; al cerrarla, los nuevos ya están en tu rejilla. Si filtras tu biblioteca y no
+  encuentras algo, "busca juegos nuevos" abre esa ventana con lo que habías escrito.
+  - El título y el botón quedan arriba del todo, y el filtro de tus juegos va junto al orden,
+    encima de la rejilla.
+- **Cada cabecera con su escena:** Noticias, Mi biblioteca y Social tienen una cabecera grande con
+  el mismo estilo, cada una con su color y un dibujo que cuenta de qué va su apartado:
+  - **Noticias**, en rojo y ámbar: periódicos y una revista de videojuegos con las fotos de las
+    últimas noticias.
+  - **Mi biblioteca**, en esmeralda: una estantería con tu colección, tus portadas entre lomos de
+    colores, y una pastilla que resume cuántos juegos tienes jugando, completados, pendientes y
+    abandonados.
+  - **Social**, en violeta: tres amigos jugando en el sofá delante de una tele que enseña lo que
+    juegan tus amigos.
 - **Noticias, más sencilla:** sin la cinta de "Última hora" ni la cabecera de periódico.
-  - La cabecera dice cuándo salió la última noticia y enseña en abanico las portadas de tus juegos
-    de los que se habla: se abre al pasar el ratón y, al pulsar una, ves las noticias de ese juego.
+  - La cabecera dice cuándo salió la última noticia y enseña los logos de tus portales: al
+    pulsarlos eliges cuáles sigues.
   - Las noticias van sin cajas: la imagen, el portal, el titular y por qué te sale. El extracto
     queda solo en la primera.
   - Cada portal lleva su logo: en las noticias que no traen imagen, al elegir qué portales sigues

@@ -10,72 +10,47 @@ import { borrarToken } from './sesion'
 import { tiempoRelativo } from './tiempo'
 import { masReciente } from './logicaNoticias'
 import { logoPortal } from './logosPortales'
+import FondoCabecera from './FondoCabecera'
 
-// La cabecera: una tarjeta con el degradado de la app (como la de Buscar). A la izquierda, la fecha,
-// el título, una frase (de qué juegos tuyos se habla) y una línea de estado: cuándo salió la última
-// noticia y de cuántos portales se leen. A la derecha, un abanico con las portadas de esos juegos que
-// se abre al pasar el ratón (pulsar una enseña sus noticias); si no hay ninguno, un dibujo.
+// La cabecera, con el mismo fondo que las de Social y Mi biblioteca (FondoCabecera): de mosaico,
+// las imágenes de las últimas noticias. Delante, la fecha, el título, una frase (de qué juegos tuyos
+// se habla) y una línea de estado: cuándo salió la última noticia y una pastilla con los logos de
+// tus portales, montados uno sobre otro, que abre "Tus portales".
 //  - frase: el texto de debajo del título
 //  - ultima: la fecha de la noticia más reciente (null mientras no hay)
-//  - nPortales: cuántos portales hay en el catálogo
-//  - juegos: los de "Se habla de tus juegos"; onJuego(juego): pulsar una portada
-//  - onPortales(): abre "Tus portales"; el botón solo se ve en pantallas estrechas, donde la columna
-//    lateral (que tiene el suyo) se queda en lo justo
-function CabeceraNoticias({ frase, ultima, nPortales, juegos, onJuego, onPortales }) {
+//  - imagenes: las del mosaico de fondo
+//  - portales: el catálogo (null mientras llega); onPortales(): abre "Tus portales"
+function CabeceraNoticias({ frase, ultima, imagenes, portales, onPortales }) {
   const { t, locale } = useIdioma()
   const hoy = new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())
-  const portadas = juegos.filter((j) => j.cover_url).slice(0, 3)
+  // Los logos del botón: primero los portales que sigues, hasta cinco
+  const conLogo = (portales ?? []).filter((p) => logoPortal(p.slug))
+  const logos = [...conLogo.filter((p) => p.following), ...conLogo.filter((p) => !p.following)].slice(0, 5)
   return (
-    <header className="noticias-cabecera">
+    <header className="banner-perfil noticias-cabecera">
+      <FondoCabecera estilo="noticias" imagenes={imagenes} />
       <div className="noticias-cabecera__texto">
         <p className="noticias-cabecera__fecha">{hoy}</p>
         <h1 className="noticias-cabecera__titulo">{t('noticias.titulo')}</h1>
         <p className="noticias-cabecera__frase">{frase}</p>
-        <p className="noticias-cabecera__estado">
+        <div className="noticias-cabecera__estado">
           {ultima && (
             <span className="noticias-cabecera__vivo">
               <span className="noticias-cabecera__punto" aria-hidden="true" />
               {t('noticias.ultimaNoticia', { tiempo: tiempoRelativo(ultima, locale) })}
             </span>
           )}
-          {nPortales > 0 && <span className="noticias-cabecera__cuantos">{t('noticias.nPortales', { n: nPortales })}</span>}
-        </p>
-      </div>
-
-      {portadas.length > 0 ? (
-        <div className="noticias-abanico" style={{ '--cuantas': portadas.length }}>
-          {portadas.map((j, i) => (
-            <button
-              key={j.igdb_id}
-              type="button"
-              className="noticias-abanico__portada"
-              // --i: -1, 0, 1 (posición respecto al centro); la del centro queda por encima
-              style={{ '--i': i - (portadas.length - 1) / 2, zIndex: 3 - Math.abs(i - (portadas.length - 1) / 2) * 2 }}
-              title={t('noticias.verDeJuego', { juego: j.name })}
-              aria-label={t('noticias.verDeJuego', { juego: j.name })}
-              onClick={() => onJuego(j)}
-            >
-              <img src={j.cover_url} alt="" />
+          {portales && (
+            <button type="button" className="noticias-cabecera__portales" title={t('noticias.gestionarPortales')} onClick={onPortales}>
+              <span className="noticias-cabecera__logos" aria-hidden="true">
+                {logos.map((p, i) => <img key={p.slug} src={logoPortal(p.slug)} alt="" style={{ '--i': i }} />)}
+              </span>
+              {t('noticias.nPortales', { n: portales.length })}
+              <span className="sr-only">{t('noticias.gestionarPortales')}</span>
             </button>
-          ))}
+          )}
         </div>
-      ) : (
-        <svg className="noticias-cabecera__dibujo" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-          <path d="M18 14h-8M15 18h-5" />
-          <path d="M10 6h8v4h-8z" />
-        </svg>
-      )}
-
-      {onPortales && (
-        <button type="button" className="noticias-cabecera__portales" aria-label={t('noticias.gestionarPortales')} title={t('noticias.gestionarPortales')} onClick={onPortales}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
-            <circle cx="16" cy="7" r="2" />
-            <circle cx="10" cy="17" r="2" />
-          </svg>
-        </button>
-      )}
+      </div>
     </header>
   )
 }
@@ -96,6 +71,9 @@ function Noticias({ setToken }) {
   const [mencionados, setMencionados] = useState([])
   // La fecha de la noticia más reciente de lo cargado, para la cabecera
   const [ultima, setUltima] = useState(null)
+  // Las imágenes del mosaico de la cabecera: las de la primera página que llega, una vez (así no
+  // cambian mientras lees)
+  const [imagenes, setImagenes] = useState([])
   // Las dos pestañas se montan la primera vez que se abren y luego siguen montadas (al volver, cada
   // una está donde la dejaste)
   const [abiertas, setAbiertas] = useState(() => new Set([tab]))
@@ -121,6 +99,7 @@ function Noticias({ setToken }) {
   const alDatos = useCallback(({ mencionados: m, noticias }) => {
     if (m) setMencionados(m)
     setUltima((previa) => masReciente(noticias, previa))
+    setImagenes((previas) => (previas.length > 0 ? previas : [...new Set(noticias.map((n) => n.image).filter(Boolean))].slice(0, 12)))
   }, [])
 
   function cambiarPortales(lista) {
@@ -145,14 +124,7 @@ function Noticias({ setToken }) {
 
   return (
     <div className="noticias">
-      <CabeceraNoticias
-        frase={frase}
-        ultima={ultima}
-        nPortales={portales?.length ?? 0}
-        juegos={mencionados}
-        onJuego={verJuego}
-        onPortales={portales ? () => setGestionando(true) : null}
-      />
+      <CabeceraNoticias frase={frase} ultima={ultima} imagenes={imagenes} portales={portales} onPortales={() => setGestionando(true)} />
 
       <PestanasPerfil
         variante="barra"

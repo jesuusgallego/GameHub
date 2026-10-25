@@ -251,6 +251,90 @@
     linear-gradient(0deg, rgba(255, 255, 255, 0.35), transparent 50%);
 }
 
+/* ---- Los fondos de las cabeceras grandes (FondoCabecera.jsx) ------------------------------
+   Social, Noticias y Mi biblioteca comparten la tarjeta (.banner-perfil); cada una tiene su color y
+   su textura (aquí) y su escena ilustrada (estilos/escenas-cabecera.css):
+     sala        violeta y cian, con rejilla y líneas de barrido
+     noticias    rojo y ámbar, con columnas de líneas de texto
+     biblioteca  esmeralda y azul, con una trama de puntos
+   El color de base (.banner-perfil__fondo) es el de 'sala'; los otros dos lo cambian. */
+
+/* Líneas de barrido muy tenues, como una pantalla de recreativa (solo en Social) */
+.cabecera-rayas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 4px);
+  mix-blend-mode: multiply;
+}
+
+:root[data-tema="claro"] .cabecera-rayas {
+  background: repeating-linear-gradient(0deg, rgba(15, 27, 42, 0.05) 0 1px, transparent 1px 4px);
+}
+
+/* ---- Noticias: última hora ---- */
+/* Rojo y ámbar, el color de los avisos de última hora */
+.fondo--noticias {
+  background:
+    radial-gradient(ellipse 55% 140% at 4% -20%, rgba(239, 68, 68, 0.8), transparent 70%),
+    radial-gradient(ellipse 50% 120% at 48% 135%, rgba(245, 158, 11, 0.6), transparent 68%),
+    radial-gradient(ellipse 42% 110% at 98% 10%, rgba(244, 114, 182, 0.4), transparent 70%),
+    linear-gradient(135deg, #2c1a22, #161521 55%, #2c1d17);
+}
+
+:root[data-tema="claro"] .fondo--noticias {
+  background:
+    radial-gradient(ellipse 55% 140% at 4% -20%, rgba(239, 68, 68, 0.32), transparent 70%),
+    radial-gradient(ellipse 50% 120% at 48% 135%, rgba(245, 158, 11, 0.32), transparent 68%),
+    radial-gradient(ellipse 42% 110% at 98% 10%, rgba(244, 114, 182, 0.28), transparent 70%),
+    linear-gradient(135deg, #fbeceb, #fdf8f5 55%, #fcefe0);
+}
+
+/* Columnas de líneas de texto, como las de un periódico, que se desvanecen hacia el título: las
+   líneas son un degradado que se repite cada 9 px, y la máscara las corta en columnas (las dos
+   capas de la máscara se cruzan: intersect) */
+.fondo--noticias::before {
+  background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px 9px);
+  background-size: auto;
+  mask-image:
+    repeating-linear-gradient(90deg, #000 0 6.5rem, transparent 6.5rem 7.5rem),
+    linear-gradient(90deg, transparent 15%, #000 60%);
+  mask-composite: intersect;
+}
+
+:root[data-tema="claro"] .fondo--noticias::before {
+  background-image: repeating-linear-gradient(0deg, rgba(60, 20, 20, 0.07) 0 2px, transparent 2px 9px);
+}
+
+/* ---- Mi biblioteca: la estantería ---- */
+/* Esmeralda y azul */
+.fondo--biblioteca {
+  background:
+    radial-gradient(ellipse 55% 140% at 4% -20%, rgba(16, 185, 129, 0.75), transparent 70%),
+    radial-gradient(ellipse 50% 120% at 48% 135%, rgba(27, 116, 200, 0.85), transparent 68%),
+    radial-gradient(ellipse 42% 110% at 98% 10%, rgba(94, 234, 212, 0.45), transparent 70%),
+    linear-gradient(135deg, #123033, #0f1b27 55%, #13283e);
+}
+
+:root[data-tema="claro"] .fondo--biblioteca {
+  background:
+    radial-gradient(ellipse 55% 140% at 4% -20%, rgba(16, 185, 129, 0.32), transparent 70%),
+    radial-gradient(ellipse 50% 120% at 48% 135%, rgba(59, 150, 230, 0.36), transparent 68%),
+    radial-gradient(ellipse 42% 110% at 98% 10%, rgba(94, 234, 212, 0.4), transparent 70%),
+    linear-gradient(135deg, #e1f5ee, #f5fbf9 55%, #e2eefb);
+}
+
+/* Una trama de puntos, como la pared de un expositor */
+.fondo--biblioteca::before {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1.5px);
+  background-size: 18px 18px;
+}
+
+:root[data-tema="claro"] .fondo--biblioteca::before {
+  background-image: radial-gradient(rgba(15, 42, 40, 0.12) 1px, transparent 1.5px);
+}
+
 /* ---- Perfil: pestañas y paneles (PestanasPerfil.jsx, Perfil.jsx) ------------- */
 .perfil__cuerpo {
   display: grid;

@@ -6,7 +6,7 @@ import { useIdioma } from './IdiomaContext'
 // CabeceraPerfil). Recibe lo que calcula GET /profile/stats:
 //  - stats: { total, jugando, completado, abandonado, pendiente, valorados, nota_media }
 //  - mejores: sus juegos mejor valorados (hasta 5)
-//  - soloLectura: es el perfil de otra persona; no ofrece buscar juegos
+//  - soloLectura: es el perfil de otra persona; no ofrece añadir juegos
 function EstadisticasPerfil({ stats, mejores, soloLectura = false }) {
   const { t } = useIdioma()
 
@@ -14,7 +14,7 @@ function EstadisticasPerfil({ stats, mejores, soloLectura = false }) {
     return (
       <div className="estado-vacio">
         <p>{soloLectura ? t('stats.vacioOtro') : t('stats.vacio')}</p>
-        {!soloLectura && <Link to="/buscar" className="btn btn--primario">{t('comun.buscarJuegos')}</Link>}
+        {!soloLectura && <Link to="/biblioteca?anadir=" className="btn btn--primario">{t('biblioteca.anadirJuegos')}</Link>}
       </div>
     )
   }

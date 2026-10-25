@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import AvatarTono from './AvatarTono'
 import { useIdioma } from './IdiomaContext'
 import { estiloTono } from './tono'
+import FondoCabecera from './FondoCabecera'
 
 const MAX_HUECOS = 6
 
@@ -45,13 +46,7 @@ function SalaCabecera({ amigos, actividad = [], onInvitar, onVerAmigos }) {
 
   return (
     <header className="banner-perfil sala-cabecera">
-      <div className="banner-perfil__fondo" aria-hidden="true" />
-      {portadas.length > 0 && (
-        <div className="sala-cabecera__mosaico" aria-hidden="true">
-          {portadas.map((url) => <img key={url} src={url} alt="" loading="lazy" />)}
-        </div>
-      )}
-      <div className="sala-cabecera__rayas" aria-hidden="true" />
+      <FondoCabecera estilo="sala" imagenes={portadas} />
 
       <div className="sala-cabecera__contenido">
         <div className="sala-cabecera__texto">

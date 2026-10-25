@@ -96,53 +96,6 @@
   --anillo-hueco: #fff;
 }
 
-/* El mosaico de portadas, inclinado y desvanecido hacia la izquierda, donde está el título */
-.sala-cabecera__mosaico {
-  position: absolute;
-  top: -30%;
-  right: -8%;
-  bottom: -30%;
-  z-index: -1;
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.6rem;
-  align-content: center;
-  width: 66%;
-  opacity: 0.42;
-  transform: rotate(-9deg);
-  mask-image: linear-gradient(90deg, transparent, #000 48%);
-}
-
-:root[data-tema="claro"] .sala-cabecera__mosaico {
-  opacity: 0.3;
-}
-
-.sala-cabecera__mosaico img {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  border-radius: 6px;
-  filter: saturate(1.15);
-}
-
-.sala-cabecera__mosaico img:nth-child(even) {
-  transform: translateY(1.4rem);
-}
-
-/* Líneas de barrido muy tenues, como una pantalla de recreativa */
-.sala-cabecera__rayas {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 4px);
-  mix-blend-mode: multiply;
-}
-
-:root[data-tema="claro"] .sala-cabecera__rayas {
-  background: repeating-linear-gradient(0deg, rgba(15, 27, 42, 0.05) 0 1px, transparent 1px 4px);
-}
-
 .sala-cabecera__contenido {
   position: relative;
   z-index: 1;
@@ -2023,11 +1976,6 @@
 @media (max-width: 640px) {
   .sala-cabecera__contenido {
     padding: 1.6rem 1.25rem 1.25rem;
-  }
-
-  .sala-cabecera__mosaico {
-    width: 100%;
-    opacity: 0.25;
   }
 
   .huecos {

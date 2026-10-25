@@ -36,6 +36,7 @@
 
 /* Perfil: banner, pestañas, seguridad y cuentas vinculadas */
 @import './perfil-cabecera-y-pestanas.css';
+@import './escenas-cabecera.css';
 @import './perfil-seguridad.css';
 @import './cuentas-vinculadas.css';
 @import './perfil-movil.css';

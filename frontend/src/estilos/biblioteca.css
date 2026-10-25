@@ -349,20 +349,106 @@
   min-width: 0;
 }
 
+/* La cabecera: el fondo de Social (.banner-perfil + FondoCabecera) con mis portadas de mosaico. El
+   título y la pastilla a la izquierda, "Añadir juegos" a la derecha. */
 .biblioteca__cabecera {
+  margin-bottom: 1.75rem;
+}
+
+.biblioteca__cabecera-contenido {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.25rem 2rem;
+  padding: 2.25rem 2rem;
 }
 
-/* Barra de orden bajo la cabecera, pegada a la derecha. Si no cabe, el selector
-   pasa a otra línea. */
-.biblioteca__orden {
+.biblioteca__cabecera-texto {
   display: flex;
-  justify-content: flex-end;
-  margin-top: -0.25rem;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.biblioteca__cabecera .titulo-pagina {
+  margin: 0;
+}
+
+/* Cuántos hay en cada estado, con su punto de color: una pastilla de cristal como la de Social */
+.biblioteca__resumen {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  margin: 0;
+  padding: 0.45rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--banner-texto);
+  background: var(--banner-cristal);
+  border: 1px solid var(--banner-cristal-borde);
+  border-radius: 1.2rem;
+  backdrop-filter: blur(10px);
+  animation: biblioteca-entrada 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both;
+}
+
+.biblioteca__resumen > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.biblioteca__resumen:empty {
+  display: none;
+}
+
+.biblioteca__anadir {
+  height: 44px;
+  padding-inline: 1.1rem;
+  white-space: nowrap;
+}
+
+/* El "+" gira un cuarto de vuelta al pasar el ratón (también el del estado vacío) */
+.biblioteca-pagina .btn svg,
+.estado-vacio .btn svg {
+  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.biblioteca-pagina .btn:hover svg,
+.estado-vacio .btn:hover svg {
+  transform: rotate(90deg);
+}
+
+/* "busca juegos nuevos" en el aviso de sin resultados: un botón con aspecto de enlace */
+.enlace-boton {
+  padding: 0;
+  font: inherit;
+  color: var(--acento);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.enlace-boton:hover {
+  text-decoration: underline;
+}
+
+/* Encima de la rejilla: el filtro a la izquierda y el orden a la derecha. Si no caben en una fila,
+   el orden pasa debajo, pegado a la derecha. */
+.biblioteca__barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.biblioteca__barra .orden {
+  margin-left: auto;
 }
 
 .orden {
@@ -465,4 +551,11 @@
 
 .enlace-titulo:hover {
   color: var(--acento);
+}
+
+/* En el móvil, la cabecera con el mismo margen interior que las de Noticias y Social */
+@media (max-width: 640px) {
+  .biblioteca__cabecera-contenido {
+    padding: 1.6rem 1.25rem 1.4rem;
+  }
 }

@@ -77,23 +77,8 @@
   font-size: 1rem;
 }
 
-/* ---- Buscar -------------------------------------------------------------- */
-.buscar-pagina {
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
-  /* Entra con un fundido y un pequeño ascenso, como las demás páginas */
-  animation: buscar-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-@keyframes buscar-entrada {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-}
-
-/* Debajo del banner: los bloques que se pliegan y la rejilla de resultados. Sin `gap`: el hueco
+/* ---- Buscar juegos: la ventana "Añadir juegos" de Mi biblioteca ---------- */
+/* Debajo del buscador: los bloques que se pliegan y la rejilla de resultados. Sin `gap`: el hueco
    entre bloques va dentro de cada Plegable, para que se pliegue con él. */
 .buscar-zona {
   display: flex;
@@ -114,27 +99,6 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.banner {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 2.25rem 2rem;
-  background: var(--banner);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio-grande);
-}
-
-.banner__titulo {
-  font-family: var(--display);
-  font-size: 2.5rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.banner__texto {
-  max-width: 560px;
 }
 
 .resultados__cabecera {

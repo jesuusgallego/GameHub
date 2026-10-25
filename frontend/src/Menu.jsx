@@ -64,17 +64,6 @@ const ENLACES = [
     ),
   },
   {
-    to: '/buscar',
-    texto: 'menu.buscar',
-    // Una lupa
-    icono: (
-      <>
-        <circle cx="11" cy="11" r="7" />
-        <path d="m20 20-3.9-3.9" />
-      </>
-    ),
-  },
-  {
     to: '/social',
     texto: 'menu.social',
     // Dos personas

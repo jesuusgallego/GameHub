@@ -11,7 +11,7 @@ import { useAvisos } from './useAvisos'
 import { useIdioma } from './IdiomaContext'
 
 // Estructura común de las páginas con sesión: barra arriba y contenido centrado.
-// <Outlet /> es donde React Router pinta la página hija (Biblioteca, Buscar o
+// <Outlet /> es donde React Router pinta la página hija (Noticias, Biblioteca, Social o
 // Perfil). El Layout no se desmonta al cambiar de página, así que la barra no se
 // vuelve a crear.
 //

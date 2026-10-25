@@ -697,7 +697,17 @@ horaria.
   hueco de debajo va dentro (por eso `.biblioteca-pagina` ya no tiene `gap`).
 - `ImagenSuave.jsx`: las portadas aparecen con un fundido al terminar de cargar.
 
-**Fluidez de Buscar.** Reutiliza las mismas piezas (`useAnimacionLista` con `{ escalonar: true }`,
+**Añadir juegos (antes, la página Buscar).** Es una ventana de Mi biblioteca (`AnadirJuegos.jsx`)
+que se abre con el botón "+ Añadir juegos" de la cabecera. Va en la URL (`/biblioteca?anadir=`, con
+lo que haya que buscar ya escrito: así "busca juegos nuevos" del aviso de sin resultados la abre con
+lo que filtrabas), de modo que otras páginas pueden traer aquí con ella abierta y el botón Atrás la
+cierra; `/buscar` redirige ahí. Quien guarda es la Biblioteca (`anadirJuego`), así que al cerrarla
+los juegos nuevos ya están en la rejilla. La ficha de un resultado no se abre dentro de la ventana
+sino a su lado, desde la Biblioteca: son dos `<dialog>` hermanos, y Esc o un clic fuera cierran solo
+el de arriba (Esc en el buscador primero lo vacía). Al abrirse, el foco se lleva al buscador a mano:
+`showModal()` lo pone en el primer botón, y `autoFocus` de React se aplica antes.
+
+**Fluidez de la búsqueda.** Reutiliza las mismas piezas (`useAnimacionLista` con `{ escalonar: true }`,
 `Plegable` con su `hueco`, `ImagenSuave`, `cacheBiblioteca`) más `cacheBusquedas.js`: los
 resultados de las últimas 40 búsquedas se guardan en memoria y un término repetido sale al
 instante, sin esperar la pausa de 400 ms al escribir ni al servidor. Mientras llega una búsqueda
@@ -705,6 +715,8 @@ nueva se siguen viendo los resultados de la anterior, atenuados (`.rejilla--busc
 cabecera enseña "Buscando…"; solo la primera búsqueda muestra el spinner grande. Los bloques de
 estado (ayuda inicial, spinner, error, cabecera, "sin resultados") son `Plegable` dentro de
 `.buscar-zona`, que no tiene `gap`: el hueco va dentro de cada bloque para que se pliegue con él.
+La ventana tiene un alto fijo para no cambiar de tamaño a cada búsqueda; solo se desplazan los
+resultados.
 ### Steam
 
 Es la única plataforma con una API oficial para leer la biblioteca de un jugador (PSN, Xbox y
@@ -776,7 +788,17 @@ Epic se descartaron), por eso es la única que se puede vincular.
   `controllers/userController.js` (buscar, perfil, biblioteca, amigos y foto de otra persona) y
   `controllers/friendController.js` (amistades, solicitudes, bloqueos, actividad y
   sugerencias). Frontend: `Social.jsx` ("la sala": cabecera con tu grupo, pestañas en barra y
-  paneles), `SalaCabecera.jsx` (el lobby: mosaico, pastilla de estado y círculos de amigos), `Actividad.jsx` (+ `EnDirecto.jsx` y
+  paneles), `SalaCabecera.jsx` (el lobby: mosaico, pastilla de estado y círculos de amigos). El fondo
+  es `FondoCabecera.jsx`, que comparten las cabeceras de Social, Noticias y Mi biblioteca: misma
+  tarjeta, título y pastillas de cristal, pero cada apartado con su `estilo` para que se note dónde
+  estás: su color, su textura y una escena ilustrada (`EscenasCabecera.jsx`, dibujada con
+  HTML/CSS/SVG, sin ilustraciones descargadas, con imágenes reales dentro). `sala`: violeta y cian,
+  tres amigos de espaldas en el sofá con mandos delante de una tele que enseña lo que juegan tus
+  amigos (un SVG cuyos colores salen de variables CSS); `noticias`: rojo y ámbar, dos periódicos
+  ("PRESS START", "LEVEL UP") y una revista ("PLAY") con las fotos de las últimas noticias;
+  `biblioteca`: esmeralda y azul, una estantería de dos baldas con cajas de frente (tus portadas,
+  con la franja de color de las cajas de consola) y lomos de colores, y una pastilla con cuántos
+  juegos hay en cada estado, `Actividad.jsx` (+ `EnDirecto.jsx` y
   la línea del tiempo por días) y `LateralSala.jsx` (solicitudes, `ParaJugarJuntos.jsx` y
   sugerencias, cada una con su botón),
   `Carnet.jsx` (la persona como carnet de jugador; lo pintan `RejillaPersonas.jsx` y las listas),
@@ -1068,11 +1090,13 @@ lo que se ve y se pulsa) y `logicaNoticias.js`. Estilos en `estilos/noticias.css
 - **Privacidad:** *Perfil → Privacidad → Noticias* tiene "Personalizar Para ti con mi actividad"
   (`users.news_personalization`). Apagado, no se registra nada (ocultar sigue funcionando, porque es
   una preferencia explícita). Los sucesos se borran a los 180 días y con la cuenta (`CASCADE`).
-- **La página:** arriba, una cabecera con el degradado de la app: fecha, título, una frase (de qué
+- **La página:** arriba, una cabecera con su propio fondo (`FondoCabecera` con `estilo="noticias"`,
+  ver Social): rojo y ámbar, con periódicos y una revista de videojuegos que llevan las fotos de
+  las primeras noticias: fecha, título, una frase (de qué
   juegos tuyos se habla) y una línea de estado ("Última noticia hace…", con `masReciente()` de
-  `logicaNoticias.js` sobre lo cargado en las dos pestañas, y cuántos portales hay). A la derecha,
-  un abanico con las portadas de hasta tres de esos juegos que se abre al pasar el ratón (pulsar
-  una filtra por ese juego); sin juegos, un periódico dibujado. Debajo, las pestañas en píldora
+  `logicaNoticias.js` sobre lo cargado en las dos pestañas) y un botón con los logos de tus
+  portales montados uno sobre otro y cuántos hay, que abre "Tus portales". Las portadas de los
+  juegos de los que se habla no se repiten aquí: ya están en la columna. Debajo, las pestañas en píldora
   con la pestaña en la URL (`?tab=siguiendo`). Las noticias van sin cajas: la primera en grande
   (con extracto) y la rejilla (imagen, portal con el punto de su color, titular y motivo, sin
   extracto), con carga al acercarse al final. En el móvil, las noticias son filas con la imagen
@@ -1092,7 +1116,7 @@ lo que se ve y se pulsa) y `logicaNoticias.js`. Estilos en `estilos/noticias.css
   sale con su animación (`animationend`, o al instante con "reducir movimiento") y deja un hueco
   con "Deshacer". La columna lateral: "Se habla de tus juegos" (pulsar uno filtra con `?game=`) y
   "Tus portales"; en pantallas estrechas solo quedan los juegos, como una fila de etiquetas arriba
-  (el abanico se esconde), y "Tus portales" pasa a un botón en la esquina de la cabecera.
+  (el bloque "Tus portales" se esconde: queda el botón de los logos de la cabecera).
 - **Cómo se probó:** `backend/test/noticias.test.js` (RSS y Atom de ejemplo con las rarezas reales,
   el catálogo y el recomendador) y `frontend/test/noticias.test.js`. La lectura de los 24 portales
   de verdad y la API (34 comprobaciones: páginas sin repetir, exploración cada 6, variedad,

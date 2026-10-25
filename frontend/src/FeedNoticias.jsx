@@ -202,7 +202,7 @@ function FeedNoticias({ tipo, juego, portales, eventos, onPortales, onDatos, onQ
 
       {tipo === 'para_ti' && !juego && tamanoBiblioteca === 0 && (
         <p className="noticias-consejo">
-          {t('noticias.consejoBiblioteca')} <Link to="/buscar">{t('noticias.consejoBuscar')}</Link>
+          {t('noticias.consejoBiblioteca')} <Link to="/biblioteca?anadir=">{t('noticias.consejoBuscar')}</Link>
         </p>
       )}
 

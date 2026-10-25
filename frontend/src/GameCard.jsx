@@ -3,7 +3,7 @@ import ImagenSuave from './ImagenSuave'
 import { useIdioma } from './IdiomaContext'
 
 // Tarjeta de un resultado de la búsqueda. El botón de añadir vive en BotonAnadir
-// y el padre (Buscar) me pasa yaGuardado y onAnadir.
+// y el padre (la ventana AnadirJuegos) me pasa yaGuardado y onAnadir.
 // Toda la tarjeta abre la ficha: el ::after del botón del título se estira por
 // ella (ver estilos/tarjetas.css) y el botón de añadir va por encima.
 //  - clave: id estable del juego; lo lee useAnimacionLista (data-clave) para deslizar y animar
