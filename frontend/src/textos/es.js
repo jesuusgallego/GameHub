@@ -255,6 +255,7 @@ export default {
   'editarPerfil.nombre': 'Nombre',
   'editarPerfil.apellidos': 'Apellidos',
   'editarPerfil.nacimiento': 'Fecha de nacimiento',
+  'campoFecha.vacio': 'Elige una fecha',
   'editarPerfil.sexo': 'Sexo',
   'editarPerfil.localizacion': 'Localización',
   'editarPerfil.localizacionPlaceholder': 'Ciudad o región',

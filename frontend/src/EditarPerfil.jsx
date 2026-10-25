@@ -17,6 +17,7 @@ import {
   PAISES_CON_PREFIJO, componerTelefono, descomponerTelefono, telefonoValido,
 } from './telefono'
 import { opcionesPaises } from './paises'
+import CampoFecha from './CampoFecha'
 
 const BIO_MAX = 300
 
@@ -340,8 +341,7 @@ function EditarPerfil({ perfil, onGuardado, cerrarSesion }) {
       <div className="formulario__pareja">
         <label className="campo">
           <span>{t('editarPerfil.nacimiento')}</span>
-          <input
-            type="date"
+          <CampoFecha
             value={nacimiento}
             onChange={(e) => setNacimiento(e.target.value)}
             min={nacimientoMin}

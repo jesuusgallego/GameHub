@@ -6,6 +6,7 @@ import Mensaje from './Mensaje'
 import { useVentana } from './useVentana'
 import { useIdioma } from './IdiomaContext'
 import { EDAD_MINIMA, limitesFechaNacimiento, problemaFechaNacimiento } from './validacion'
+import CampoFecha from './CampoFecha'
 
 // Ventana que pide la fecha de nacimiento a las cuentas creadas antes de que hubiera edad
 // mínima (14 años, ver EDAD_MINIMA). Sale sobre cualquier página hasta que se guarda una fecha
@@ -77,9 +78,8 @@ function PedirFechaNacimiento({ onGuardado, setToken }) {
       <form className="formulario" onSubmit={guardar} noValidate>
         <label className="campo">
           <span>{t('editarPerfil.nacimiento')}</span>
-          <input
+          <CampoFecha
             ref={campoRef}
-            type="date"
             value={fecha}
             min={min}
             max={max}

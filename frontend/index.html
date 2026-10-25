@@ -14,9 +14,12 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="GameHub" />
-    <!-- black-translucent: la barra de estado (hora, batería) va encima de la app, con el texto en
-         blanco; la barra de GameHub empieza debajo -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- SIN apple-mobile-web-app-status-bar-style: con "black-translucent" (lo que había hasta la
+         1.8.0), iOS 26.1 y posteriores pintan un degradado borroso encima de la app, en la franja de
+         la hora, y la web no lo puede quitar. Sin la etiqueta (lo que recomienda Apple), la franja
+         es opaca, del color de theme-color, y la app empieza debajo. El script de abajo pone
+         theme-color a juego con el tema. OJO: iOS lee esto al instalar; hay que quitar la app de la
+         pantalla de inicio y volver a añadirla para que cambie. -->
     <link rel="apple-touch-icon" href="/iconos/apple-touch-icon.png" />
     <!-- Pantallas de arranque del iPhone: iOS no las genera solo y, sin ellas, la app abre con un
          fogonazo blanco. Una por tamaño de pantalla (las genera scripts/iconos-pwa.mjs). -->
@@ -54,8 +57,16 @@
           tema = 'oscuro'
         }
         document.documentElement.dataset.tema = tema
+        // La franja de la hora (y la barra de Android) del color de la barra de GameHub en cada tema.
+        // Misma lógica que colorBarraEstado() de src/tema.js.
+        document.querySelector('meta[name="theme-color"]').content = tema === 'claro' ? '#ffffff' : '#0b121c'
+        // iPhone y iPad: el CSS les da el aspecto "Liquid Glass" de iOS 26 (estilos/cristal-ios.css).
+        // El iPad con iPadOS se presenta como un Mac: se le reconoce por la pantalla táctil.
+        if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+          document.documentElement.classList.add('ios')
+        }
         // Abierta como app instalada (desde el icono de la pantalla de inicio): el CSS lo usa para
-        // la franja de la hora en el iPhone (ver estilos/barra-superior.css). Safari lo dice con
+        // la barra de pestañas de abajo en el iPhone (ver estilos/cristal-ios.css). Safari lo dice con
         // navigator.standalone; el resto, con display-mode.
         if (navigator.standalone === true || matchMedia('(display-mode: standalone)').matches) {
           document.documentElement.classList.add('app-instalada')

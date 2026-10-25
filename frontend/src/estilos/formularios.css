@@ -63,3 +63,82 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Campo de fecha (CampoFecha.jsx) ---- */
+/* Fuera de iOS, el campo de fecha del navegador ya se ve bien (con su "dd/mm/aaaa" y su icono): el
+   envoltorio no cambia nada y lo que añade queda oculto. */
+.campo-fecha {
+  position: relative;
+  display: block;
+}
+
+/* El envoltorio es un <span> dentro de la etiqueta .campo: que no herede el aspecto del rótulo */
+.campo > span.campo-fecha {
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  color: inherit;
+}
+
+.campo-fecha__vacio,
+.campo-fecha__icono {
+  display: none;
+}
+
+/* En el iPhone, Safari pinta el campo de fecha a su manera: el texto centrado, más bajo que los
+   demás campos cuando está vacío (y sin nada dentro) y sin encoger, así que en dos columnas se
+   salía de la suya. Con appearance: none vuelve a ser un campo como los demás; al tocarlo sigue
+   abriendo la rueda de fechas de iOS. El icono y el texto de ejemplo los pone CampoFecha.jsx. */
+:root.ios .campo-fecha input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  /* El alto de un campo de texto: una línea de 16 px, el relleno y el borde */
+  min-height: calc(1.5em + 1.2rem + 2px);
+  padding-right: 2.6rem;
+  text-align: left;
+}
+
+:root.ios .campo-fecha input::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  margin: 0;
+  text-align: left;
+}
+
+/* (Para las capturas en Chromium, que sí pinta su propio "dd/mm/aaaa" y su icono) */
+:root.ios .campo-fecha--vacio input::-webkit-datetime-edit {
+  color: transparent;
+}
+
+:root.ios .campo-fecha input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
+
+:root.ios .campo-fecha--vacio .campo-fecha__vacio {
+  position: absolute;
+  top: 50%;
+  left: calc(0.8rem + 1px);
+  display: block;
+  color: var(--texto-suave);
+  pointer-events: none;
+  translate: 0 -50%;
+}
+
+:root.ios .campo-fecha__icono {
+  position: absolute;
+  top: 50%;
+  right: 0.85rem;
+  display: block;
+  color: var(--texto-suave);
+  pointer-events: none;
+  translate: 0 -50%;
+  transition: color var(--transicion), scale 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Al tocarlo, el icono se enciende con el color de acento y da un saltito */
+:root.ios .campo-fecha:focus-within .campo-fecha__icono {
+  color: var(--acento);
+  scale: 1.12;
+}

@@ -2,6 +2,34 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+GameHub en el iPhone, más pulida y con el aspecto «Liquid Glass» de iOS 26.
+
+### Añadido
+- **Liquid Glass en el iPhone y el iPad.** Lo que flota sobre la página (menús, ventanas, avisos,
+  las pestañas de Noticias y Social) es de cristal: deja ver lo de detrás, desenfocado. Los botones
+  tienen forma de cápsula, como en iOS.
+- **Barra de pestañas abajo en la app instalada.** Noticias, Mi biblioteca y Social pasan a una
+  cápsula de cristal en la parte de abajo, con su nombre bajo cada icono, y a su lado un botón
+  redondo para el chat, como en las apps de iOS 26. Arriba solo quedan el logo y los menús.
+
+### Corregido
+- **La parte de arriba se veía borrosa en el iPhone** (iOS 26.1 y posteriores): ahora la franja de
+  la hora es de un color sólido, a juego con el tema. *Hay que quitar la app de la pantalla de
+  inicio y volver a añadirla* para que el cambio se aplique.
+- **La fecha de nacimiento** se veía rara en el iPhone (centrada, más baja que los demás campos y
+  vacía sin ninguna pista): ahora es un campo como los demás, con su icono y «Elige una fecha».
+- **Las pestañas de Noticias («Para ti» / «Siguiendo») y de Social** se escondían detrás de la
+  barra de arriba al bajar por la página en el móvil.
+- En la pantalla de registro del móvil, el botón de ajustes ya no pisa la tarjeta.
+
+### Interno
+- `estilos/cristal-ios.css` (solo con la clase `ios` en `<html>`, que pone `index.html`).
+- Sin `apple-mobile-web-app-status-bar-style`; `theme-color` sigue al tema (`tema.js`).
+- `--alto-barra` se mide con un `ResizeObserver` en `Menu.jsx`.
+- `CampoFecha.jsx`: el `<input type="date">` con icono y texto de ejemplo en iOS.
+
 ## [1.8.0] - 2026-10-25
 
 GameHub llega al iPhone: instálala desde Safari y ábrela como una app más.

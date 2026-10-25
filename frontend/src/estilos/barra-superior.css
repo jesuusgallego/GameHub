@@ -150,10 +150,11 @@
   animation: insignia-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
 }
 
-/* La app instalada en el iPhone con el tema claro: la hora y la batería se pintan siempre en
-   blanco (barra de estado "black-translucent", ver index.html), así que la franja de la muesca
-   va en oscuro para que se lean. Una sombra interior de la altura de esa franja la pinta sin
-   añadir elementos. La clase app-instalada la pone index.html al arrancar. */
+/* Solo para quien instaló la app con la 1.8.0 (barra de estado "black-translucent", que iOS
+   recuerda hasta que se reinstala) y usa el tema claro: la hora y la batería se pintan en blanco,
+   así que la franja de la muesca va en oscuro para que se lean. Una sombra interior de la altura
+   de esa franja la pinta sin añadir elementos. Desde la 1.8.1 la franja es opaca y está fuera de
+   la página (--seguro-arriba vale 0), así que esto ya no pinta nada. */
 :root.app-instalada[data-tema="claro"] .barra {
   box-shadow: inset 0 var(--seguro-arriba) 0 #0b121c;
 }

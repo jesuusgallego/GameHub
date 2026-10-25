@@ -6,6 +6,7 @@ import MenuAjustes from './MenuAjustes'
 import { useIdioma } from './IdiomaContext'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
+import CampoFecha from './CampoFecha'
 import {
   emailRegex, passwordRegex, usernameRegex, normalizarUsername, USERNAME_MAX,
   EDAD_MINIMA, limitesFechaNacimiento, problemaFechaNacimiento,
@@ -111,8 +112,7 @@ function Registro() {
           </label>
           <label className="campo">
             <span>{t('editarPerfil.nacimiento')}</span>
-            <input
-              type="date"
+            <CampoFecha
               value={nacimiento}
               onChange={(e) => setNacimiento(e.target.value)}
               min={nacimientoMin}

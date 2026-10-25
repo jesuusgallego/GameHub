@@ -254,6 +254,7 @@ export default {
   'editarPerfil.nombre': 'First name',
   'editarPerfil.apellidos': 'Last name',
   'editarPerfil.nacimiento': 'Date of birth',
+  'campoFecha.vacio': 'Choose a date',
   'editarPerfil.sexo': 'Sex',
   'editarPerfil.localizacion': 'Location',
   'editarPerfil.localizacionPlaceholder': 'City or region',

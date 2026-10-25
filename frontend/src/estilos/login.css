@@ -6,13 +6,22 @@
   display: grid;
   place-items: center;
   min-height: 100svh;
-  padding: 1.25rem;
+  padding: calc(1.25rem + var(--seguro-arriba)) 1.25rem calc(1.25rem + var(--seguro-abajo));
 }
 
+/* Con las zonas seguras del iPhone sumadas (valen 0 en el resto de sitios) */
 .auth__tema {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: calc(1rem + var(--seguro-arriba));
+  right: calc(1rem + var(--seguro-derecha));
+}
+
+/* En el móvil la tarjeta ocupa todo el ancho: bajo un poco para que el botón de ajustes de la
+   esquina no la pise */
+@media (max-width: 640px) {
+  .auth {
+    padding-top: calc(4.5rem + var(--seguro-arriba));
+  }
 }
 
 .auth__tarjeta {

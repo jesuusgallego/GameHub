@@ -114,8 +114,26 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
     return () => observador.disconnect()
   }, [])
 
+  // La altura real de la barra, en la variable --alto-barra: lo que se queda pegado debajo de ella
+  // al hacer scroll (las pestañas de Noticias y Social, los laterales) se coloca con ella. El CSS
+  // trae un valor fijo (64px), pero en el móvil la barra tiene dos filas, o una más baja con la
+  // app instalada en el iPhone; sin medirla, las pestañas acababan escondidas detrás de la barra.
+  const barraRef = useRef(null)
+  useEffect(() => {
+    const barra = barraRef.current
+    const raiz = document.documentElement
+    const observador = new ResizeObserver(() => {
+      raiz.style.setProperty('--alto-barra', `${barra.offsetHeight}px`)
+    })
+    observador.observe(barra)
+    return () => {
+      observador.disconnect()
+      raiz.style.removeProperty('--alto-barra')
+    }
+  }, [])
+
   return (
-    <header className="barra">
+    <header className="barra" ref={barraRef}>
       <div className="barra__interior">
         <Marca to="/noticias" />
 
