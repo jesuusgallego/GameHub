@@ -2,7 +2,10 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.7.0] - 2026-10-25
+
+Una GameHub más clara: menos ruido, cada apartado con su cara y añadir juegos sin salir de tu
+biblioteca.
 
 ### Cambiado
 - **La barra de arriba** enseña iconos en lugar de texto (Noticias, Mi biblioteca y Social),
@@ -30,6 +33,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   - Cada portal lleva su logo: en las noticias que no traen imagen, al elegir qué portales sigues
     y en la lista de "Tus portales".
   - En el móvil, las noticias son una lista de titulares con la imagen pequeña al lado.
+
+### Interno
+- Las cabeceras comparten `FondoCabecera.jsx`; las tres escenas están en `EscenasCabecera.jsx`
+  (HTML, CSS y SVG, sin imágenes) y sus estilos en `estilos/escenas-cabecera.css`.
+- `Buscar.jsx` pasa a ser `AnadirJuegos.jsx`, una ventana de Mi biblioteca que va en la URL
+  (`/biblioteca?anadir=`); `/buscar` redirige ahí.
+- Los 24 logos de los portales van dentro de la app (`src/logos-portales/`); una prueba avisa si
+  falta el de algún portal del catálogo.
+- Solo cambia la interfaz: el servidor es el mismo de la 1.6.0.
 
 ## [1.6.0] - 2026-10-24
 

@@ -11,6 +11,20 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.7.0': {
+    es: [
+      'La barra de arriba es ahora de iconos, en el centro: pasa el ratón para ver su nombre.',
+      'Añade juegos sin salir de Mi biblioteca, con el botón "+ Añadir juegos".',
+      'Noticias, Mi biblioteca y Social estrenan cabecera, cada una con su propio dibujo y color.',
+      'Noticias más limpia, y cada portal con su logo.',
+    ],
+    en: [
+      'The top bar now has icons, in the middle: hover over one to see its name.',
+      'Add games without leaving My library, with the "+ Add games" button.',
+      'News, My library and Social get new headers, each with its own picture and colour.',
+      'A cleaner News page, with each site\'s logo.',
+    ],
+  },
   '1.6.0': {
     es: [
       'Noticias es ahora lo primero que ves: lo último de 24 portales de videojuegos.',
