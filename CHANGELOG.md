@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.8.1] - 2026-10-25
 
 GameHub en el iPhone, más pulida y con el aspecto «Liquid Glass» de iOS 26.
 

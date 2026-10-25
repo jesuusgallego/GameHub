@@ -11,6 +11,16 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.1': {
+    es: [
+      'En el iPhone, GameHub estrena el aspecto «Liquid Glass» de iOS 26 y las pestañas pasan abajo, como en una app de iOS.',
+      'Arreglos para el móvil: la parte de arriba ya no se ve borrosa, la fecha de nacimiento se ve bien y las pestañas de Noticias ya no se esconden tras la barra.',
+    ],
+    en: [
+      'On iPhone, GameHub gets the iOS 26 "Liquid Glass" look and the tabs move to the bottom, like an iOS app.',
+      'Mobile fixes: the top no longer looks blurry, the date of birth field looks right and the News tabs no longer hide behind the bar.',
+    ],
+  },
   '1.8.0': {
     es: [
       'GameHub ya funciona en el iPhone: abre jesuusgallego.github.io/GameHub en Safari y añádela a la pantalla de inicio.',
