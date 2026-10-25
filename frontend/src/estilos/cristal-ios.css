@@ -347,10 +347,6 @@
     -webkit-touch-callout: none;
   }
 
-  :root.ios.app-instalada .barra__nav a.active {
-    color: var(--acento);
-  }
-
   :root.ios.app-instalada .barra__pista {
     position: static;
     display: block;
@@ -376,50 +372,64 @@
     transform: none;
   }
 
-  /* La línea de la pestaña activa se convierte en la lente: una gota de cristal más clara que va
-     de una pestaña a otra. Menu.jsx le da la posición (--x) y el ancho (--ancho) de la pestaña en
-     píxeles: aquí se usan tal cual, sin estirar con scaleX (que deformaba sus puntas redondas).
-     El !important gana al transform que Menu.jsx pone en el propio elemento para el escritorio.
-     Sin rebote: con él, al ir a la primera o a la última pestaña se pasaba de largo y asomaba
-     fuera de su sitio. Al pulsar la pestaña en la que estás, la lente se encoge un poco. */
+  /* La línea de la pestaña activa se convierte en la lente: una gota de cristal más clara. La
+     mueve useLenteLiquida.js con un muelle, fotograma a fotograma, escribiendo en la barra su
+     borde izquierdo (--lx), su ancho (--lw) y cuánto se hincha (--lgx a los lados, --lgy arriba y
+     abajo). Por eso aquí no hay transiciones de posición ni de tamaño: el muelle ya es la
+     animación. El "transform: none" anula el que Menu.jsx pone para la línea del escritorio. */
   :root.ios.app-instalada .barra__linea {
-    top: 0.3rem;
-    bottom: 0.3rem;
-    width: var(--ancho, 0);
+    top: calc(0.3rem - var(--lgy, 0px));
+    bottom: calc(0.3rem - var(--lgy, 0px));
+    left: calc(var(--lx, 0px) - var(--lgx, 0px));
+    width: calc(var(--lw, 0px) + 2 * var(--lgx, 0px));
     height: auto;
     background: var(--cristal-lente);
     border-radius: 999px;
     box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.18), inset -1px -1px 0 rgba(255, 255, 255, 0.06);
-    transform: translateX(var(--x, 0)) !important;
-    transform-origin: center;
-    transition:
-      transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-      width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-      scale 0.2s ease;
+    transform: none !important;
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
+    will-change: left, width;
   }
 
-  :root.ios.app-instalada .barra__nav:not(.barra__nav--arrastrando):has(a.active:active) .barra__linea {
-    scale: 0.94;
-  }
-
-  /* Arrastrando el dedo por la barra (useArrastrePestanas.js): la lente lo sigue casi al instante,
-     se hincha un poco y se aclara, como una gota bajo el dedo; la pestaña que queda debajo se
-     enciende con el color de acento (y la de la página actual se apaga mientras tanto) */
+  /* Con el dedo encima, la lente se aclara y brilla un poco más, como una gota bajo el dedo */
   :root.ios.app-instalada .barra__nav--arrastrando .barra__linea {
-    background: color-mix(in srgb, var(--cristal-lente), white 8%);
-    scale: 1.08 1.06;
-    transition:
-      transform 0.08s linear,
-      width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-      scale 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: color-mix(in srgb, var(--cristal-lente), white 9%);
+    box-shadow:
+      inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+      inset -1px -1px 0 rgba(255, 255, 255, 0.1),
+      0 4px 16px rgba(0, 0, 0, 0.18);
   }
 
-  :root.ios.app-instalada .barra__nav--arrastrando a.active:not(.bajo-el-dedo) {
-    color: var(--texto-h);
-  }
-
-  :root.ios.app-instalada .barra__nav a.bajo-el-dedo {
+  /* La capa de color: los mismos iconos y nombres que las pestañas, en el color de acento, justo
+     encima de ellos y recortados con la forma exacta de la lente (las mismas variables). Lo que la
+     lente tapa se ve de color; lo de fuera, no. Así solo hay UN selector, y el color se mueve con
+     él de forma continua (un icono a medio tapar se ve medio coloreado). No recibe toques. */
+  :root.ios.app-instalada .barra__tinta {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem;
     color: var(--acento);
+    pointer-events: none;
+    clip-path: inset(
+      calc(0.3rem - var(--lgy, 0px))
+      calc(100% - var(--lx, 0px) - var(--lw, 0px) - var(--lgx, 0px))
+      calc(0.3rem - var(--lgy, 0px))
+      calc(var(--lx, 0px) - var(--lgx, 0px))
+      round 999px
+    );
+  }
+
+  /* Cada copia, colocada igual que su pestaña de verdad (mismo reparto y mismo hueco) */
+  :root.ios.app-instalada .barra__tinta-pestana {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
   }
 
   /* La insignia de avisos de Social, en la esquina del icono */

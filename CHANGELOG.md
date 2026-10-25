@@ -2,6 +2,19 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Mejorado
+- **La lente de la barra de abajo del iPhone, fluida como en Instagram.** Ya no parece que haya
+  dos selectores ni salta de golpe a las pestañas: el color va dentro de la lente (lo que tapa se
+  ve de color, aunque sea medio icono), la lente sigue al dedo con un movimiento de muelle, se
+  estira un poco si vas rápido y, al soltar, se desliza suavemente hasta la pestaña más cercana.
+
+### Interno
+- `useLenteLiquida.js` (sustituye a `useArrastrePestanas.js`): muelle con `requestAnimationFrame`
+  que escribe `--lx`, `--lw`, `--lgx` y `--lgy`; `.barra__tinta` recortada con `clip-path`.
+- Corregido: el motor se reiniciaba en cada navegación porque `navigate` cambia de identidad.
+
 ## [1.8.4] - 2026-10-25
 
 Navegar arrastrando el dedo y un chat más cómodo en el iPhone.

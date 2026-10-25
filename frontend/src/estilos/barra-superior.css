@@ -130,6 +130,11 @@
   transition-delay: 0.25s;
 }
 
+/* La capa de color de la lente: solo existe en la barra de abajo del iPhone (cristal-ios.css) */
+.barra__tinta {
+  display: none;
+}
+
 .barra__acciones {
   justify-self: end;
   display: flex;

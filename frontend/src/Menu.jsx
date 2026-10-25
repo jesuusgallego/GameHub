@@ -4,7 +4,7 @@ import Marca from './Marca'
 import MenuUsuario from './MenuUsuario'
 import MenuAjustes from './MenuAjustes'
 import { useIdioma } from './IdiomaContext'
-import { useArrastrePestanas } from './useArrastrePestanas'
+import { useLenteLiquida } from './useLenteLiquida'
 
 // Ancho base de la línea (el del CSS): se estira con scaleX para llegar al ancho del enlace. Así
 // la línea solo cambia transform, que anima la tarjeta gráfica sin pasar por el hilo principal;
@@ -27,11 +27,6 @@ function colocarLinea(nav, linea, conAnimacion) {
   if (!conAnimacion) linea.style.transition = 'none'
 
   linea.style.transform = `translateX(${activo.offsetLeft}px) scaleX(${activo.offsetWidth / ANCHO_BASE})`
-  // La posición y el ancho también en píxeles, para la lente de la barra de pestañas del iPhone
-  // (estilos/cristal-ios.css): es una cápsula y, estirada con scaleX, sus puntas redondas se
-  // deformarían. Allí se usa el ancho de verdad.
-  linea.style.setProperty('--x', `${activo.offsetLeft}px`)
-  linea.style.setProperty('--ancho', `${activo.offsetWidth}px`)
 
   if (!conAnimacion) {
     // Fuerzo al navegador a aplicar el cambio YA, antes de reactivar la
@@ -120,8 +115,9 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
     return () => observador.disconnect()
   }, [])
 
-  // En el iPhone (barra de pestañas abajo), cambiar de sección arrastrando el dedo
-  useArrastrePestanas(navRef, lineaRef)
+  // En el iPhone (barra de pestañas abajo), la línea es una lente de cristal que se mueve con un
+  // muelle y se puede arrastrar con el dedo de una pestaña a otra (useLenteLiquida.js)
+  useLenteLiquida(navRef, pathname)
 
   // La altura real de la barra, en la variable --alto-barra: lo que se queda pegado debajo de ella
   // al hacer scroll (las pestañas de Noticias y Social, los laterales) se coloca con ella. El CSS
@@ -163,6 +159,19 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
             </NavLink>
           ))}
           <span className="barra__linea" ref={lineaRef} aria-hidden="true" />
+          {/* Solo en el iPhone (barra de abajo): los mismos iconos en color de acento, recortados
+              con la forma de la lente. Lo que queda debajo de la lente se ve de color, y el color
+              viaja con ella (ver useLenteLiquida.js y .barra__tinta en cristal-ios.css). */}
+          <span className="barra__tinta" aria-hidden="true">
+            {ENLACES.map(({ to, texto, icono }) => (
+              <span key={to} className="barra__tinta-pestana">
+                <svg className="barra__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {icono}
+                </svg>
+                <span className="barra__pista">{t(texto)}</span>
+              </span>
+            ))}
+          </span>
         </nav>
 
         <div className="barra__acciones">
