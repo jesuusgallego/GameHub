@@ -2,6 +2,14 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Corregido
+- En el iPhone, la franja de arriba cortaba el borde de las cápsulas del logo y de los menús.
+- La lente de la pestaña activa (abajo) se salía de su sitio: rebotaba al cambiar de pestaña,
+  se deformaba y, al pulsarla, crecía fuera de la cápsula. Ahora mide justo lo que la pestaña y
+  se desliza sin pasarse.
+
 ## [1.8.2] - 2026-10-25
 
 Liquid Glass al estilo de WhatsApp en el iPhone, y por fin sin la parte de arriba borrosa.

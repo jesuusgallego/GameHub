@@ -26,6 +26,11 @@ function colocarLinea(nav, linea, conAnimacion) {
   if (!conAnimacion) linea.style.transition = 'none'
 
   linea.style.transform = `translateX(${activo.offsetLeft}px) scaleX(${activo.offsetWidth / ANCHO_BASE})`
+  // La posición y el ancho también en píxeles, para la lente de la barra de pestañas del iPhone
+  // (estilos/cristal-ios.css): es una cápsula y, estirada con scaleX, sus puntas redondas se
+  // deformarían. Allí se usa el ancho de verdad.
+  linea.style.setProperty('--x', `${activo.offsetLeft}px`)
+  linea.style.setProperty('--ancho', `${activo.offsetWidth}px`)
 
   if (!conAnimacion) {
     // Fuerzo al navegador a aplicar el cambio YA, antes de reactivar la
