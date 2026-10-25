@@ -16,6 +16,7 @@
 @import './barra-superior.css';
 @import './paginas.css';
 @import './mensajes.css';
+@import './app-instalada.css';
 
 /* Tarjetas de juego y formularios */
 @import './tarjetas.css';

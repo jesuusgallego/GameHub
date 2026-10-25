@@ -22,9 +22,10 @@ services:
       # los usuarios con la misma IP
       - key: TRUST_PROXY
         value: "1"
-      # La app de escritorio llama desde este origen
+      # Quién puede llamar a la API: la app de escritorio (app://gamehub) y la versión web de
+      # GitHub Pages, la que se instala en el móvil (https://jesuusgallego.github.io)
       - key: CORS_ORIGINS
-        value: app://gamehub
+        value: app://gamehub,https://jesuusgallego.github.io
       # Render genera un valor aleatorio largo la primera vez
       - key: JWT_SECRET
         generateValue: true

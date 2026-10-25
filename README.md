@@ -61,6 +61,22 @@ pregunta si quieres reiniciar para instalarla; si dices *Más tarde*, se instala
 > gratuito y se "duerme" tras un rato sin uso. La app te lo avisa en pantalla; después va con
 > normalidad. Necesitas conexión a internet.
 
+## En el iPhone
+
+GameHub también funciona en el móvil, sin App Store: se instala desde Safari como una app.
+
+1. Abre **[jesuusgallego.github.io/GameHub](https://jesuusgallego.github.io/GameHub/)** en Safari.
+2. Pulsa **Compartir** (en iOS 26, dentro del botón **···**) y elige **Añadir a pantalla de
+   inicio**.
+3. Abre GameHub desde su icono: va a pantalla completa, como cualquier otra app. Entra con tu
+   cuenta de siempre.
+
+GameHub te lo explica la primera vez que la abres en Safari, y lo tienes siempre en
+*Ajustes → Instalar en el iPhone*. **Se actualiza sola:** si hay una versión nueva, al volver a
+la app te avisa para actualizar. En Android también se puede instalar (Chrome → *Instalar app*).
+
+> En el iPhone, los avisos de mensajes nuevos del chat todavía no están disponibles.
+
 ## Cómo se usa
 
 1. **Crea una cuenta** con un nombre de usuario, tu email y una contraseña (8 caracteres o

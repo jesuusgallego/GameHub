@@ -2,6 +2,33 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Añadido
+- **GameHub en el iPhone.** La versión web
+  ([jesuusgallego.github.io/GameHub](https://jesuusgallego.github.io/GameHub/)) se instala desde
+  Safari como una app: *Compartir → Añadir a pantalla de inicio* (en iOS 26, Compartir está
+  dentro de «···»). Se abre a pantalla completa, con su icono y su pantalla de arranque, y entras
+  con tu cuenta de siempre.
+  - La primera vez que la abres en Safari te explica cómo instalarla; lo tienes también en
+    *Ajustes → Instalar en el iPhone*.
+  - Todo queda bien colocado en la pantalla del iPhone: nada debajo de la isla dinámica ni de la
+    barrita de abajo.
+  - Abre aunque no haya conexión (y te avisa de que no llega al servidor).
+  - Cuando hay una versión nueva, al volver a la app te avisa para actualizar.
+  - En Android también se puede instalar (Chrome → *Instalar app*).
+
+### Limitaciones conocidas
+- En el iPhone no hay avisos de mensajes nuevos del chat: allí solo pueden llegar desde el
+  servidor ("push") y eso llegará más adelante.
+
+### Interno
+- Nuevo workflow `web.yml` que publica la web en GitHub Pages con cada versión, en la subcarpeta
+  `/GameHub/` (`VITE_BASE`, `basename` del router, `404.html` = `index.html`).
+- `public/sw.js` (service worker), `public/manifest.webmanifest`, iconos y 10 pantallas de
+  arranque generadas con `scripts/iconos-pwa.mjs`; zonas seguras con `env(safe-area-inset-*)`.
+- El servidor tiene que permitir el origen `https://jesuusgallego.github.io` en `CORS_ORIGINS`.
+
 ## [1.7.0] - 2026-10-25
 
 Una GameHub más clara: menos ruido, cada apartado con su cara y añadir juegos sin salir de tu

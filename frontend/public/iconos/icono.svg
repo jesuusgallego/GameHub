@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Icono de la app instalada (iPhone y Android).
+       El mando-libro del logo (Marca.jsx, cuadrícula de 64) en blanco sobre el degradado de la marca, a
+       sangre (sin esquinas redondeadas: iOS y Android ponen su propia máscara). Las PNG de esta carpeta
+       salen de aquí (ver docs/DESARROLLO.md, "La app en el iPhone"). -->
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5b3df5"/>
+      <stop offset="1" stop-color="#1b74c8"/>
+    </linearGradient>
+    <path id="cuerpo" d="M16 14H27Q32 20 37 14H48C55 14 59 19 60.5 28L62 42C62.6 48 59 52 54 52C50 52 48 50 45 46L43 43H21L19 46C16 50 14 52 10 52C5 52 1.4 48 2 42L3.5 28C5 19 9 14 16 14Z"/>
+    <clipPath id="izquierda"><rect x="0" y="0" width="32" height="64"/></clipPath>
+    <clipPath id="derecha"><rect x="32" y="0" width="32" height="64"/></clipPath>
+    <mask id="huecos" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
+      <rect width="64" height="64" fill="#fff"/>
+      <g fill="#000">
+        <rect x="13.5" y="24" width="5" height="14" rx="1.2"/>
+        <rect x="9" y="28.5" width="14" height="5" rx="1.2"/>
+        <circle cx="51.5" cy="26.2" r="2.2"/><circle cx="51.5" cy="35.8" r="2.2"/>
+        <circle cx="46.7" cy="31" r="2.2"/><circle cx="56.3" cy="31" r="2.2"/>
+        <rect x="28.6" y="16" width="6.8" height="28"/>
+      </g>
+    </mask>
+  </defs>
+  <rect width="512" height="512" fill="url(#fondo)"/>
+  <g transform="translate(256 256) scale(5.4) translate(-32 -35.5)">
+    <g clip-path="url(#izquierda)"><use href="#cuerpo" fill="#fff" mask="url(#huecos)"/></g>
+    <g clip-path="url(#derecha)" opacity="0.75"><use href="#cuerpo" fill="#fff" mask="url(#huecos)"/></g>
+    <path d="M29.7 17.5V57L32 53.8L34.3 57V17.5Z" fill="#fff"/>
+  </g>
+</svg>

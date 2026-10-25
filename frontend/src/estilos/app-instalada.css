@@ -1,0 +1,221 @@
+/* La app instalada (PWA): la explicación para instalarla en el iPhone (InstalarIOS.jsx) y el aviso
+   de versión nueva (AvisoVersion.jsx). Los dos flotan abajo, por encima de la barrita de inicio
+   del iPhone (--seguro-abajo) y del botón del chat. */
+
+/* ---- Instalar en el iPhone ---- */
+.instalar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1rem + var(--seguro-abajo));
+  z-index: 1900;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  width: min(24rem, calc(100% - 1.5rem));
+  padding: 1rem 1rem 1.05rem;
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 18px;
+  box-shadow: var(--sombra), 0 0 0 1px color-mix(in srgb, var(--acento) 18%, transparent);
+  transform: translateX(-50%);
+  animation: instalar-entrada 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+
+/* Sube desde abajo, como las hojas de iOS, y baja igual al cerrarla */
+@keyframes instalar-entrada {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 120%);
+  }
+}
+
+.instalar--saliendo {
+  pointer-events: none;
+  animation: instalar-salida 0.3s cubic-bezier(0.5, 0, 0.75, 0) both;
+}
+
+@keyframes instalar-salida {
+  to {
+    opacity: 0;
+    transform: translate(-50%, 120%);
+  }
+}
+
+/* El icono de la app, como en la pantalla de inicio, con un pequeño saltito al aparecer */
+.instalar__icono {
+  flex: none;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 22.5%;
+  box-shadow: 0 6px 16px rgba(91, 61, 245, 0.35);
+  animation: instalar-icono 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
+}
+
+@keyframes instalar-icono {
+  from {
+    transform: scale(0.6) rotate(-12deg);
+  }
+}
+
+.instalar__texto {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.instalar__titulo {
+  padding-right: 1.5rem;
+  font-family: var(--display);
+  font-size: 1.25rem;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.instalar__frase {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--texto-suave);
+}
+
+.instalar__pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+
+/* Cada paso con su número en un círculo de acento y el icono que hay que buscar */
+.instalar__pasos li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--texto-h);
+  counter-increment: paso;
+}
+
+.instalar__pasos li::before {
+  display: grid;
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--sobre-degradado, #fff);
+  content: counter(paso);
+  background: var(--degradado);
+  border-radius: 50%;
+}
+
+.instalar__compartir {
+  flex: none;
+  color: var(--acento);
+}
+
+.instalar__cerrar {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  padding: 0;
+  color: var(--texto-suave);
+  background: var(--superficie-2);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color var(--transicion), transform 0.3s ease, scale 0.12s ease;
+}
+
+.instalar__cerrar:hover {
+  color: var(--texto-h);
+  transform: rotate(90deg);
+}
+
+.instalar__cerrar:active {
+  scale: 0.9;
+}
+
+/* ---- Hay una versión nueva ---- */
+.aviso-version {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.25rem + var(--seguro-abajo));
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: max-content;
+  max-width: calc(100% - 1.5rem);
+  padding: 0.55rem 0.55rem 0.55rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--texto-h);
+  background: var(--superficie);
+  border: 1px solid color-mix(in srgb, var(--acento) 45%, var(--borde));
+  border-radius: 999px;
+  box-shadow: var(--sombra);
+  transform: translateX(-50%);
+  animation: version-entrada 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@keyframes version-entrada {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 1rem) scale(0.95);
+  }
+}
+
+.aviso-version--saliendo {
+  pointer-events: none;
+  animation: version-salida 0.25s ease both;
+}
+
+@keyframes version-salida {
+  to {
+    opacity: 0;
+    transform: translate(-50%, 1rem) scale(0.95);
+  }
+}
+
+.aviso-version .btn {
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+}
+
+.aviso-version__cerrar {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  padding: 0;
+  color: var(--texto-suave);
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color var(--transicion), background-color var(--transicion);
+}
+
+.aviso-version__cerrar:hover {
+  color: var(--texto-h);
+  background: var(--superficie-2);
+}
+
+/* En el móvil, por encima del botón del chat (que va abajo a la derecha) */
+@media (max-width: 640px) {
+  .instalar,
+  .aviso-version {
+    bottom: calc(4.75rem + var(--seguro-abajo));
+  }
+}

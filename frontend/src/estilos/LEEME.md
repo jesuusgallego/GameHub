@@ -13,6 +13,7 @@ a su vez importa el resto de archivos con `@import`.
 | `barra-superior.css` | Barra de arriba y su navegación | `Menu` |
 | `paginas.css` | Contenedor central, títulos de página/sección y el buscador de juegos de "Añadir juegos" | `AnadirJuegos` |
 | `mensajes.css` | Mensajes de error, éxito y aviso; estados vacíos | `Mensaje` |
+| `app-instalada.css` | La app instalada (PWA): la explicación para instalarla en el iPhone y el aviso de versión nueva | `InstalarIOS`, `AvisoVersion` |
 | `tarjetas.css` | Rejilla de juegos, tarjetas, su animación de entrada, chips de estado, insignia de Steam, icono de plataforma | `GameCard`, `JuegoGuardado`, `InsigniaSteam`, `IconoPlataforma` |
 | `formularios.css` | `.formulario`, `.campo`, `.formulario__pareja` (dos campos por fila) y el subtítulo de sección | formularios |
 | `desplegable.css` | Desplegable propio (el del estado y filtros) | `Desplegable` |

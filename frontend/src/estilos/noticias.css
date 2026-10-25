@@ -559,7 +559,7 @@
 /* ---- Columna lateral: sin cajas, rótulos pequeños ---- */
 .noticias-lateral {
   position: sticky;
-  top: calc(64px + 1.5rem);
+  top: calc(var(--alto-barra) + 1.5rem);
   display: flex;
   flex-direction: column;
   gap: 2.25rem;
@@ -894,7 +894,7 @@
 /* La ventana "Tus portales" */
 .ventana-portales {
   width: min(56rem, calc(100% - 2rem));
-  max-height: min(48rem, calc(100svh - 3rem));
+  max-height: min(48rem, calc(100svh - 3rem - var(--seguro-arriba) - var(--seguro-abajo)));
 }
 
 .ventana-portales[open] {

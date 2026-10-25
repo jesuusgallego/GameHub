@@ -3,8 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover: en el iPhone la app ocupa también la zona de la muesca y la de la barra
+         de inicio; el CSS aparta lo importante con env(safe-area-inset-*) (ver estilos/base.css) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>GameHub</title>
+
+    <!-- La app instalada (PWA): el manifiesto para Android y Chrome, y lo que iOS lee aparte -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0b121c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="GameHub" />
+    <!-- black-translucent: la barra de estado (hora, batería) va encima de la app, con el texto en
+         blanco; la barra de GameHub empieza debajo -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/iconos/apple-touch-icon.png" />
+    <!-- Pantallas de arranque del iPhone: iOS no las genera solo y, sin ellas, la app abre con un
+         fogonazo blanco. Una por tamaño de pantalla (las genera scripts/iconos-pwa.mjs). -->
+    <!-- iPhone 16 Pro Max -->
+    <link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/arranque/arranque-1320x2868.png" />
+    <!-- iPhone 16 Pro -->
+    <link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/arranque/arranque-1206x2622.png" />
+    <!-- iPhone 14 Pro Max, 15 Pro Max, 15 Plus, 16 Plus -->
+    <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/arranque/arranque-1290x2796.png" />
+    <!-- iPhone 14 Pro, 15, 15 Pro, 16 -->
+    <link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/arranque/arranque-1179x2556.png" />
+    <!-- iPhone 12 Pro Max, 13 Pro Max, 14 Plus -->
+    <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/arranque/arranque-1284x2778.png" />
+    <!-- iPhone 12, 12 Pro, 13, 13 Pro, 14, 16e -->
+    <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/arranque/arranque-1170x2532.png" />
+    <!-- iPhone XS Max, 11 Pro Max -->
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/arranque/arranque-1242x2688.png" />
+    <!-- iPhone XR, 11 -->
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/arranque/arranque-828x1792.png" />
+    <!-- iPhone X, XS, 11 Pro, 12 mini, 13 mini -->
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/arranque/arranque-1125x2436.png" />
+    <!-- iPhone SE (2.ª y 3.ª), 8 -->
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/arranque/arranque-750x1334.png" />
     <!-- Aplica el tema ANTES de pintar nada, para que no haya un parpadeo del
          tema equivocado al cargar. Misma lógica que src/tema.js. -->
     <script>
@@ -19,6 +54,12 @@
           tema = 'oscuro'
         }
         document.documentElement.dataset.tema = tema
+        // Abierta como app instalada (desde el icono de la pantalla de inicio): el CSS lo usa para
+        // la franja de la hora en el iPhone (ver estilos/barra-superior.css). Safari lo dice con
+        // navigator.standalone; el resto, con display-mode.
+        if (navigator.standalone === true || matchMedia('(display-mode: standalone)').matches) {
+          document.documentElement.classList.add('app-instalada')
+        }
       })()
     </script>
   </head>

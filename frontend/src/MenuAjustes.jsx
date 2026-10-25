@@ -7,6 +7,8 @@ import { IDIOMAS } from './idioma'
 import { useMenuDesplegable } from './useMenuDesplegable'
 import Interruptor from './Interruptor'
 import { useAvisos, activarAvisos, desactivarAvisos } from './useAvisos'
+import { puedeInstalarseEnIOS } from './pwa'
+import { EVENTO_INSTALAR } from './InstalarIOS'
 
 // Menú de ajustes: un botón de tres líneas con un desplegable para elegir el
 // idioma de la interfaz y el tema claro/oscuro. Está en la barra, a la derecha de
@@ -90,6 +92,20 @@ function MenuAjustes({ conAvisos = false }) {
               {tema === "oscuro" ? t('ajustes.temaClaro') : t('ajustes.temaOscuro')}
               <IconoTema tema={tema} />
             </button>
+
+            {/* Solo en el iPhone o el iPad sin la app instalada: vuelve a enseñar cómo instalarla */}
+            {puedeInstalarseEnIOS() && (
+              <>
+                <p className="menu-ajustes__titulo menu-ajustes__titulo--separado">{t('instalar.app')}</p>
+                <button type="button" className="menu-usuario__opcion" onClick={() => { cerrar(); window.dispatchEvent(new Event(EVENTO_INSTALAR)) }}>
+                  {t('instalar.enIphone')}
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="7" y="2.5" width="10" height="19" rx="2.5" />
+                    <path d="M12 7v7M9.5 11.5 12 14l2.5-2.5" />
+                  </svg>
+                </button>
+              </>
+            )}
 
             {conAvisos && avisos.disponible && (
               <>

@@ -19,6 +19,7 @@ están en los documentos a los que enlaza.
 | Resolver un problema | [Guía de desarrollo](DESARROLLO.md): sección 13 |
 | Poner el servidor en internet, o conocer sus límites | [Despliegue](DESPLIEGUE.md) |
 | Entender la app de escritorio y sus actualizaciones | [`desktop/README.md`](../desktop/README.md) |
+| Entender la app del iPhone (PWA) y cómo se publica la web | [Guía de desarrollo](DESARROLLO.md): sección 9, «La app en el iPhone»; [Despliegue](DESPLIEGUE.md): sección 4 |
 | Saber dónde está cada archivo de la interfaz | [`frontend/README.md`](../frontend/README.md) |
 | Tocar el CSS | [`frontend/src/estilos/LEEME.md`](../frontend/src/estilos/LEEME.md) |
 

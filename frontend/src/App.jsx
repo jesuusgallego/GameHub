@@ -17,6 +17,9 @@ import { leerToken, alCambiarSesionEnOtraPestana } from './sesion'
 // daría pantalla en blanco. Con HashRouter la ruta va detrás de # (index.html#/biblioteca)
 // y siempre se sirve el mismo archivo. Se elige al compilar (VITE_DESKTOP=1).
 const Router = import.meta.env.VITE_DESKTOP ? HashRouter : BrowserRouter
+// La web publicada vive en una subcarpeta (/GameHub/, ver vite.config.js): el router tiene que
+// saberlo para que /GameHub/noticias sea su ruta /noticias. BASE_URL la pone Vite ("/" si no).
+const BASENAME = import.meta.env.VITE_DESKTOP ? undefined : import.meta.env.BASE_URL.replace(/\/$/, '') || undefined
 
 function App() {
   const [token, setToken] = useState(leerToken())
@@ -26,7 +29,7 @@ function App() {
   useEffect(() => alCambiarSesionEnOtraPestana(() => window.location.reload()), [])
 
   return (
-    <Router>
+    <Router basename={BASENAME}>
       <Routes>
         {/* Lo primero que se ve al entrar son las noticias (1.6); sin sesión, el inicio de sesión */}
         <Route path="/" element={<Navigate to={token ? '/noticias' : '/login'} replace />} />

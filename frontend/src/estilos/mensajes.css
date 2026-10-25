@@ -79,7 +79,7 @@
 .aviso-servidor {
   position: fixed;
   left: 50%;
-  bottom: 1.25rem;
+  bottom: calc(1.25rem + var(--seguro-abajo));
   z-index: 2000;
   width: min(34rem, calc(100% - 2rem));
   transform: translateX(-50%);

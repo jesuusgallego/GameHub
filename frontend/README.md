@@ -18,7 +18,7 @@ Necesita el backend en marcha: la URL se toma de `VITE_API_URL` (por defecto
 
 | Carpeta o archivo | Contenido |
 |-------------------|-----------|
-| `src/main.jsx`, `src/App.jsx` | Arranque y rutas (`HashRouter` en la compilación de escritorio) |
+| `src/main.jsx`, `src/App.jsx` | Arranque y rutas (`HashRouter` en la compilación de escritorio; en la web publicada, la subcarpeta `/GameHub/`) |
 | `src/api.js` | Todas las llamadas al backend (`apiFetch`) y el aviso de servidor lento |
 | `src/textos/` | Textos en español e inglés (`es.js` y `en.js`, mismas claves) |
 | `src/estilos/` | CSS dividido por zonas: mira [`LEEME.md`](src/estilos/LEEME.md) |
@@ -37,6 +37,11 @@ Necesita el backend en marcha: la URL se toma de `VITE_API_URL` (por defecto
 | `src/logicaChat.js` | La lógica del chat sin React (fusionar mensajes, agrupar por días y tandas, "visto", enlaces), con pruebas |
 | `src/PanelPrivacidad.jsx` | La pestaña *Perfil → Privacidad* |
 | `src/Recuperar.jsx` | Recuperar la contraseña en dos pasos: pedir el código y elegir la nueva |
+| `src/AnadirJuegos.jsx` | La ventana "Añadir juegos" de Mi biblioteca: buscar en IGDB y guardar |
+| `src/FondoCabecera.jsx`, `src/EscenasCabecera.jsx` | El fondo de las cabeceras de Noticias, Mi biblioteca y Social, con la escena dibujada de cada una |
+| `src/logosPortales.js`, `src/logos-portales/` | Los logos de los portales de noticias (un PNG por portal) |
+| `src/pwa.js`, `src/InstalarIOS.jsx`, `src/AvisoVersion.jsx`, `public/sw.js`, `public/manifest.webmanifest` | La app instalada en el iPhone (PWA): reconocer iOS y si está instalada, la explicación para instalarla, el aviso de versión nueva, el service worker y el manifiesto |
+| `public/iconos/`, `public/arranque/`, `scripts/iconos-pwa.mjs` | Iconos de la app instalada y pantallas de arranque del iPhone, y el script que los genera |
 | `test/` | Pruebas (`node --test`) |
 
 La documentación del proyecto: el [README de la raíz](../README.md) (qué es y cómo funciona, para

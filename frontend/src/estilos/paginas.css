@@ -4,7 +4,9 @@
 .contenedor {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 2rem 1.25rem 6rem;
+  /* Abajo, sitio para el botón del chat y para la barrita de inicio del iPhone; a los lados, la
+     muesca con el móvil en horizontal */
+  padding: 2rem max(1.25rem, var(--seguro-derecha)) calc(6rem + var(--seguro-abajo)) max(1.25rem, var(--seguro-izquierda));
 }
 
 .titulo-pagina {

@@ -347,7 +347,7 @@
    referencia para colocar el indicador (position: absolute) */
 .pestanas {
   position: sticky;
-  top: 5rem;
+  top: calc(var(--alto-barra) + 1rem);
   display: flex;
   flex-direction: column;
   gap: 0.25rem;

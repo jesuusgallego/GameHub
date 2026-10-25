@@ -252,7 +252,7 @@
 /* ---- Pestañas en barra (variante de PestanasPerfil) ---- */
 .pestanas--barra {
   position: sticky;
-  top: 4.5rem;
+  top: calc(var(--alto-barra) + 0.5rem);
   z-index: 5;
   /* Se ajusta a las pestañas y se centra: a todo el ancho quedaba un hueco vacío */
   align-self: center;
@@ -729,7 +729,7 @@
 /* ---- Columna lateral: invitaciones, para jugar juntos y sugerencias ---- */
 .lateral {
   position: sticky;
-  top: 9rem;
+  top: calc(var(--alto-barra) + 5rem);
   display: flex;
   flex-direction: column;
   gap: 1rem;

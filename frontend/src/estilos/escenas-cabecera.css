@@ -352,11 +352,16 @@
 }
 
 /* ---- Pantallas estrechas: las escenas, más tenues, detrás del texto ---- */
+/* Con :root[data-tema] delante para ganar también a las reglas del tema claro de arriba */
 @media (max-width: 640px) {
-  .escena--noticias,
-  .escena--biblioteca,
-  .escena--sala {
-    opacity: 0.28;
+  :root[data-tema] .escena--biblioteca,
+  :root[data-tema] .escena--sala {
+    opacity: 0.25;
+  }
+
+  /* Los periódicos son claros y llenos de líneas: aún más tenues, para que el texto se lea */
+  :root[data-tema] .escena--noticias {
+    opacity: 0.16;
   }
 
   .escena--noticias {

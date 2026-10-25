@@ -8,7 +8,7 @@
 
   /* Las pestañas pasan a una fila con scroll horizontal, pegada bajo la barra */
   .pestanas {
-    top: 4rem;
+    top: var(--alto-barra);
     z-index: 5;
     flex-direction: row;
     overflow-x: auto;

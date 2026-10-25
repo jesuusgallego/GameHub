@@ -351,6 +351,7 @@ chat**). La plantilla comentada es [`backend/.env.example`](../backend/.env.exam
 | `VITE_DESKTOP` | La pone `desktop/scripts/build-web.mjs` | Activa `HashRouter` y las fuentes locales en la versión de escritorio |
 | `GAMEHUB_API_URL` | Al ejecutar `npm run build:web` / `npm run dist` en `desktop/` | Servidor al que llamará la app instalada. En GitHub Actions es la variable del repositorio del mismo nombre |
 | `GAMEHUB_DEV_URL` | Al ejecutar `npm start` en `desktop/` | Apunta Electron a un servidor de Vite en vez de a la interfaz compilada |
+| `VITE_BASE` | La pone `.github/workflows/web.yml` | Subcarpeta en la que se publica la web (`/GameHub/` en GitHub Pages); sin ella, la raíz |
 
 ## 6. Base de datos
 
@@ -1155,6 +1156,66 @@ Mayús + clic derecho deja el menú del navegador) y dentro de la **ficha** que 
 - Electron no arranca en WSL (falla con un segfault); la app de escritorio se prueba en Windows
   o en el runner de GitHub Actions.
 
+### La app en el iPhone (PWA)
+
+La versión web, publicada en GitHub Pages (`https://jesuusgallego.github.io/GameHub/`), se
+puede **instalar en el iPhone** desde Safari: *Compartir → Añadir a pantalla de inicio* (en iOS
+26, Compartir está dentro de «···»). Se abre a pantalla completa, con su icono y sin la barra del
+navegador. No es una app de la App Store (eso exige una cuenta de pago y un Mac): es la misma web
+con lo que iOS necesita para tratarla como una app. En Android y en Chrome de escritorio también
+se puede instalar.
+
+- **Dónde vive:** en una subcarpeta del dominio. `VITE_BASE=/GameHub/` se lo dice a Vite (que
+  antepone la carpeta a todas las rutas de `index.html` y de los archivos) y al router
+  (`basename` en `App.jsx`, sacado de `import.meta.env.BASE_URL`). GitHub Pages no sabe que
+  `/GameHub/noticias` es una página de la app: para cualquier ruta que no existe sirve
+  `404.html`, que el workflow crea copiando `index.html`. Lo publica
+  [`web.yml`](../.github/workflows/web.yml) con cada etiqueta `v*` (o a mano).
+- **Lo que lee iOS** (`index.html`): `apple-mobile-web-app-capable`, el título, el icono
+  `apple-touch-icon` (180 px, cuadrado y opaco: iOS pone su máscara y pinta de negro lo
+  transparente), `viewport-fit=cover` y la barra de estado `black-translucent` (la hora va encima
+  de la app, en blanco). Android y Chrome leen `public/manifest.webmanifest` (nombre, colores,
+  iconos de 192 y 512 y uno *maskable*, con `start_url` y `scope` relativos).
+- **Pantallas de arranque:** iOS no las genera solo (sin ellas, la app abre con un fogonazo
+  blanco). Hay una por tamaño de pantalla de iPhone en `public/arranque/`, enlazadas en
+  `index.html` con su media query (ancho y alto en puntos y densidad). Los iconos y las pantallas
+  salen de `public/iconos/icono*.svg` con `frontend/scripts/iconos-pwa.mjs` (Chromium + Playwright,
+  a mano, solo al cambiar el icono; las PNG van en el repositorio). `test/pwa.test.js` comprueba
+  que cada pantalla enlazada existe y que su tamaño coincide con su media query.
+- **Zonas seguras:** con `viewport-fit=cover` la app llega a la isla dinámica y a la barrita de
+  inicio. `base.css` define `--seguro-arriba/abajo/izquierda/derecha` con `env(safe-area-inset-*)`
+  (0 fuera del iPhone) y `--alto-barra` (64 px + la muesca). Las usan la barra (relleno arriba),
+  lo que se pega bajo ella al bajar (pestañas, columnas laterales), el botón y el panel del chat,
+  los avisos flotantes y las ventanas: `dialog:modal` cambia su `inset` para centrarse dentro de la
+  zona segura. Con el tema claro, la franja de la hora se pinta en oscuro (la hora siempre es
+  blanca con `black-translucent`): `index.html` pone la clase `app-instalada` en `<html>` al
+  arrancar como app (`navigator.standalone` o `display-mode: standalone`).
+- **Detalles de iOS:** Safari amplía la página al tocar un campo de menos de 16 px, así que en iOS
+  todos van a 16 px (`@supports (-webkit-touch-callout: none)`); sin el recuadro gris al tocar
+  (`-webkit-tap-highlight-color`). **Los avisos del chat no se ofrecen en iOS** (`avisos.js`):
+  allí solo llegarían por *push* desde el servidor, porque al salir de la app iOS la pausa y deja
+  de consultar. Hacerlo es posible (Web Push, gratis) pero necesita el backend: queda para después.
+- **Service worker** (`public/sw.js`, registrado en `main.jsx` solo en la web publicada): la
+  página se pide primero a internet y, sin red, sale la copia guardada (la app abre y avisa de
+  que no llega al servidor); los archivos con huella (`assets/`, iconos, pantallas) se sirven de
+  la caché, con un tope de 120. La API y las imágenes de otras webs no pasan por él: siempre van a
+  internet. Nunca guarda datos de la cuenta.
+- **Versión nueva** (`AvisoVersion.jsx`): en el iPhone, la app se queda abierta en segundo plano
+  días. Al volver a ella (como mucho cada 10 min) se pide el `index.html` publicado y se compara
+  su script principal (con huella) con el de la página abierta (`pwa.js`); si cambió, sale
+  «Hay una versión nueva · Actualizar».
+- **Cómo instalarla** (`InstalarIOS.jsx`): en iOS no hay un botón de "Instalar" que la web pueda
+  pulsar. En Safari sin instalar, una tarjeta lo explica en dos pasos con los iconos de Safari;
+  sale sola una vez (al cerrarla se recuerda en `localStorage`) y queda en *Ajustes → Instalar en
+  el iPhone*.
+- **Cómo se probó:** con Chromium emulando un iPhone 15 Pro (tamaño, densidad y
+  `navigator.standalone`), sirviendo la compilación como GitHub Pages (subcarpeta y `404.html`) e
+  inyectando las zonas seguras (Chromium no las tiene): la tarjeta sale, se cierra y vuelve desde
+  Ajustes; instalada, la barra empieza bajo la isla y nada queda debajo de la barrita; el service
+  worker controla la página, sin red la app abre, y el aviso de versión nueva sale al cambiar el
+  `index.html` publicado. **Falta probarla en un iPhone de verdad**: lo propio de Safari (la
+  pantalla de arranque, la barra de estado, el zoom de los campos) no se puede emular.
+
 ## 10. Convenciones del código
 
 - **Comentarios en español y didácticos:** explican el *porqué*, no solo el qué. El proyecto
@@ -1252,6 +1313,10 @@ Al subir la etiqueta, [`release.yml`](../.github/workflows/release.yml):
 
 Tarda unos 2–3 minutos. También se puede lanzar a mano (sin publicar, solo deja el instalador
 como artefacto): `gh workflow run release.yml --ref main`.
+
+A la vez, [`web.yml`](../.github/workflows/web.yml) publica la **versión web** en GitHub Pages
+(la que se instala en el iPhone): pasa las pruebas, compila con `VITE_BASE=/GameHub/` y la sube.
+Quien la tenga instalada verá «Hay una versión nueva» al volver a la app.
 
 ### Después de publicar
 

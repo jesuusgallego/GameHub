@@ -1,0 +1,74 @@
+# Publica la versión web de GameHub en GitHub Pages: https://jesuusgallego.github.io/GameHub/
+# Es la que se instala en el iPhone (y en Android) desde el navegador, como una app (PWA). Se
+# compila en los servidores de GitHub, así que no hace falta instalar nada en tu PC.
+#
+# Se lanza solo con cada versión (al subir una etiqueta "v...", igual que el instalador de
+# escritorio) y a mano desde la pestaña "Actions" > "Versión web" > "Run workflow".
+#
+# La web vive en una subcarpeta del dominio (/GameHub/): VITE_BASE se lo dice a Vite y al router.
+# GitHub Pages no sabe que /GameHub/noticias es una página de la app: para cualquier dirección
+# que no existe sirve 404.html, que aquí es una copia de index.html; así abrir o recargar
+# cualquier página funciona. La dirección del servidor es la variable de repositorio
+# GAMEHUB_API_URL si existe; si no, la de producción.
+#
+# Antes de la primera vez hay que permitir este origen en el servidor: en Render, la variable
+# CORS_ORIGINS tiene que incluir https://jesuusgallego.github.io (ver docs/DESPLIEGUE.md).
+name: Versión web
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Una publicación cada vez; si llega otra, la que está en marcha termina
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    env:
+      VITE_API_URL: ${{ vars.GAMEHUB_API_URL || 'https://gamehub-api-sr2x.onrender.com' }}
+      VITE_BASE: /GameHub/
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Dependencias de la interfaz
+        run: npm ci
+        working-directory: frontend
+
+      - name: Pruebas de la interfaz
+        run: npm test
+        working-directory: frontend
+
+      - name: Compilar la web
+        run: npm run build
+        working-directory: frontend
+
+      - name: Cualquier dirección de la app abre la app (404.html = index.html)
+        run: cp frontend/dist/index.html frontend/dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+      - name: Publicar en GitHub Pages
+        id: publicar
+        uses: actions/deploy-pages@v4

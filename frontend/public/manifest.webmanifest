@@ -1,0 +1,19 @@
+{
+  "name": "GameHub",
+  "short_name": "GameHub",
+  "description": "Tu biblioteca de videojuegos, las noticias de tus juegos y tus amigos.",
+  "lang": "es",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111a27",
+  "theme_color": "#0b121c",
+  "categories": ["games", "entertainment", "social"],
+  "icons": [
+    { "src": "iconos/icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "iconos/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "iconos/icono-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

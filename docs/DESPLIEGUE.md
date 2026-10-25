@@ -133,6 +133,28 @@ GAMEHUB_API_URL = https://gamehub-api.onrender.com
 (sin barra al final). Sigue con [`desktop/README.md`](../desktop/README.md) para generar el
 instalador.
 
+## 4. La versión web (la que se instala en el iPhone)
+
+La interfaz también se publica como web en **GitHub Pages**, gratis y sin cuenta nueva:
+`https://jesuusgallego.github.io/GameHub/`. La publica el workflow `web.yml` con cada versión.
+
+Una sola vez:
+
+1. **Activa GitHub Pages** con GitHub Actions como origen: *Settings → Pages → Build and
+   deployment → Source: GitHub Actions* (o `gh api -X POST repos/jesuusgallego/GameHub/pages -f build_type=workflow`).
+2. **Permite ese origen en el servidor.** En Render → *Environment*, la variable `CORS_ORIGINS`
+   tiene que incluir la web (separada por comas, sin barra al final):
+
+   ```
+   app://gamehub,https://jesuusgallego.github.io
+   ```
+
+   Al guardarla, Render reinicia el servidor solo. Sin esto, la web carga pero no puede hablar
+   con el servidor (el navegador bloquea las peticiones por CORS).
+
+Después, cada etiqueta `v*` publica la web a la vez que el instalador. También se puede lanzar
+a mano: *Actions → Versión web → Run workflow*.
+
 ## Qué protege ya el backend
 
 - **Límite de intentos:** 10 inicios de sesión fallidos cada 15 minutos por IP, 10 registros

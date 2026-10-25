@@ -14,10 +14,16 @@
 //
 // La lógica no usa React ni el navegador para poder probarla (test/avisos.test.js).
 
+import { esIOS } from './pwa.js'
+
 const CLAVE_PREFERENCIA = 'avisosChat'
 
-// ¿Hay notificaciones en este navegador?
+// ¿Hay notificaciones en este navegador? En el iPhone y el iPad no: Safari solo las enseña con
+// la app instalada y llegando por "push" desde el servidor, y GameHub las saca mientras la app
+// está abierta y detrás de otras ventanas, algo que en iOS no pasa (al salir, la app se pausa).
+// Así no se ofrece un interruptor que no haría nada.
 export function avisosDisponibles(ventana = globalThis) {
+  if (esIOS(ventana.navigator)) return false
   return typeof ventana.Notification === 'function'
 }
 

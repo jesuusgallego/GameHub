@@ -87,8 +87,23 @@
   --radio-grande: 12px;
   --transicion: 0.2s ease;
 
+  /* Las zonas seguras del iPhone con la app instalada: arriba la muesca o la isla dinámica,
+     abajo la barrita de inicio y, en horizontal, los lados. Con viewport-fit=cover (index.html)
+     la app llega hasta ahí y estas medidas dicen cuánto apartar lo importante. En un navegador
+     normal o en el ordenador valen 0, así que no cambian nada. */
+  --seguro-arriba: env(safe-area-inset-top, 0px);
+  --seguro-abajo: env(safe-area-inset-bottom, 0px);
+  --seguro-izquierda: env(safe-area-inset-left, 0px);
+  --seguro-derecha: env(safe-area-inset-right, 0px);
+  /* Alto de la barra de arriba, contando la zona de la muesca: lo que se pega bajo ella al
+     hacer scroll se coloca con esto */
+  --alto-barra: calc(64px + var(--seguro-arriba));
+
   font-family: var(--sans);
   font-synthesis: none;
+  /* Sin el recuadro gris que pinta iOS al tocar un enlace o un botón: cada uno tiene ya su
+     propia respuesta al pulsar (ver respuesta-al-pulsar.css) */
+  -webkit-tap-highlight-color: transparent;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -203,5 +218,16 @@ a:focus-visible {
   * {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+/* ---- iPhone y iPad ---------------------------------------------------------------------- */
+/* Safari amplía la página al tocar un campo de texto de menos de 16px, y la deja así. En iOS
+   todos los campos van a 16px. (-webkit-touch-callout solo existe en Safari de iOS.) */
+@supports (-webkit-touch-callout: none) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
   }
 }
