@@ -2,6 +2,18 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Añadido
+- **Cambiar de sección arrastrando el dedo** por la barra de abajo del iPhone, como en Instagram:
+  la lente sigue al dedo, la pestaña que queda debajo se enciende y, al soltar, vas a ella. Un
+  toque normal sigue funcionando igual.
+- **El botón del chat también lo cierra** en el iPhone: con el chat abierto se convierte en una X
+  y el panel se abre encima de las pestañas, que siguen a la vista.
+
+### Corregido
+- La foto de perfil de arriba quedaba descentrada dentro de su cápsula en el iPhone.
+
 ## [1.8.3] - 2026-10-25
 
 Retoques del aspecto de cristal en el iPhone.

@@ -4,6 +4,7 @@ import Marca from './Marca'
 import MenuUsuario from './MenuUsuario'
 import MenuAjustes from './MenuAjustes'
 import { useIdioma } from './IdiomaContext'
+import { useArrastrePestanas } from './useArrastrePestanas'
 
 // Ancho base de la línea (el del CSS): se estira con scaleX para llegar al ancho del enlace. Así
 // la línea solo cambia transform, que anima la tarjeta gráfica sin pasar por el hilo principal;
@@ -119,6 +120,9 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
     return () => observador.disconnect()
   }, [])
 
+  // En el iPhone (barra de pestañas abajo), cambiar de sección arrastrando el dedo
+  useArrastrePestanas(navRef, lineaRef)
+
   // La altura real de la barra, en la variable --alto-barra: lo que se queda pegado debajo de ella
   // al hacer scroll (las pestañas de Noticias y Social, los laterales) se coloca con ella. El CSS
   // trae un valor fijo (64px), pero en el móvil la barra tiene dos filas, o una más baja con la
@@ -144,7 +148,7 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
 
         <nav className="barra__nav" ref={navRef}>
           {ENLACES.map(({ to, texto, icono }) => (
-            <NavLink key={to} to={to} aria-label={t(texto)}>
+            <NavLink key={to} to={to} data-to={to} aria-label={t(texto)}>
               <svg className="barra__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 {icono}
               </svg>

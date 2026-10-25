@@ -58,6 +58,11 @@
   transition: transform 0.2s ease, opacity 0.12s ease;
 }
 
+/* La X del botón con el panel abierto: solo existe en el iPhone (cristal-ios.css) */
+.chat-lanzador__x {
+  display: none;
+}
+
 .chat-lanzador__icono {
   flex: none;
   overflow: visible;
