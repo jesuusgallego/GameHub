@@ -11,6 +11,16 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.7': {
+    es: [
+      'Las noticias de «Para ti» salen ahora de la más nueva a la más antigua.',
+      'Nuevo: ordena y filtra las noticias por fecha, por portal o solo las de tus juegos.',
+    ],
+    en: [
+      'The "For you" news now go from newest to oldest.',
+      'New: sort and filter the news by date, by site or only those about your games.',
+    ],
+  },
   '1.8.6': {
     es: [
       'Las pestañas de Noticias, Social y Perfil se mueven ahora con la misma animación fluida que la barra de abajo del iPhone.',

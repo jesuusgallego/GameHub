@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.8.7] - 2026-10-25
+
+Noticias por orden cronológico, con orden y filtros; y nada de vistas previas al mantener pulsado.
 
 ### Añadido
 - **Ordenar y filtrar las noticias.** Encima de cada lista, «Ordenar» (más recientes, más antiguas
