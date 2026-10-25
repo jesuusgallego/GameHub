@@ -11,6 +11,14 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.5': {
+    es: [
+      'En el iPhone, la pestaña elegida de la barra de abajo se mueve ahora de forma fluida al arrastrar el dedo, como en Instagram.',
+    ],
+    en: [
+      'On iPhone, the selected tab in the bottom bar now moves smoothly when you slide your finger, like on Instagram.',
+    ],
+  },
   '1.8.4': {
     es: [
       'En el iPhone puedes cambiar de sección arrastrando el dedo por la barra de abajo, como en Instagram.',

@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.8.5] - 2026-10-25
+
+La barra de abajo del iPhone, fluida como en Instagram.
 
 ### Mejorado
 - **La lente de la barra de abajo del iPhone, fluida como en Instagram.** Ya no parece que haya
