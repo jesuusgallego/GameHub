@@ -213,6 +213,8 @@ Lo que **no** es del proyecto y mantiene sus propios términos:
 - **Iconos de plataformas** (PlayStation, Xbox, Nintendo, Apple, Android, Linux…): trazados de
   [Simple Icons](https://simpleicons.org) (CC0). Las marcas pertenecen a sus dueños y se usan
   solo para identificar la plataforma.
+- **Logos de los portales de noticias** (Vandal, IGN, Eurogamer…): son marcas de cada portal y se
+  usan solo para indicar de dónde viene una noticia, junto al enlace al artículo original.
 - **Tipografías** Barlow Condensed y Figtree, bajo la licencia SIL Open Font License, servidas
   con los paquetes `@fontsource`.
 - **Traducciones automáticas** de las descripciones: Azure AI Translator (Microsoft) o

@@ -1,196 +1,17 @@
-/* Noticias (1.6): la portada de la app. Una cabecera de periódico con su cinta de "Última hora",
-   las pestañas Para ti / Siguiendo, la rejilla de noticias (la primera en grande) y una columna
-   lateral. Cada portal tiene su color (--tono, como las personas en tono.js): su nombre, la raya de
-   arriba de sus tarjetas y la portada de las noticias sin imagen. */
+/* Noticias: la portada de la app. Arriba, una cabecera con el degradado de la app (fecha, título,
+   estado y el abanico de portadas) y las pestañas Para ti / Siguiendo en píldora; debajo, la
+   noticia destacada, la rejilla y una columna lateral. Las noticias van sin cajas, con aire entre
+   ellas y el color solo donde dice algo (el punto de cada portal, el titular al pasar el ratón). Cada portal tiene su color (--tono, como las
+   personas en tono.js). */
 
 .noticias {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .noticias button {
   font: inherit;
-}
-
-/* ---- Cabecera de periódico ---- */
-.noticias-cabecera {
-  position: relative;
-  overflow: hidden;
-  background: var(--banner);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio-grande);
-  animation: noticias-entrada 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-/* Líneas de imprenta: una trama horizontal muy tenue, como las rayas de recreativa de Social */
-.noticias-cabecera::before {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 4px);
-  pointer-events: none;
-}
-
-.noticias-cabecera__cuerpo {
-  position: relative;
-  padding: 1.4rem 1.75rem 1.2rem;
-  text-align: center;
-}
-
-.noticias-cabecera__fecha {
-  display: inline-block;
-  padding-bottom: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--texto-suave);
-  text-transform: uppercase;
-}
-
-.noticias-cabecera__fecha::first-letter {
-  text-transform: uppercase;
-}
-
-/* El titular de la cabecera, entre dos filetes como el de un periódico */
-.noticias-cabecera__titulo {
-  margin: 0.15rem auto 0.55rem;
-  padding: 0.25rem 0;
-  max-width: 34rem;
-  font-family: var(--display);
-  font-size: clamp(2.6rem, 6vw, 4.2rem);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.14em;
-  color: var(--texto-h);
-  text-transform: uppercase;
-  border-top: 3px double color-mix(in srgb, var(--texto-h) 45%, transparent);
-  border-bottom: 3px double color-mix(in srgb, var(--texto-h) 45%, transparent);
-}
-
-.noticias-cabecera__frase {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--texto);
-}
-
-/* La cinta de "Última hora" */
-.noticias-cinta {
-  position: relative;
-  display: flex;
-  align-items: center;
-  border-top: 1px solid var(--borde);
-  background: color-mix(in srgb, var(--superficie) 70%, transparent);
-}
-
-.noticias-cinta__rotulo {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--sobre-peligro);
-  text-transform: uppercase;
-  background: var(--peligro);
-}
-
-.noticias-cinta__punto {
-  position: relative;
-  width: 0.45rem;
-  height: 0.45rem;
-  background: currentColor;
-  border-radius: 50%;
-}
-
-.noticias-cinta__punto::after {
-  position: absolute;
-  inset: 0;
-  content: "";
-  background: currentColor;
-  border-radius: inherit;
-  animation: punto-vivo 2s ease-out infinite;
-}
-
-.noticias-cinta__ventana {
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
-  /* Los titulares aparecen y se desvanecen en los bordes */
-  mask-image: linear-gradient(90deg, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
-}
-
-.noticias-cinta__pista {
-  display: flex;
-  width: max-content;
-  animation: noticias-cinta var(--duracion, 45s) linear infinite;
-}
-
-/* Se para al pasar el ratón o al llegar con el teclado, para poder leer y pulsar */
-.noticias-cinta:hover .noticias-cinta__pista,
-.noticias-cinta:focus-within .noticias-cinta__pista {
-  animation-play-state: paused;
-}
-
-@keyframes noticias-cinta {
-  to { transform: translateX(-50%); }
-}
-
-.noticias-cinta__tanda {
-  display: flex;
-}
-
-.noticias-cinta a {
-  display: flex;
-  align-items: baseline;
-  gap: 0.45rem;
-  padding: 0.55rem 1.4rem 0.55rem 0;
-  font-size: 0.88rem;
-  color: var(--texto);
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.noticias-cinta a::before {
-  content: "•";
-  color: var(--texto-suave);
-}
-
-.noticias-cinta a strong {
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
-  text-transform: uppercase;
-}
-
-.noticias-cinta a:hover {
-  color: var(--texto-h);
-  text-decoration: underline;
-}
-
-/* ---- Cuerpo: noticias y columna lateral ---- */
-.noticias-cuerpo {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 19rem;
-  align-items: start;
-  gap: 1.5rem;
-}
-
-.noticias-panel[hidden] {
-  display: none;
-}
-
-.noticias-lateral {
-  position: sticky;
-  top: calc(64px + 1rem);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  animation: noticias-entrada 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both;
 }
 
 @keyframes noticias-entrada {
@@ -200,10 +21,221 @@
   }
 }
 
+/* ---- Cabecera: una tarjeta con el degradado de la app ---- */
+.noticias-cabecera {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  overflow: hidden;
+  padding: 2rem 2.25rem;
+  background: var(--banner);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-grande);
+  animation: noticias-entrada 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Un foco suave del color de acento en la esquina de arriba a la derecha, detrás de las portadas */
+.noticias-cabecera::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: radial-gradient(ellipse 45% 110% at 92% 0%, color-mix(in srgb, var(--acento) 18%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.noticias-cabecera__texto {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.noticias-cabecera__fecha {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+}
+
+.noticias-cabecera__titulo {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(2.4rem, 5vw, 3.3rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: var(--texto-h);
+  text-transform: uppercase;
+}
+
+.noticias-cabecera__frase {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 1rem;
+  color: var(--texto);
+}
+
+/* La línea de estado: "● Última noticia hace 31 minutos · 24 portales" */
+.noticias-cabecera__estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.noticias-cabecera__estado > span + span::before {
+  margin-right: 0.6rem;
+  content: "·";
+}
+
+.noticias-cabecera__vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--texto);
+}
+
+/* El punto verde late, como el de "jugando ahora" */
+.noticias-cabecera__punto {
+  position: relative;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--exito);
+  border-radius: 50%;
+}
+
+.noticias-cabecera__punto::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: inherit;
+  border-radius: inherit;
+  animation: punto-vivo 2s ease-out infinite;
+}
+
+/* El abanico de portadas de tus juegos de los que se habla. Cada portada se coloca según --i (su
+   posición respecto al centro: -1, 0, 1) y gira desde un punto por debajo, como cartas en la mano.
+   Al pasar el ratón se abren; la que señalas sube y se endereza. */
+.noticias-abanico {
+  position: relative;
+  flex: none;
+  width: 17rem;
+  height: 10rem;
+  margin-right: 0.5rem;
+}
+
+.noticias-abanico__portada {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6.2rem;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  padding: 0;
+  background: var(--superficie-2);
+  border: 2px solid color-mix(in srgb, var(--texto-h) 20%, transparent);
+  border-radius: var(--radio);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transform: translate(-50%, -50%) translateX(calc(var(--i) * 3.6rem)) rotate(calc(var(--i) * 10deg));
+  transform-origin: 50% 130%;
+  transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2), border-color var(--transicion), box-shadow var(--transicion);
+  /* backwards: la entrada solo manda hasta que acaba; después, el transform de arriba (y sus
+     transiciones al pasar el ratón) vuelven a funcionar */
+  animation: abanico-entrada 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.1) backwards;
+  animation-delay: calc(0.25s + (var(--i) + 1) * 0.09s);
+}
+
+@keyframes abanico-entrada {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(1.5rem) scale(0.85);
+  }
+}
+
+.noticias-abanico__portada img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.noticias-abanico:hover .noticias-abanico__portada {
+  transform: translate(-50%, -50%) translateX(calc(var(--i) * 5rem)) rotate(calc(var(--i) * 6deg));
+}
+
+.noticias-abanico .noticias-abanico__portada:is(:hover, :focus-visible) {
+  z-index: 5 !important;
+  border-color: var(--acento);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, -50%) translateX(calc(var(--i) * 5rem)) translateY(-0.6rem) scale(1.06);
+}
+
+/* Sin juegos de los que se hable: un periódico dibujado, grande y tenue */
+.noticias-cabecera__dibujo {
+  position: relative;
+  flex: none;
+  width: 7.5rem;
+  height: 7.5rem;
+  margin-right: 1.5rem;
+  color: var(--acento);
+  opacity: 0.35;
+  transform: rotate(-8deg);
+  transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3), opacity 0.5s ease;
+}
+
+.noticias-cabecera:hover .noticias-cabecera__dibujo {
+  opacity: 0.5;
+  transform: rotate(0deg) scale(1.05);
+}
+
+/* "Tus portales" en la cabecera: solo en pantallas estrechas (en las anchas está en la columna) */
+.noticias-cabecera__portales {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  padding: 0;
+  color: var(--texto-suave);
+  background: color-mix(in srgb, var(--superficie) 60%, transparent);
+  border: 1px solid var(--borde);
+  border-radius: 50%;
+  transition: color var(--transicion), border-color var(--transicion), transform 0.3s ease;
+}
+
+.noticias-cabecera__portales:hover {
+  color: var(--texto-h);
+  border-color: var(--acento);
+  transform: rotate(90deg);
+}
+
+/* ---- Cuerpo: noticias y columna lateral ---- */
+.noticias-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  align-items: start;
+  gap: 3rem;
+}
+
+.noticias-panel[hidden] {
+  display: none;
+}
+
 .noticias-feed {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .noticias-estado {
@@ -226,34 +258,25 @@
   animation: noticias-entrada 0.3s ease both;
 }
 
+/* El consejo de "añade juegos": una línea con una raya de acento a la izquierda */
 .noticias-consejo {
   margin: 0;
-  padding: 0.75rem 1rem;
+  padding: 0.15rem 0 0.15rem 0.85rem;
   font-size: 0.9rem;
-  color: var(--texto);
-  background: color-mix(in srgb, var(--acento) 10%, var(--superficie));
-  border: 1px solid color-mix(in srgb, var(--acento) 35%, var(--borde));
-  border-radius: var(--radio-grande);
+  color: var(--texto-suave);
+  border-left: 2px solid var(--acento);
 }
 
-/* El filtro por juego, encima de la rejilla */
+/* El filtro por juego: "Noticias de Hades" y "Ver todas" */
 .noticias-filtro {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.7rem 0.9rem 0.7rem 1.1rem;
-  font-family: var(--display);
-  font-size: 1.3rem;
-  letter-spacing: 0.04em;
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--texto-h);
-  text-transform: uppercase;
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-left: 0;
-  border-radius: var(--radio-grande);
-  box-shadow: inset 4px 0 0 var(--acento);
   animation: noticias-entrada 0.3s ease both;
 }
 
@@ -261,14 +284,11 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.35rem 0.8rem;
-  font-family: var(--sans);
+  padding: 0.3rem 0.75rem;
   font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  color: var(--texto);
-  text-transform: none;
-  background: var(--superficie-2);
+  font-weight: 600;
+  color: var(--texto-suave);
+  background: none;
   border: 1px solid var(--borde);
   border-radius: 999px;
   transition: color var(--transicion), border-color var(--transicion);
@@ -279,23 +299,18 @@
   border-color: var(--acento);
 }
 
-/* ---- La rejilla y las tarjetas ---- */
+/* ---- La rejilla y las noticias ---- */
 .noticias-rejilla {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 2.25rem 1.5rem;
 }
 
+/* Sin caja: la imagen con sus esquinas redondeadas y el texto debajo, sobre el fondo de la página */
 .noticia {
   position: relative;
   display: flex;
   min-width: 0;
-  overflow: hidden;
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio-grande);
-  box-shadow: inset 0 3px 0 hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
-  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2), border-color var(--transicion), box-shadow var(--transicion);
   animation: noticia-entrada 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   animation-delay: calc(var(--orden, 0) * 0.035s);
 }
@@ -303,15 +318,8 @@
 @keyframes noticia-entrada {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.98);
+    transform: translateY(12px);
   }
-}
-
-.noticia:hover,
-.noticia:focus-within {
-  transform: translateY(-3px);
-  border-color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.6);
-  box-shadow: inset 0 3px 0 hsl(var(--tono, 220) var(--tono-s) var(--tono-l)), 0 12px 28px rgba(0, 0, 0, 0.25);
 }
 
 /* "No me interesa": sale encogiéndose y desvaneciéndose */
@@ -323,7 +331,7 @@
 @keyframes noticia-salida {
   to {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.94);
   }
 }
 
@@ -331,7 +339,12 @@
   display: flex;
   width: 100%;
   flex-direction: column;
+  gap: 0.85rem;
   color: inherit;
+  text-decoration: none;
+}
+
+.noticia__enlace:hover {
   text-decoration: none;
 }
 
@@ -340,7 +353,8 @@
   display: block;
   overflow: hidden;
   aspect-ratio: 16 / 9;
-  background: hsl(var(--tono, 220) 30% 18%);
+  background: var(--superficie-2);
+  border-radius: var(--radio-grande);
 }
 
 .noticia__imagen img {
@@ -351,31 +365,56 @@
 }
 
 .noticia:hover .noticia__imagen img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
-/* Sin imagen: el nombre del portal sobre su color, con rayas diagonales */
+/* Sin imagen: el logo del portal (o su nombre, si no hay logo) sobre un fondo teñido de su color,
+   más intenso en el centro, como un foco detrás del logo */
 .noticia__sin-imagen {
   display: grid;
   height: 100%;
   place-items: center;
-  background:
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 10px, transparent 10px 20px),
-    linear-gradient(135deg, hsl(var(--tono, 220) 55% 34%), hsl(calc(var(--tono, 220) + 40) 50% 18%));
+  background: radial-gradient(
+    circle at 50% 45%,
+    color-mix(in srgb, hsl(var(--tono, 220) var(--tono-s) var(--tono-l)) 30%, var(--superficie)),
+    color-mix(in srgb, hsl(var(--tono, 220) var(--tono-s) var(--tono-l)) 8%, var(--superficie)) 75%
+  );
 }
 
 .noticia__sin-imagen span {
-  font-family: var(--display);
-  font-size: 1.8rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.06em;
+  color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
   text-transform: uppercase;
   transition: transform 0.4s ease;
 }
 
+/* El logo: como el icono de una app, con las esquinas redondeadas y una sombra. Al pasar el ratón
+   crece y se inclina un poco, con rebote. Con .noticia__imagen delante para ganar a la regla de las
+   fotos (.noticia__imagen img), que las estira a todo el hueco. */
+.noticia__imagen .noticia__logo {
+  width: clamp(3rem, 26%, 6rem);
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 22%;
+  /* drop-shadow y no box-shadow: sigue la silueta del logo, así los que tienen el fondo
+     transparente (un círculo, una letra) no enseñan un cuadrado de sombra detrás */
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.noticia--destacada .noticia__imagen .noticia__logo {
+  width: clamp(4rem, 22%, 7.5rem);
+}
+
 .noticia:hover .noticia__sin-imagen span {
-  transform: scale(1.06) rotate(-2deg);
+  transform: scale(1.06);
+}
+
+.noticia:hover .noticia__imagen .noticia__logo {
+  transform: scale(1.08) rotate(-4deg);
 }
 
 .noticia__cuerpo {
@@ -383,78 +422,87 @@
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  gap: 0.45rem;
-  padding: 0.85rem 1rem 1rem;
+  gap: 0.4rem;
 }
 
+/* El portal (con el punto de su color) y cuánto hace */
 .noticia__meta {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.76rem;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
 }
 
 .noticia__portal {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.4rem;
   overflow: hidden;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
-  text-overflow: ellipsis;
-  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--texto);
   white-space: nowrap;
+}
+
+.noticia__portal::before {
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  content: "";
+  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
+  border-radius: 50%;
 }
 
 .noticia__meta time {
   flex: none;
-  color: var(--texto-suave);
 }
 
 .noticia__meta time::before {
-  margin-right: 0.5rem;
+  margin-right: 0.45rem;
   content: "·";
 }
 
 .noticia__titulo {
   display: -webkit-box;
   overflow: hidden;
-  font-size: 1.02rem;
+  font-size: 1rem;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.35;
   color: var(--texto-h);
+  transition: color var(--transicion);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
 
 .noticia__enlace:hover .noticia__titulo {
-  text-decoration: underline;
-  text-decoration-color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
-  text-underline-offset: 3px;
+  color: var(--acento);
 }
 
 .noticia__extracto {
   display: -webkit-box;
   overflow: hidden;
-  font-size: 0.88rem;
-  line-height: 1.45;
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: var(--texto-suave);
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
 }
 
-/* El motivo: una píldora al pie de la tarjeta */
+/* Por qué sale: una línea pequeña y gris, con el icono en el color de acento */
 .noticia__motivo {
   display: inline-flex;
   max-width: 100%;
   align-items: center;
-  align-self: flex-start;
-  gap: 0.4rem;
-  margin-top: auto;
-  padding: 0.22rem 0.65rem 0.22rem 0.3rem;
-  font-size: 0.76rem;
-  font-weight: 700;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+}
+
+.noticia__motivo svg {
+  flex: none;
   color: var(--acento);
-  background: color-mix(in srgb, var(--acento) 13%, transparent);
-  border-radius: 999px;
 }
 
 .noticia__motivo span {
@@ -463,47 +511,19 @@
   white-space: nowrap;
 }
 
-.noticia__motivo svg {
-  flex: none;
-  margin-left: 0.25rem;
-}
-
-.noticia__motivo-portada {
-  flex: none;
-  width: 1.3rem;
-  height: 1.7rem;
-  object-fit: cover;
-  border-radius: 3px;
-}
-
-.noticia__motivo--descubrir {
-  color: var(--violeta-claro, #a594ff);
-  background: color-mix(in srgb, #7c62ff 16%, transparent);
-}
-
-:root[data-tema="claro"] .noticia__motivo--descubrir {
-  color: #5b3df5;
-}
-
-.noticia__motivo--reciente,
-.noticia__motivo--portal {
-  color: var(--texto-suave);
-  background: var(--superficie-2);
-}
-
-/* "No me interesa": en la esquina, aparece al pasar el ratón (en pantallas táctiles, siempre) */
+/* "No me interesa": en la esquina de la imagen, aparece al pasar el ratón (en táctiles, siempre) */
 .noticia__ocultar {
   position: absolute;
-  top: 0.6rem;
-  right: 0.6rem;
+  top: 0.5rem;
+  right: 0.5rem;
   display: grid;
-  width: 2rem;
-  height: 2rem;
+  width: 1.9rem;
+  height: 1.9rem;
   place-items: center;
   padding: 0;
   color: #fff;
-  background: rgba(8, 12, 20, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(8, 12, 20, 0.55);
+  border: 0;
   border-radius: 50%;
   opacity: 0;
   backdrop-filter: blur(6px);
@@ -526,43 +546,39 @@
   }
 }
 
-/* La primera, destacada: ocupa toda la fila, con la imagen grande al lado */
+/* La destacada: a lo ancho, imagen grande a la izquierda y texto a la derecha, separada del resto
+   por una línea fina */
 .noticia--destacada {
   grid-column: 1 / -1;
+  padding-bottom: 2.25rem;
+  border-bottom: 1px solid var(--borde);
 }
 
 .noticia--destacada .noticia__enlace {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-}
-
-.noticia--destacada .noticia__imagen {
-  aspect-ratio: auto;
-  min-height: 17rem;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 2rem;
 }
 
 .noticia--destacada .noticia__cuerpo {
-  justify-content: center;
   gap: 0.7rem;
-  padding: 1.5rem 1.6rem;
 }
 
 .noticia--destacada .noticia__titulo {
-  font-family: var(--display);
-  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
-  font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: 0.01em;
+  font-size: clamp(1.35rem, 2.1vw, 1.8rem);
+  line-height: 1.22;
+  letter-spacing: -0.01em;
   -webkit-line-clamp: 4;
 }
 
-.noticia--destacada .noticia__extracto {
-  font-size: 0.95rem;
-  -webkit-line-clamp: 4;
+/* La destacada sin imagen se queda en el texto, a lo ancho: un bloque grande vacío no aporta nada */
+.noticia--destacada.noticia--sin-imagen .noticia__imagen {
+  display: none;
 }
 
-.noticia--destacada .noticia__motivo {
-  margin-top: 0.3rem;
+.noticia--destacada.noticia--sin-imagen .noticia__enlace {
+  grid-template-columns: minmax(0, 46rem);
 }
 
 /* El hueco de una noticia oculta, con "Deshacer" */
@@ -601,15 +617,43 @@
   padding: 0.75rem 0 1.5rem;
 }
 
-/* ---- Columna lateral ---- */
-.noticias-bloque {
-  animation: none;
+/* ---- Columna lateral: sin cajas, rótulos pequeños ---- */
+.noticias-lateral {
+  position: sticky;
+  top: calc(64px + 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  animation: noticias-entrada 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both;
+}
+
+.noticias-lateral .lateral__bloque {
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.noticias-lateral .lateral__titulo {
+  margin: 0 0 0.35rem;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--texto-suave);
+}
+
+.noticias-lateral .lateral__ayuda {
+  margin-bottom: 0.6rem;
+  font-size: 0.8rem;
 }
 
 .noticias-juegos {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.15rem;
+  /* Hacia la izquierda, para que las portadas queden alineadas con los rótulos */
+  margin-left: -0.4rem;
 }
 
 .noticias-juegos > li {
@@ -638,18 +682,17 @@
 
 .noticias-juego--activo,
 .noticias-juego--activo:hover {
-  background: color-mix(in srgb, var(--acento) 14%, transparent);
-  border-color: color-mix(in srgb, var(--acento) 50%, transparent);
+  background: var(--acento-suave);
+  border-color: color-mix(in srgb, var(--acento) 45%, transparent);
 }
 
 .noticias-juego__portada {
   flex: none;
-  width: 2.3rem;
-  height: 3.1rem;
+  width: 2rem;
+  height: 2.7rem;
   overflow: hidden;
   background: var(--superficie-2);
   border-radius: 4px;
-  box-shadow: var(--sombra-portada, 0 4px 14px rgba(0, 0, 0, 0.4));
 }
 
 .noticias-juego__portada img {
@@ -666,23 +709,24 @@
 
 .noticias-juego__texto strong {
   overflow: hidden;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--texto-h);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .noticias-juego__texto small {
-  font-size: 0.78rem;
-  color: var(--acento);
+  font-size: 0.76rem;
+  color: var(--texto-suave);
 }
 
-/* Tus portales: sellos con su color */
+/* Tus portales: su nombre con el punto de su color, sin fondo */
 .noticias-sellos {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin-bottom: 0.4rem;
+  margin: 0.5rem 0 0.25rem;
 }
 
 .noticias-sellos > li {
@@ -692,37 +736,57 @@
 
 .noticias-sellos a {
   display: inline-flex;
-  white-space: nowrap;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.25rem 0.65rem;
+  padding: 0.22rem 0.65rem;
   font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--texto-h);
+  font-weight: 600;
+  color: var(--texto);
+  white-space: nowrap;
   text-decoration: none;
-  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.14);
-  border: 1px solid hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.4);
+  border: 1px solid var(--borde);
   border-radius: 999px;
-  transition: background-color var(--transicion), transform 0.2s ease;
+  transition: color var(--transicion), border-color var(--transicion), transform 0.2s ease;
+}
+
+/* El logo pequeño del portal; solo si no lo hay sale el punto de su color */
+.noticias-sellos__logo {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-left: -0.3rem;
+  border-radius: 0.3rem;
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.noticias-sellos a:hover .noticias-sellos__logo {
+  transform: rotate(-8deg) scale(1.1);
+}
+
+.noticias-sellos a:has(.noticias-sellos__logo)::before {
+  display: none;
 }
 
 .noticias-sellos a::before {
-  width: 0.45rem;
-  height: 0.45rem;
+  width: 0.4rem;
+  height: 0.4rem;
   content: "";
   background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l));
   border-radius: 50%;
 }
 
 .noticias-sellos a:hover {
-  background: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.26);
+  color: var(--texto-h);
+  border-color: hsl(var(--tono, 220) var(--tono-s) var(--tono-l) / 0.7);
   transform: translateY(-1px);
+}
+
+.noticias-lateral .lateral__mas {
+  margin-left: -0.45rem;
 }
 
 .noticias-nota {
   margin: 0;
-  padding: 0 0.25rem;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   line-height: 1.45;
   color: var(--texto-suave);
 }
@@ -796,6 +860,26 @@
 }
 
 .portal:hover .portal__sello {
+  transform: rotate(-6deg) scale(1.05);
+}
+
+/* El logo del portal en lugar de las letras: mismo tamaño y misma animación. Sin marcar se ve algo
+   apagado; al marcarlo recupera su color, a juego con el resto de la ficha. */
+.portal__logo {
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.6rem;
+  filter: grayscale(0.6) opacity(0.75);
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4), filter var(--transicion);
+}
+
+.portal:hover .portal__logo,
+.portal--elegido .portal__logo {
+  filter: none;
+}
+
+.portal:hover .portal__logo {
   transform: rotate(-6deg) scale(1.05);
 }
 
@@ -899,78 +983,139 @@
 @media (max-width: 1000px) {
   .noticias-cuerpo {
     grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
   }
 
-  /* La columna lateral pasa arriba como una franja horizontal compacta que se desliza: así la
-     primera noticia sigue saliendo en la primera pantalla */
+  /* La columna lateral sube encima de las noticias y se queda en lo justo: los juegos de los que se
+     habla, en una fila de etiquetas que se desliza. "Tus portales" pasa al botón de la cabecera. */
   .noticias-lateral {
     position: static;
     order: -1;
-    flex-direction: row;
-    gap: 0.75rem;
-    margin: 0 -1rem;
-    padding: 0 1rem 0.25rem;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
+    gap: 0;
   }
 
-  .noticias-lateral > .noticias-bloque {
-    flex: 0 0 min(19rem, 82vw);
-    padding: 0.8rem 0.9rem;
-    scroll-snap-align: start;
+  .noticias-cabecera__portales {
+    display: grid;
   }
 
-  .noticias-lateral .lateral__titulo {
-    font-size: 1.05rem;
+  /* Las portadas ya salen justo debajo, en la fila de "Se habla de tus juegos" */
+  .noticias-abanico,
+  .noticias-cabecera__dibujo {
+    display: none;
   }
 
+  .noticias-bloque--portales,
+  .noticias-bloque--vacio,
   .noticias-lateral .lateral__ayuda,
   .noticias-nota {
     display: none;
   }
 
   .noticias-juegos {
-    gap: 0.15rem;
+    flex-direction: row;
+    gap: 0.5rem;
+    margin: 0.35rem -1rem 0;
+    padding: 0 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .noticias-juegos::-webkit-scrollbar {
+    display: none;
+  }
+
+  .noticias-juegos > li {
+    flex: none;
   }
 
   .noticias-juego {
-    padding: 0.25rem;
+    padding: 0.2rem 0.85rem 0.2rem 0.2rem;
+    border-color: var(--borde);
+    border-radius: 999px;
+  }
+
+  .noticias-juego:hover {
+    transform: none;
   }
 
   .noticias-juego__portada {
     width: 1.7rem;
-    height: 2.3rem;
+    height: 1.7rem;
+    border-radius: 50%;
   }
 
-  .noticias-sellos {
-    flex-wrap: nowrap;
-    overflow-x: auto;
+  .noticias-juego__texto strong {
+    max-width: 12rem;
+    font-size: 0.85rem;
+  }
+
+  .noticias-juego__texto small {
+    display: none;
   }
 }
 
 @media (max-width: 720px) {
-  .noticias-cabecera__cuerpo {
-    padding: 1.1rem 1rem 1rem;
+  .noticias-cabecera {
+    padding: 1.4rem 1.25rem;
   }
 
-  .noticias-cabecera__titulo {
-    letter-spacing: 0.08em;
+  .noticias-cabecera__texto {
+    padding-right: 2.5rem; /* el botón de "Tus portales" */
   }
 
+  .noticias-cabecera__fecha {
+    letter-spacing: 0.1em;
+  }
+
+  /* En el móvil la línea de estado se queda en "Última noticia hace…" */
+  .noticias-cabecera__cuantos {
+    display: none;
+  }
+
+  .noticia--destacada {
+    padding-bottom: 1.5rem;
+  }
+
+  /* Una debajo de otra; stretch para que la imagen ocupe todo el ancho (en el escritorio van
+     centradas en vertical, y "center" aquí la encogería) */
   .noticia--destacada .noticia__enlace {
     display: flex;
+    align-items: stretch;
+    gap: 0.85rem;
   }
 
-  .noticia--destacada .noticia__imagen {
-    min-height: 0;
-    aspect-ratio: 16 / 9;
-  }
-
-  .noticia--destacada .noticia__cuerpo {
-    padding: 1rem;
-  }
-
+  /* En el móvil, las demás noticias son filas: el texto a la izquierda y la imagen pequeña a la
+     derecha, como en una lista de titulares */
   .noticias-rejilla {
     grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .noticia:not(.noticia--destacada) .noticia__enlace {
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    gap: 0.9rem;
+  }
+
+  .noticia:not(.noticia--destacada) .noticia__imagen {
+    flex: 0 0 6.5rem;
+    aspect-ratio: 1;
+    border-radius: var(--radio);
+  }
+
+  .noticia:not(.noticia--destacada) .noticia__titulo {
+    font-size: 0.95rem;
+  }
+
+  .noticia:not(.noticia--destacada) .noticia__sin-imagen span {
+    font-size: 0.65rem;
+    text-align: center;
+  }
+
+  .noticia:not(.noticia--destacada) .noticia__ocultar {
+    top: 0.3rem;
+    right: 0.3rem;
+    width: 1.6rem;
+    height: 1.6rem;
   }
 }

@@ -3,6 +3,7 @@ import ImagenSuave from './ImagenSuave'
 import { useIdioma } from './IdiomaContext'
 import { tiempoRelativo } from './tiempo'
 import { claveMotivo } from './logicaNoticias'
+import { logoPortal } from './logosPortales'
 
 // Los iconos de cada motivo de "Para ti"
 const ICONOS_MOTIVO = {
@@ -14,28 +15,25 @@ const ICONOS_MOTIVO = {
   reciente: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
 }
 
-// Por qué sale una noticia en "Para ti": un icono, el texto ("Porque juegas a Elden Ring") y, si
-// es por un juego, su portada pequeña
+// Por qué sale una noticia en "Para ti": un icono pequeño y el texto ("Porque tienes Elden Ring"),
+// en una línea discreta al pie
 export function MotivoNoticia({ motivo }) {
   const { t } = useIdioma()
   if (!motivo) return null
   const juego = motivo.game?.name
   return (
     <span className={`noticia__motivo noticia__motivo--${motivo.kind}`}>
-      {motivo.game?.cover_url
-        ? <img className="noticia__motivo-portada" src={motivo.game.cover_url} alt="" loading="lazy" />
-        : (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            {ICONOS_MOTIVO[motivo.kind] ?? ICONOS_MOTIVO.reciente}
-          </svg>
-        )}
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {ICONOS_MOTIVO[motivo.kind] ?? ICONOS_MOTIVO.reciente}
+      </svg>
       <span>{t(claveMotivo(motivo), { juego })}</span>
     </span>
   )
 }
 
-// Una noticia: imagen (o, si el portal no la da, una portada con su color y su nombre), el portal,
-// cuánto hace, el titular, un extracto y por qué te la recomendamos. Toda la tarjeta es un enlace al
+// Una noticia: imagen (o, si el portal no la da, su logo o su nombre sobre un fondo de su color), el
+// portal, cuánto hace, el titular y por qué te la recomendamos. El extracto solo sale en la destacada:
+// en las demás, con el titular basta. Toda la tarjeta es un enlace al
 // artículo en el portal (se abre en el navegador: GameHub no copia el artículo). "No me interesa"
 // va aparte, fuera del enlace.
 //  - noticia: la de la API ({ id, url, title, excerpt, image, published_at, source, reason? })
@@ -49,17 +47,20 @@ function TarjetaNoticia({ noticia, destacada = false, orden = 0, refObservar, on
   const { source } = noticia
   // Si la imagen del portal no carga (borrada, bloqueada...), la portada con su color
   const [imagenRota, setImagenRota] = useState(false)
+  const conImagen = Boolean(noticia.image) && !imagenRota
+  // Sin imagen, el logo del portal (si lo tenemos); sin ninguno de los dos, su nombre
+  const logo = conImagen ? null : logoPortal(source.slug)
   return (
     <article
       ref={refObservar}
-      className={['noticia', destacada && 'noticia--destacada', saliendo && 'noticia--saliendo'].filter(Boolean).join(' ')}
+      className={['noticia', destacada && 'noticia--destacada', !conImagen && !logo && 'noticia--sin-imagen', saliendo && 'noticia--saliendo'].filter(Boolean).join(' ')}
       style={{ '--tono': source.tono, '--orden': Math.min(orden, 12) }}
       // La salida termina con su animación, no con un temporizador (solo la suya, no la de dentro)
       onAnimationEnd={(e) => { if (saliendo && e.target === e.currentTarget) onSalida?.() }}
     >
       <a className="noticia__enlace" href={noticia.url} target="_blank" rel="noopener noreferrer" onClick={onAbrir}>
         <span className="noticia__imagen">
-          {noticia.image && !imagenRota ? (
+          {conImagen ? (
             // Sin "referrer": algunos portales no sirven sus imágenes a otras webs si saben de dónde viene la petición
             <ImagenSuave
               src={noticia.image}
@@ -70,7 +71,7 @@ function TarjetaNoticia({ noticia, destacada = false, orden = 0, refObservar, on
             />
           ) : (
             <span className="noticia__sin-imagen" aria-hidden="true">
-              <span>{source.name}</span>
+              {logo ? <img className="noticia__logo" src={logo} alt="" /> : <span>{source.name}</span>}
             </span>
           )}
         </span>
@@ -82,7 +83,7 @@ function TarjetaNoticia({ noticia, destacada = false, orden = 0, refObservar, on
             </time>
           </span>
           <span className="noticia__titulo">{noticia.title}</span>
-          {noticia.excerpt && <span className="noticia__extracto">{noticia.excerpt}</span>}
+          {destacada && noticia.excerpt && <span className="noticia__extracto">{noticia.excerpt}</span>}
           {noticia.reason && <MotivoNoticia motivo={noticia.reason} />}
         </span>
         <span className="sr-only">{t('noticias.abreEnPortal', { portal: source.name })}</span>

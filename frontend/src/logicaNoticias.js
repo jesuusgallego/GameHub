@@ -32,17 +32,14 @@ export function cursorSiguiente(noticias) {
   return ultima ? `before=${encodeURIComponent(ultima.published_at)}&before_id=${ultima.id}` : ''
 }
 
-// Los titulares de la cinta de "Última hora": los más recientes de lo cargado, sin repetir portal
-// seguido, como mucho `cuantos`
-export function titularesCinta(noticias, cuantos = 8) {
-  const recientes = [...noticias].sort((a, b) => Date.parse(b.published_at) - Date.parse(a.published_at))
-  const salida = []
-  for (const n of recientes) {
-    if (salida.length >= cuantos) break
-    if (salida[salida.length - 1]?.source.slug === n.source.slug) continue
-    salida.push(n)
+// La fecha (ISO) de la noticia más reciente de una lista, o `previa` si es más reciente que todas
+// (o si la lista está vacía). Para "Última noticia hace…" de la cabecera.
+export function masReciente(noticias, previa = null) {
+  let mejor = previa
+  for (const n of noticias ?? []) {
+    if (!mejor || Date.parse(n.published_at) > Date.parse(mejor)) mejor = n.published_at
   }
-  return salida
+  return mejor
 }
 
 // La cola de sucesos que se envían al servidor (impresiones y clics). Una impresión se apunta UNA

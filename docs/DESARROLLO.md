@@ -1068,14 +1068,31 @@ lo que se ve y se pulsa) y `logicaNoticias.js`. Estilos en `estilos/noticias.css
 - **Privacidad:** *Perfil → Privacidad → Noticias* tiene "Personalizar Para ti con mi actividad"
   (`users.news_personalization`). Apagado, no se registra nada (ocultar sigue funcionando, porque es
   una preferencia explícita). Los sucesos se borran a los 180 días y con la cuenta (`CASCADE`).
-- **La página:** cabecera de periódico con la cinta de "Última hora" (los titulares más recientes de
-  lo cargado; se para al pasar el ratón o con el foco), pestañas en barra con la pestaña en la URL
-  (`?tab=siguiendo`), la primera noticia en grande y la rejilla, con carga al acercarse al final.
+- **La página:** arriba, una cabecera con el degradado de la app: fecha, título, una frase (de qué
+  juegos tuyos se habla) y una línea de estado ("Última noticia hace…", con `masReciente()` de
+  `logicaNoticias.js` sobre lo cargado en las dos pestañas, y cuántos portales hay). A la derecha,
+  un abanico con las portadas de hasta tres de esos juegos que se abre al pasar el ratón (pulsar
+  una filtra por ese juego); sin juegos, un periódico dibujado. Debajo, las pestañas en píldora
+  con la pestaña en la URL (`?tab=siguiendo`). Las noticias van sin cajas: la primera en grande
+  (con extracto) y la rejilla (imagen, portal con el punto de su color, titular y motivo, sin
+  extracto), con carga al acercarse al final. En el móvil, las noticias son filas con la imagen
+  pequeña a la derecha.
+- **Logos de los portales:** una noticia sin imagen (o con una que no carga) enseña el logo de su
+  portal sobre un fondo de su color; sin logo, su nombre (y la destacada se queda en el texto).
+  También salen en la elección de portales (en lugar de sus iniciales; apagados hasta que lo
+  marcas) y, en pequeño, en las etiquetas de "Tus portales" de la columna. Son
+  PNG de 128×128 en `frontend/src/logos-portales/<slug>.png`, descargados una vez del icono que
+  publica cada web (`apple-touch-icon` o el más grande de sus `<link rel="icon">`; los de IGN y
+  GameSpot, a mano) y pasados a PNG cuadrado. Van dentro de la app para no pedir nada a otras webs al
+  abrir Noticias. `logosPortales.js` los encuentra con `import.meta.glob`, que da la URL buena en la
+  web y en el escritorio. **Al añadir un portal al catálogo hay que dejar su PNG en esa carpeta:**
+  `frontend/test/noticias.test.js` falla si falta alguno.
   Las dos pestañas quedan montadas al cambiar (cada una sigue donde estaba). Cambiar de idioma, de
   juego o de portales cambia la `key` del feed, que se crea de nuevo desde cero. "No me interesa"
   sale con su animación (`animationend`, o al instante con "reducir movimiento") y deja un hueco
   con "Deshacer". La columna lateral: "Se habla de tus juegos" (pulsar uno filtra con `?game=`) y
-  "Tus portales"; en el móvil es una franja horizontal arriba.
+  "Tus portales"; en pantallas estrechas solo quedan los juegos, como una fila de etiquetas arriba
+  (el abanico se esconde), y "Tus portales" pasa a un botón en la esquina de la cabecera.
 - **Cómo se probó:** `backend/test/noticias.test.js` (RSS y Atom de ejemplo con las rarezas reales,
   el catálogo y el recomendador) y `frontend/test/noticias.test.js`. La lectura de los 24 portales
   de verdad y la API (34 comprobaciones: páginas sin repetir, exploración cada 6, variedad,

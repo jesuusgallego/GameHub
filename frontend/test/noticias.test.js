@@ -1,12 +1,15 @@
 // Pruebas de la lógica de las noticias en la interfaz: motivos, portales por idioma, juntar
-// páginas, el cursor de Siguiendo, la cinta y la cola de sucesos. npm test
+// páginas, el cursor de Siguiendo, la noticia más reciente, la cola de sucesos y que no falte ningún
+// logo de portal. npm test
 import { test } from 'node:test'
 import assert from 'node:assert'
 import {
-  claveMotivo, portalesPorIdioma, preseleccion, juntarNoticias, cursorSiguiente, titularesCinta, crearCola,
+  claveMotivo, portalesPorIdioma, preseleccion, juntarNoticias, cursorSiguiente, masReciente, crearCola,
 } from '../src/logicaNoticias.js'
 import es from '../src/textos/es.js'
 import en from '../src/textos/en.js'
+import { createRequire } from 'node:module'
+import { existsSync } from 'node:fs'
 
 const n = (id, slug = 'a', fecha = '2026-10-24T10:00:00Z') => ({ id, published_at: fecha, source: { slug } })
 
@@ -34,10 +37,12 @@ test('juntar páginas sin repetir y el cursor de la siguiente', () => {
   assert.strictEqual(cursorSiguiente([]), '')
 })
 
-test('la cinta: lo más reciente, sin dos seguidas del mismo portal', () => {
-  const ns = [n(1, 'a', '2026-10-24T09:00:00Z'), n(2, 'a', '2026-10-24T11:00:00Z'), n(3, 'b', '2026-10-24T10:00:00Z'), n(4, 'a', '2026-10-24T08:00:00Z')]
-  assert.deepStrictEqual(titularesCinta(ns).map((x) => x.id), [2, 3, 1])
-  assert.strictEqual(titularesCinta(ns, 1).length, 1)
+test('la noticia más reciente, también contra la que ya había', () => {
+  const ns = [n(1, 'a', '2026-10-24T09:00:00Z'), n(2, 'a', '2026-10-24T11:00:00Z')]
+  assert.strictEqual(masReciente(ns), '2026-10-24T11:00:00Z')
+  assert.strictEqual(masReciente(ns, '2026-10-24T12:00:00Z'), '2026-10-24T12:00:00Z', 'la previa es más nueva')
+  assert.strictEqual(masReciente([], '2026-10-24T08:00:00Z'), '2026-10-24T08:00:00Z')
+  assert.strictEqual(masReciente(undefined), null)
 })
 
 test('la cola: una impresión por noticia y pestaña, los clics siempre, y por tandas', () => {
@@ -54,4 +59,11 @@ test('la cola: una impresión por noticia y pestaña, los clics siempre, y por t
   ])
   assert.strictEqual(cola.tomar().length, 2)
   assert.strictEqual(cola.pendientes, 0)
+})
+
+test('cada portal del catálogo tiene su logo en src/logos-portales', () => {
+  // El catálogo es del backend (CommonJS): se carga con require
+  const portales = createRequire(import.meta.url)('../../backend/src/config/portales.js')
+  const sinLogo = portales.filter((p) => !existsSync(new URL(`../src/logos-portales/${p.slug}.png`, import.meta.url)))
+  assert.deepStrictEqual(sinLogo.map((p) => p.slug), [], 'falta el PNG de estos portales')
 })

@@ -6,9 +6,10 @@ import { useVentana } from './useVentana'
 import { useIdioma } from './IdiomaContext'
 import { portalesPorIdioma, preseleccion } from './logicaNoticias'
 import { tiempoRelativo } from './tiempo'
+import { logoPortal } from './logosPortales'
 
 // La lista de portales para elegir cuáles seguir, en dos grupos por idioma (el de la interfaz
-// primero). Cada portal es un botón que se marca y desmarca, con su color, su nombre y su último
+// primero). Cada portal es un botón que se marca y desmarca, con su logo, su nombre y su último
 // titular. Sirve en dos sitios: la primera vez, dentro de "Siguiendo", y en la ventana "Tus portales".
 //  - portales: GET /news/sources
 //  - elegidos: los slugs marcados; onAlternar(slug)
@@ -30,7 +31,10 @@ export function ListaPortales({ portales, elegidos, onAlternar }) {
                     aria-pressed={elegido}
                     onClick={() => onAlternar(p.slug)}
                   >
-                    <span className="portal__sello" aria-hidden="true">{p.name.replace(/[^A-Za-z0-9ÁÉÍÓÚÑ]/g, '').slice(0, 2)}</span>
+                    {/* Su logo; si no lo hay, sus dos primeras letras sobre su color */}
+                    {logoPortal(p.slug)
+                      ? <img className="portal__logo" src={logoPortal(p.slug)} alt="" />
+                      : <span className="portal__sello" aria-hidden="true">{p.name.replace(/[^A-Za-z0-9ÁÉÍÓÚÑ]/g, '').slice(0, 2)}</span>}
                     <span className="portal__texto">
                       <strong>{p.name}</strong>
                       <small>

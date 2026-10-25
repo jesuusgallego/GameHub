@@ -7,42 +7,74 @@ import { VentanaPortales } from './PortalesNoticias'
 import { useEventosNoticias } from './useEventosNoticias'
 import { useIdioma } from './IdiomaContext'
 import { borrarToken } from './sesion'
-import { titularesCinta } from './logicaNoticias'
+import { tiempoRelativo } from './tiempo'
+import { masReciente } from './logicaNoticias'
+import { logoPortal } from './logosPortales'
 
-// La cabecera, como la de un periódico: "NOTICIAS" en grande, la fecha de hoy y una frase, y debajo
-// una cinta de "Última hora" con los titulares más recientes que se desliza sola (se para al pasar el
-// ratón o con el foco, y no se mueve con "reducir movimiento"). Cada titular de la cinta es un enlace.
-//  - titulares: las noticias de la cinta; frase: el texto de debajo del título
-function CabeceraNoticias({ titulares, frase }) {
+// La cabecera: una tarjeta con el degradado de la app (como la de Buscar). A la izquierda, la fecha,
+// el título, una frase (de qué juegos tuyos se habla) y una línea de estado: cuándo salió la última
+// noticia y de cuántos portales se leen. A la derecha, un abanico con las portadas de esos juegos que
+// se abre al pasar el ratón (pulsar una enseña sus noticias); si no hay ninguno, un dibujo.
+//  - frase: el texto de debajo del título
+//  - ultima: la fecha de la noticia más reciente (null mientras no hay)
+//  - nPortales: cuántos portales hay en el catálogo
+//  - juegos: los de "Se habla de tus juegos"; onJuego(juego): pulsar una portada
+//  - onPortales(): abre "Tus portales"; el botón solo se ve en pantallas estrechas, donde la columna
+//    lateral (que tiene el suyo) se queda en lo justo
+function CabeceraNoticias({ frase, ultima, nPortales, juegos, onJuego, onPortales }) {
   const { t, locale } = useIdioma()
   const hoy = new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())
-  const enlaces = (oculta) => titulares.map((n) => (
-    <a key={`${oculta ? 'b' : 'a'}${n.id}`} href={n.url} target="_blank" rel="noopener noreferrer" tabIndex={oculta ? -1 : undefined} style={{ '--tono': n.source.tono }}>
-      <strong>{n.source.name}</strong>
-      {n.title}
-    </a>
-  ))
+  const portadas = juegos.filter((j) => j.cover_url).slice(0, 3)
   return (
     <header className="noticias-cabecera">
-      <div className="noticias-cabecera__cuerpo">
+      <div className="noticias-cabecera__texto">
         <p className="noticias-cabecera__fecha">{hoy}</p>
         <h1 className="noticias-cabecera__titulo">{t('noticias.titulo')}</h1>
         <p className="noticias-cabecera__frase">{frase}</p>
+        <p className="noticias-cabecera__estado">
+          {ultima && (
+            <span className="noticias-cabecera__vivo">
+              <span className="noticias-cabecera__punto" aria-hidden="true" />
+              {t('noticias.ultimaNoticia', { tiempo: tiempoRelativo(ultima, locale) })}
+            </span>
+          )}
+          {nPortales > 0 && <span className="noticias-cabecera__cuantos">{t('noticias.nPortales', { n: nPortales })}</span>}
+        </p>
       </div>
-      {titulares.length > 0 && (
-        <div className="noticias-cinta" role="region" aria-label={t('noticias.ultimaHora')}>
-          <span className="noticias-cinta__rotulo">
-            <span className="noticias-cinta__punto" aria-hidden="true" />
-            {t('noticias.ultimaHora')}
-          </span>
-          <div className="noticias-cinta__ventana">
-            {/* Dos copias seguidas: al llegar a la mitad, la animación vuelve al principio sin que se note */}
-            <div className="noticias-cinta__pista" style={{ '--duracion': `${Math.max(30, titulares.length * 7)}s` }}>
-              <span className="noticias-cinta__tanda">{enlaces(false)}</span>
-              <span className="noticias-cinta__tanda" aria-hidden="true">{enlaces(true)}</span>
-            </div>
-          </div>
+
+      {portadas.length > 0 ? (
+        <div className="noticias-abanico" style={{ '--cuantas': portadas.length }}>
+          {portadas.map((j, i) => (
+            <button
+              key={j.igdb_id}
+              type="button"
+              className="noticias-abanico__portada"
+              // --i: -1, 0, 1 (posición respecto al centro); la del centro queda por encima
+              style={{ '--i': i - (portadas.length - 1) / 2, zIndex: 3 - Math.abs(i - (portadas.length - 1) / 2) * 2 }}
+              title={t('noticias.verDeJuego', { juego: j.name })}
+              aria-label={t('noticias.verDeJuego', { juego: j.name })}
+              onClick={() => onJuego(j)}
+            >
+              <img src={j.cover_url} alt="" />
+            </button>
+          ))}
         </div>
+      ) : (
+        <svg className="noticias-cabecera__dibujo" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+          <path d="M18 14h-8M15 18h-5" />
+          <path d="M10 6h8v4h-8z" />
+        </svg>
+      )}
+
+      {onPortales && (
+        <button type="button" className="noticias-cabecera__portales" aria-label={t('noticias.gestionarPortales')} title={t('noticias.gestionarPortales')} onClick={onPortales}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+            <circle cx="16" cy="7" r="2" />
+            <circle cx="10" cy="17" r="2" />
+          </svg>
+        </button>
       )}
     </header>
   )
@@ -62,7 +94,8 @@ function Noticias({ setToken }) {
   const [recarga, setRecarga] = useState(0)
   const [juego, setJuego] = useState(null)
   const [mencionados, setMencionados] = useState([])
-  const [titulares, setTitulares] = useState([])
+  // La fecha de la noticia más reciente de lo cargado, para la cabecera
+  const [ultima, setUltima] = useState(null)
   // Las dos pestañas se montan la primera vez que se abren y luego siguen montadas (al volver, cada
   // una está donde la dejaste)
   const [abiertas, setAbiertas] = useState(() => new Set([tab]))
@@ -83,12 +116,11 @@ function Noticias({ setToken }) {
     return () => { vivo = false }
   }, [cerrarSesion, recarga])
 
-  const alDatosParaTi = useCallback(({ mencionados: m, noticias }) => {
+  // Lo que llega de cada pestaña: los juegos de los que se habla (solo Para ti) y la noticia más
+  // reciente (de las dos, la que lo sea más)
+  const alDatos = useCallback(({ mencionados: m, noticias }) => {
     if (m) setMencionados(m)
-    setTitulares((previos) => (previos.length > 0 ? previos : titularesCinta(noticias)))
-  }, [])
-  const alDatosSiguiendo = useCallback(({ noticias }) => {
-    setTitulares((previos) => (previos.length > 0 ? previos : titularesCinta(noticias)))
+    setUltima((previa) => masReciente(noticias, previa))
   }, [])
 
   function cambiarPortales(lista) {
@@ -113,7 +145,14 @@ function Noticias({ setToken }) {
 
   return (
     <div className="noticias">
-      <CabeceraNoticias titulares={titulares} frase={frase} />
+      <CabeceraNoticias
+        frase={frase}
+        ultima={ultima}
+        nPortales={portales?.length ?? 0}
+        juegos={mencionados}
+        onJuego={verJuego}
+        onPortales={portales ? () => setGestionando(true) : null}
+      />
 
       <PestanasPerfil
         variante="barra"
@@ -145,7 +184,7 @@ function Noticias({ setToken }) {
                 portales={portales}
                 eventos={eventos}
                 onPortales={cambiarPortales}
-                onDatos={id === 'para_ti' ? alDatosParaTi : alDatosSiguiendo}
+                onDatos={alDatos}
                 onQuitarJuego={() => setJuego(null)}
                 cerrarSesion={cerrarSesion}
               />
@@ -154,7 +193,7 @@ function Noticias({ setToken }) {
         </div>
 
         <aside className="noticias-lateral">
-          <section className="lateral__bloque noticias-bloque">
+          <section className={mencionados.length === 0 ? 'lateral__bloque noticias-bloque noticias-bloque--vacio' : 'lateral__bloque noticias-bloque'}>
             <h3 className="titulo-seccion lateral__titulo">{t('noticias.seHabla')}</h3>
             {mencionados.length === 0 ? (
               <p className="lateral__ayuda">{t('noticias.seHablaVacio')}</p>
@@ -185,7 +224,7 @@ function Noticias({ setToken }) {
             )}
           </section>
 
-          <section className="lateral__bloque noticias-bloque">
+          <section className="lateral__bloque noticias-bloque noticias-bloque--portales">
             <h3 className="titulo-seccion lateral__titulo">{t('noticias.tusPortales')}</h3>
             {portales !== null && seguidos.length === 0 ? (
               <p className="lateral__ayuda">{t('noticias.sinPortales')}</p>
@@ -193,7 +232,11 @@ function Noticias({ setToken }) {
               <ul className="noticias-sellos">
                 {seguidos.map((p, i) => (
                   <li key={p.slug} style={{ '--tono': p.tono, '--orden': i }}>
-                    <a href={p.site} target="_blank" rel="noopener noreferrer">{p.name}</a>
+                    <a href={p.site} target="_blank" rel="noopener noreferrer">
+                      {/* El logo en pequeño; sin él, el CSS pone un punto de su color */}
+                      {logoPortal(p.slug) && <img className="noticias-sellos__logo" src={logoPortal(p.slug)} alt="" />}
+                      {p.name}
+                    </a>
                   </li>
                 ))}
               </ul>

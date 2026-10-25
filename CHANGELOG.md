@@ -2,6 +2,20 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [Sin publicar]
+
+### Cambiado
+- **La barra de arriba** enseña iconos en lugar de texto (Noticias, Mi biblioteca, Buscar y
+  Social), centrados en medio de la barra. Al pasar el ratón sale el nombre de cada uno.
+- **Noticias, más sencilla:** sin la cinta de "Última hora" ni la cabecera de periódico.
+  - La cabecera dice cuándo salió la última noticia y enseña en abanico las portadas de tus juegos
+    de los que se habla: se abre al pasar el ratón y, al pulsar una, ves las noticias de ese juego.
+  - Las noticias van sin cajas: la imagen, el portal, el titular y por qué te sale. El extracto
+    queda solo en la primera.
+  - Cada portal lleva su logo: en las noticias que no traen imagen, al elegir qué portales sigues
+    y en la lista de "Tus portales".
+  - En el móvil, las noticias son una lista de titulares con la imagen pequeña al lado.
+
 ## [1.6.0] - 2026-10-24
 
 Las noticias pasan a ser la portada de GameHub: lo que ves al entrar.
