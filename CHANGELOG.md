@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
-## [Sin publicar]
+## [1.8.0] - 2026-10-25
+
+GameHub llega al iPhone: instálala desde Safari y ábrela como una app más.
 
 ### Añadido
 - **GameHub en el iPhone.** La versión web

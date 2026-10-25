@@ -11,6 +11,16 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.0': {
+    es: [
+      'GameHub ya funciona en el iPhone: abre jesuusgallego.github.io/GameHub en Safari y añádela a la pantalla de inicio.',
+      'Entras con tu misma cuenta: tu biblioteca, tus noticias y tus amigos, también en el móvil.',
+    ],
+    en: [
+      'GameHub now works on iPhone: open jesuusgallego.github.io/GameHub in Safari and add it to your Home Screen.',
+      'Sign in with the same account: your library, your news and your friends, on your phone too.',
+    ],
+  },
   '1.7.0': {
     es: [
       'La barra de arriba es ahora de iconos, en el centro: pasa el ratón para ver su nombre.',
