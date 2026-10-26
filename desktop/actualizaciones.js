@@ -11,6 +11,14 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.8': {
+    es: [
+      'En el móvil, Mi biblioteca enseña tus juegos nada más entrar, con filtros más sencillos y de cristal en el iPhone.',
+    ],
+    en: [
+      'On mobile, My library shows your games right away, with simpler filters, made of glass on iPhone.',
+    ],
+  },
   '1.8.7': {
     es: [
       'Las noticias de «Para ti» salen ahora de la más nueva a la más antigua.',

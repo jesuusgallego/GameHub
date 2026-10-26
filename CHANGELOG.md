@@ -2,6 +2,25 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [1.8.8] - 2026-10-26
+
+Mi biblioteca en el móvil: tus juegos, lo primero; los filtros, minimalistas y de cristal.
+
+### Cambiado
+- **Filtros de Mi biblioteca en el móvil, más sencillos.** En lugar de la barra de filtros, que
+  ocupaba una pantalla entera antes de los juegos, una fila con el buscador y un botón de filtros
+  que despliega el orden (con «más antiguo / más reciente» en dos mitades, como en iOS) y el género,
+  la compañía y la plataforma; el botón dice cuántos hay puestos. Debajo, el estado en pastillas
+  con su contador que se deslizan de lado. En el iPhone, todo de cristal (Liquid Glass).
+- **Tus juegos se ven nada más entrar en la biblioteca.** En el móvil, la cabecera cabe en una fila
+  con un botón «+» redondo para añadir juegos, y «Jugando ahora» pasa a una tira que se desliza de
+  lado.
+
+### Interno
+- `FiltrosBibliotecaMovil.jsx` y el hook `useMedia.js` (hasta 820 px); estilos en `biblioteca.css`,
+  `movil.css` y `cristal-ios.css`. La entrada de `.biblioteca-pagina` pasa a `backwards` para que
+  Safari no anule el desenfoque del cristal de dentro.
+
 ## [1.8.7] - 2026-10-25
 
 Noticias por orden cronológico, con orden y filtros; y nada de vistas previas al mantener pulsado.
