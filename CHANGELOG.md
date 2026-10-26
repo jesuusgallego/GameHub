@@ -2,6 +2,22 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [1.8.10] - 2026-10-26
+
+GameHub en Android, con el mismo aspecto que en el iPhone.
+
+### Añadido
+- **Liquid Glass en Android.** Con la app instalada en Android (desde Chrome, *Instalar app*),
+  GameHub se ve igual que en el iPhone: controles de cristal que flotan sobre el contenido, las
+  pestañas abajo con la lente que se arrastra con el dedo y el chat en un botón redondo. En el
+  navegador de Android, sin instalar, sigue el diseño de siempre.
+- El README explica cómo instalarla en Android.
+
+### Interno
+- La clase `cristal` (iPhone y iPad siempre; Android con la app instalada) sustituye a `ios` en los
+  estilos de cristal, que pasan de `cristal-ios.css` a `cristal.css`. Con `ios` quedan solo los
+  arreglos de Safari (vista previa al mantener pulsado, franja de iOS 27, campo de fecha).
+
 ## [1.8.9] - 2026-10-26
 
 Buscar vuelve a tener su propia pestaña en el menú.

@@ -11,6 +11,14 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.10': {
+    es: [
+      'En Android, la app instalada tiene ahora el mismo aspecto de cristal que en el iPhone.',
+    ],
+    en: [
+      'On Android, the installed app now has the same glass look as on iPhone.',
+    ],
+  },
   '1.8.9': {
     es: [
       'Buscar vuelve a tener su pestaña en el menú, con tus búsquedas recientes a mano.',
