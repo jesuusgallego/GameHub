@@ -132,6 +132,72 @@
   border-radius: 999px;
 }
 
+/* ---- Filtros de Mi biblioteca en el móvil (FiltrosBibliotecaMovil.jsx) ---- */
+/* El buscador, el botón de filtros, las pastillas de estado y el panel: cápsulas de cristal que
+   flotan sobre la página, como los controles de iOS 26. Las pastillas con una sombra más corta:
+   son muchas juntas y con la grande la fila se veía emborronada. */
+:root.ios :is(.filtros-movil__busqueda input, .filtros-movil__boton, .filtros-movil__estado, .filtros-movil__panel) {
+  background: var(--cristal-reflejo), var(--cristal);
+  -webkit-backdrop-filter: var(--cristal-filtro);
+  backdrop-filter: var(--cristal-filtro);
+  border: 1px solid var(--cristal-borde);
+  box-shadow: var(--cristal-canto), var(--cristal-sombra);
+}
+
+:root.ios .filtros-movil .filtros-movil__estado {
+  box-shadow: var(--cristal-canto), 0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
+:root.ios .filtros-movil .filtros-movil__panel {
+  border-radius: 26px;
+}
+
+/* El aro de foco del buscador, que la regla de arriba quitaba */
+:root.ios .filtros-movil .filtros-movil__busqueda input:focus-visible {
+  border-color: var(--acento);
+  box-shadow: var(--cristal-canto), 0 0 0 3px var(--acento-suave);
+}
+
+:root.ios .filtros-movil .filtros-movil__boton--abierto {
+  border-color: color-mix(in srgb, var(--acento) 70%, transparent);
+}
+
+/* La pastilla elegida: cristal teñido del color de su estado (el "tinted glass" de iOS) */
+:root.ios .filtros-movil__estado.filtros-movil__estado--activo {
+  background: var(--cristal-reflejo), color-mix(in srgb, var(--color) 30%, transparent);
+  border-color: color-mix(in srgb, var(--color) 60%, transparent);
+}
+
+/* Dentro del panel, los desplegables y el sentido del orden son huecos más claros en el cristal
+   (la "lente"), sin borde: el panel ya hace de marco */
+:root.ios .filtros-movil .desplegable__boton,
+:root.ios .filtros-movil .filtros-movil__sentido {
+  background: var(--cristal-lente);
+  border-color: transparent;
+}
+
+:root.ios .filtros-movil .desplegable__boton[aria-expanded="true"] {
+  border-color: var(--acento);
+}
+
+/* La mitad elegida del sentido: una gota de cristal más clara, con su canto */
+:root.ios .filtros-movil__sentido-lente {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.22), inset -1px -1px 0 rgba(255, 255, 255, 0.06), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+:root.ios[data-tema="claro"] .filtros-movil__sentido-lente {
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(31, 52, 80, 0.18);
+}
+
+/* El panel se despliega con una animación (Plegable) que, con "both", se quedaba aplicada y
+   anulaba el desenfoque del cristal de dentro (la misma trampa que en los menús de la barra) */
+:root.ios .filtros-movil .plegable:not(.plegable--saliendo),
+:root.ios .filtros-movil .plegable:not(.plegable--saliendo) .plegable__interior {
+  animation-fill-mode: backwards;
+}
+
 /* ---- Pestañas de Noticias, Social y Perfil: la misma lente que la barra de abajo ---- */
 /* Una gota de cristal más clara que la cápsula, y el color de acento dentro de ella (la capa de
    color, .pestanas__tinta en sala.css). La mueve el mismo muelle (useLente.js). */

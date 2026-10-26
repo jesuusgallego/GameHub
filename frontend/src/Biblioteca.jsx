@@ -6,6 +6,8 @@ import AnadirJuegos from './AnadirJuegos'
 import FondoCabecera from './FondoCabecera'
 import FiltrosBiblioteca from './FiltrosBiblioteca'
 import OrdenBiblioteca from './OrdenBiblioteca'
+import FiltrosBibliotecaMovil from './FiltrosBibliotecaMovil'
+import { useMedia } from './useMedia'
 import { CRITERIOS, TODOS, ordenar, filtrar, opcionesDeFiltros, filtrosVigentes } from './ordenFiltros'
 import { ESTADOS } from './estados'
 import { useIdioma } from './IdiomaContext'
@@ -46,6 +48,9 @@ function Biblioteca({ setToken }) {
   // Anima la rejilla al filtrar, ordenar o buscar (las tarjetas se deslizan, entran y salen)
   const rejillaRef = useAnimacionLista()
   const [params, setParams] = useSearchParams()
+  // En pantallas estrechas la barra lateral de filtros no cabe al lado de los juegos y, encima de
+  // ellos, ocupaba una pantalla entera: ahí van los filtros compactos (FiltrosBibliotecaMovil)
+  const movil = useMedia(MOVIL)
   const anadiendo = params.has('anadir')
   // Los que ya tengo, por su id de IGDB, para marcarlos en la ventana de añadir
   const guardados = useMemo(() => new Map(juegos.map((j) => [j.igdb_id, j])), [juegos])
@@ -229,12 +234,44 @@ function Biblioteca({ setToken }) {
   const visibles = ordenar(filtrar(juegos, vigentes, consulta), criterio, direccion, locale)
   const hayFiltros = consulta.trim() !== "" || Object.values(vigentes).some((v) => v !== TODOS)
 
+  // La rejilla de juegos y, si ninguno coincide, el aviso. Igual en el móvil y en el ordenador.
+  const listado = (
+    <>
+      <ul className="rejilla" ref={rejillaRef}>
+        {visibles.map((juego) => (
+          <JuegoGuardado
+            key={juego.id}
+            juego={juego}
+            onActualizar={(cambios) => actualizarJuego(juego.id, cambios)}
+            onBorrar={() => borrarJuego(juego.id)}
+            onVerDetalle={() => abrirDetalle(juego)}
+          />
+        ))}
+      </ul>
+
+      {visibles.length === 0 && (
+        <div className="sin-resultados">
+          <h2>{t('biblioteca.sinResultadosTitulo')}</h2>
+          <p>
+            {t('biblioteca.sinResultadosAntes')}
+            {/* Abre la ventana de añadir con lo que estaba filtrando ya escrito */}
+            <button type="button" className="enlace-boton" onClick={() => abrirAnadir(consulta.trim())}>
+              {t('biblioteca.sinResultadosEnlace')}
+            </button>
+            {t('biblioteca.sinResultadosDespues')}
+          </p>
+        </div>
+      )}
+    </>
+  )
+
   return (
     <div className="biblioteca-pagina">
       {/* La cabecera, con el mismo fondo que las de Social y Noticias (FondoCabecera): de mosaico,
           las portadas de mis juegos. Delante, el título con cuántos juegos veo, una pastilla con
           cuántos hay en cada estado y "Añadir juegos" (busca juegos nuevos). Arriba del todo, para
-          que el botón se vea nada más entrar, también en el móvil. */}
+          que el botón se vea nada más entrar. En el móvil se queda en una sola fila, sin la pastilla
+          y con el botón redondo (ver biblioteca.css), para que los juegos se vean enseguida. */}
       <header className="banner-perfil biblioteca__cabecera">
         <FondoCabecera estilo="biblioteca" imagenes={portadasCabecera} />
         <div className="biblioteca__cabecera-contenido">
@@ -258,7 +295,9 @@ function Biblioteca({ setToken }) {
 
           <button type="button" className="btn btn--primario biblioteca__anadir" onClick={() => abrirAnadir()}>
             <IconoMas />
-            {t('biblioteca.anadirJuegos')}
+            {/* En el móvil el botón es un círculo con el "+": el texto queda para los lectores de
+                pantalla (ver .biblioteca__anadir-texto en biblioteca.css) */}
+            <span className="biblioteca__anadir-texto">{t('biblioteca.anadirJuegos')}</span>
           </button>
         </div>
       </header>
@@ -273,74 +312,74 @@ function Biblioteca({ setToken }) {
         />
       </Plegable>
 
-      <div className="biblioteca">
-        <FiltrosBiblioteca
-          juegos={juegos}
-          filtros={vigentes}
-          opciones={opciones}
-          onCambiar={cambiarFiltro}
-          onLimpiar={limpiarFiltros}
-          hayFiltros={hayFiltros}
-        />
-
+      {movil ? (
         <section className="biblioteca__contenido" aria-labelledby="titulo-biblioteca">
-          {/* Encima de la rejilla: el filtro (busca entre mis juegos) a la izquierda y el orden a la
-              derecha; si no caben, el orden pasa debajo */}
-          <div className="biblioteca__barra">
-            <div className="caja-busqueda caja-busqueda--filtro">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
-              <input
-                type="search"
-                value={consulta}
-                onChange={(e) => setConsulta(e.target.value)}
-                placeholder={t('biblioteca.filtrarJuegos')}
-                aria-label={t('biblioteca.filtrarJuegos')}
-              />
-            </div>
-
-            <OrdenBiblioteca
-              criterio={criterio}
-              direccion={direccion}
-              onCambiarCriterio={cambiarCriterio}
-              onInvertir={() => setDireccion(direccion === 'asc' ? 'desc' : 'asc')}
-            />
-          </div>
-
-          <ul className="rejilla" ref={rejillaRef}>
-            {visibles.map((juego) => (
-              <JuegoGuardado
-                key={juego.id}
-                juego={juego}
-                onActualizar={(cambios) => actualizarJuego(juego.id, cambios)}
-                onBorrar={() => borrarJuego(juego.id)}
-                onVerDetalle={() => abrirDetalle(juego)}
-              />
-            ))}
-          </ul>
-
-          {visibles.length === 0 && (
-            <div className="sin-resultados">
-              <h2>{t('biblioteca.sinResultadosTitulo')}</h2>
-              <p>
-                {t('biblioteca.sinResultadosAntes')}
-                {/* Abre la ventana de añadir con lo que estaba filtrando ya escrito */}
-                <button type="button" className="enlace-boton" onClick={() => abrirAnadir(consulta.trim())}>
-                  {t('biblioteca.sinResultadosEnlace')}
-                </button>
-                {t('biblioteca.sinResultadosDespues')}
-              </p>
-            </div>
-          )}
+          <FiltrosBibliotecaMovil
+            juegos={juegos}
+            filtros={vigentes}
+            opciones={opciones}
+            onCambiar={cambiarFiltro}
+            onLimpiar={limpiarFiltros}
+            hayFiltros={hayFiltros}
+            consulta={consulta}
+            onConsulta={setConsulta}
+            criterio={criterio}
+            direccion={direccion}
+            onCambiarCriterio={cambiarCriterio}
+            onDireccion={setDireccion}
+          />
+          {listado}
         </section>
-      </div>
+      ) : (
+        <div className="biblioteca">
+          <FiltrosBiblioteca
+            juegos={juegos}
+            filtros={vigentes}
+            opciones={opciones}
+            onCambiar={cambiarFiltro}
+            onLimpiar={limpiarFiltros}
+            hayFiltros={hayFiltros}
+          />
+
+          <section className="biblioteca__contenido" aria-labelledby="titulo-biblioteca">
+            {/* Encima de la rejilla: el filtro (busca entre mis juegos) a la izquierda y el orden a la
+                derecha; si no caben, el orden pasa debajo */}
+            <div className="biblioteca__barra">
+              <div className="caja-busqueda caja-busqueda--filtro">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+                <input
+                  type="search"
+                  value={consulta}
+                  onChange={(e) => setConsulta(e.target.value)}
+                  placeholder={t('biblioteca.filtrarJuegos')}
+                  aria-label={t('biblioteca.filtrarJuegos')}
+                />
+              </div>
+
+              <OrdenBiblioteca
+                criterio={criterio}
+                direccion={direccion}
+                onCambiarCriterio={cambiarCriterio}
+                onInvertir={() => setDireccion(direccion === 'asc' ? 'desc' : 'asc')}
+              />
+            </div>
+
+            {listado}
+          </section>
+        </div>
+      )}
 
       {ventanas}
     </div>
   )
 }
+
+// Hasta este ancho, los filtros del móvil (el mismo punto en el que la barra lateral ya no cabe al
+// lado de los juegos y se iba encima)
+const MOVIL = '(max-width: 820px)'
 
 // El "+" de los botones de añadir
 function IconoMas() {

@@ -7,7 +7,9 @@
 .biblioteca-pagina {
   display: flex;
   flex-direction: column;
-  animation: biblioteca-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  /* "backwards" y no "both": con "both" la transformación de la entrada se queda aplicada para
+     siempre y, en Safari, el cristal (backdrop-filter) de lo que hay dentro deja de desenfocar */
+  animation: biblioteca-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 
 @keyframes biblioteca-entrada {
@@ -553,9 +555,338 @@
   color: var(--acento);
 }
 
-/* En el móvil, la cabecera con el mismo margen interior que las de Noticias y Social */
+/* ---- Mi biblioteca en el móvil -------------------------------------------- */
+/* Lo primero que se ve al entrar son los juegos: la cabecera se queda en una fila (título y un "+"
+   redondo), "Jugando ahora" pasa a una tira que se desliza de lado (movil.css) y los filtros caben
+   en dos filas finas (FiltrosBibliotecaMovil.jsx). */
 @media (max-width: 640px) {
-  .biblioteca__cabecera-contenido {
-    padding: 1.6rem 1.25rem 1.4rem;
+  .biblioteca__cabecera {
+    margin-bottom: 1.25rem;
   }
+
+  .biblioteca__cabecera-contenido {
+    flex-wrap: nowrap;
+    gap: 1rem;
+    padding: 1.1rem 1.1rem 1.1rem 1.35rem;
+  }
+
+  /* El título y el contador, siempre en una línea */
+  .biblioteca__cabecera .titulo-pagina {
+    font-size: 1.6rem;
+    white-space: nowrap;
+  }
+
+  .biblioteca__cabecera-texto {
+    flex: 1;
+  }
+
+  .biblioteca__cabecera .titulo-pagina .contador {
+    flex: none;
+  }
+
+  /* La pastilla con cuántos hay en cada estado sobra: las pastillas de los filtros ya lo dicen */
+  .biblioteca__resumen {
+    display: none;
+  }
+
+  /* "Añadir juegos", un círculo con el "+" */
+  .biblioteca__anadir {
+    position: relative;
+    flex: none;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .biblioteca__anadir svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* El texto sigue ahí para los lectores de pantalla, pero no se ve ni ocupa sitio. El botón es
+     position: relative, así que el texto no puede ensanchar la página. */
+  .biblioteca__anadir-texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Menos hueco bajo la tira de "Jugando ahora" (va dentro de su Plegable) */
+  .biblioteca-pagina > .plegable {
+    --plegable-hueco: 1.4rem;
+  }
+}
+
+/* ---- Filtros del móvil (FiltrosBibliotecaMovil.jsx) ------------------------ */
+/* Fuera del iPhone, con los colores de siempre; en el iPhone, de cristal (cristal-ios.css). */
+.biblioteca__contenido:has(> .filtros-movil) {
+  gap: 1rem;
+}
+
+.filtros-movil {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+/* El buscador y el botón de filtros, en una fila */
+.filtros-movil__fila {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.filtros-movil__busqueda {
+  flex: 1;
+  min-width: 0;
+}
+
+.filtros-movil__busqueda input {
+  height: 46px;
+  padding-left: 2.7rem;
+  border-radius: 999px;
+}
+
+/* La lupa, por encima del campo: en el iPhone el campo es de cristal y la tapaba */
+.filtros-movil__busqueda svg {
+  left: 1rem;
+  z-index: 1;
+}
+
+/* El botón de filtros: un círculo del alto del buscador */
+.filtros-movil__boton {
+  position: relative;
+  display: grid;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  padding: 0;
+  color: var(--texto-h);
+  background: var(--campo);
+  border: 1px solid var(--borde);
+  border-radius: 50%;
+  transition: color var(--transicion), border-color var(--transicion), background-color var(--transicion), scale 0.15s ease;
+}
+
+.filtros-movil__boton:active {
+  scale: 0.9;
+}
+
+.filtros-movil__boton--abierto {
+  color: var(--acento);
+  border-color: var(--acento);
+}
+
+/* Las bolitas de los reguladores se cruzan al abrir el panel (con un pequeño rebote) */
+.filtros-movil__bolita {
+  fill: currentColor;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.filtros-movil__boton--abierto .filtros-movil__bolita--1 {
+  transform: translateX(6px);
+}
+
+.filtros-movil__boton--abierto .filtros-movil__bolita--2 {
+  transform: translateX(-6px);
+}
+
+/* Cuántos filtros del panel hay puestos, en la esquina: entra creciendo, como las insignias */
+.filtros-movil__cuenta {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  place-items: center;
+  padding: 0 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  background: var(--degradado);
+  border-radius: 999px;
+  animation: insignia-entrada 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+/* El panel que se despliega: el orden y los tres desplegables, uno debajo de otro */
+.filtros-movil__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 0.7rem;
+  padding: 1rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 22px;
+}
+
+.filtros-movil__grupo {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.filtros-movil__titulo {
+  padding-left: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.filtros-movil .desplegable__boton {
+  min-height: 44px;
+  padding-inline: 1rem;
+  border-radius: 999px;
+}
+
+/* El sentido del orden: dos mitades y una "lente" que se desliza a la elegida. --lado vale 0
+   (la de la izquierda) o 1 (la de la derecha); lo pone el componente. */
+.filtros-movil__sentido {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  background: var(--campo);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+}
+
+.filtros-movil__sentido-lente {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  background: var(--superficie-2);
+  border-radius: 999px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+  transform: translateX(calc(var(--lado, 0) * 100%));
+  transition: transform 0.45s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.filtros-movil__sentido-opcion {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0 0.5rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--texto-suave);
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  transition: color 0.25s ease, scale 0.15s ease;
+}
+
+.filtros-movil__sentido-opcion:active {
+  scale: 0.95;
+}
+
+.filtros-movil__sentido-opcion--activa {
+  color: var(--texto-h);
+}
+
+.filtros-movil .filtros-movil__limpiar {
+  align-self: center;
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--acento);
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  transition: opacity var(--transicion), background-color var(--transicion), scale 0.15s ease;
+}
+
+.filtros-movil .filtros-movil__limpiar:active:not(:disabled) {
+  scale: 0.94;
+  background: var(--acento-suave);
+}
+
+.filtros-movil .filtros-movil__limpiar:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Las pastillas de estado: una fila que se desliza de lado y llega hasta los bordes de la pantalla
+   (márgenes negativos del tamaño del margen de la página). Sin barra de scroll. */
+.filtros-movil__estados {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.75rem calc(-1 * max(1.25rem, var(--seguro-derecha))) 0 calc(-1 * max(1.25rem, var(--seguro-izquierda)));
+  padding: 2px max(1.25rem, var(--seguro-derecha)) 4px max(1.25rem, var(--seguro-izquierda));
+  overflow-x: auto;
+  scroll-padding-inline: 1.25rem;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.filtros-movil__estados::-webkit-scrollbar {
+  display: none;
+}
+
+/* --color: el del estado (el de su punto); "Todos" usa el de acento */
+.filtros-movil__estado {
+  --color: var(--acento);
+
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.45rem;
+  height: 36px;
+  padding: 0 0.85rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--texto);
+  background: var(--campo);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  transition: color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease, scale 0.15s ease;
+}
+
+.filtros-movil__estado:active {
+  scale: 0.93;
+}
+
+.filtros-movil__estado--jugando { --color: var(--estado-jugando); }
+.filtros-movil__estado--completado { --color: var(--estado-completado); }
+.filtros-movil__estado--abandonado { --color: var(--estado-abandonado); }
+.filtros-movil__estado--pendiente { --color: var(--estado-pendiente); }
+
+/* La elegida, teñida con el color de su estado */
+.filtros-movil__estado--activo {
+  color: var(--texto-h);
+  background: color-mix(in srgb, var(--color) 22%, var(--campo));
+  border-color: color-mix(in srgb, var(--color) 70%, transparent);
+}
+
+.filtros-movil__estado-cuenta {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-suave);
+  transition: color 0.25s ease;
+}
+
+.filtros-movil__estado--activo .filtros-movil__estado-cuenta {
+  color: inherit;
 }
