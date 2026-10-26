@@ -351,12 +351,158 @@
   opacity: 0.85;
 }
 
+/* ---- Buscar: portadas en abanico y una lupa de cristal ---- */
+.escena--buscar {
+  top: 0;
+  right: 2%;
+  bottom: 0;
+  width: 48%;
+  opacity: 0.85;
+}
+
+:root[data-tema="claro"] .escena--buscar {
+  opacity: 0.8;
+}
+
+/* Cada caja: una portada con canto claro y sombra, girada como si estuvieran en abanico. --x, --y y
+   --giro las colocan; la del centro (la que mira la lupa) va delante y un poco más grande. */
+.ficha {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  display: flex;
+  width: 4.4rem;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 5px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  transform: rotate(var(--giro));
+}
+
+:root[data-tema="claro"] .ficha {
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 20px rgba(40, 20, 80, 0.2);
+}
+
+.ficha--0 { --x: 4%; --y: 34%; --giro: -16deg; }
+.ficha--1 { --x: 22%; --y: 18%; --giro: -7deg; }
+.ficha--2 { --x: 42%; --y: 12%; --giro: 1deg; z-index: 1; width: 5rem; }
+.ficha--3 { --x: 63%; --y: 20%; --giro: 9deg; }
+.ficha--4 { --x: 81%; --y: 36%; --giro: 17deg; }
+
+.ficha__portada {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* La lupa: un aro grueso con un cristal que aviva el color de lo que tiene detrás y un reflejo
+   arriba a la izquierda; el mango, abajo a la derecha. Flota despacio sobre la caja del centro. */
+.lupa {
+  position: absolute;
+  top: 22%;
+  left: calc(42% + 0.6rem);
+  z-index: 2;
+  width: 6.5rem;
+  height: 6.5rem;
+  animation: lupa-flota 6s ease-in-out infinite;
+}
+
+.lupa__cristal {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.06) 38%, rgba(255, 255, 255, 0.02) 70%);
+  border: 7px solid #e9e4ff;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 2px rgba(80, 60, 160, 0.35),
+    inset 0 0 18px rgba(255, 255, 255, 0.25),
+    0 12px 30px rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: saturate(1.7) brightness(1.15) contrast(1.05);
+  backdrop-filter: saturate(1.7) brightness(1.15) contrast(1.05);
+}
+
+:root[data-tema="claro"] .lupa__cristal {
+  border-color: #fff;
+  box-shadow:
+    inset 0 0 0 2px rgba(99, 102, 241, 0.25),
+    inset 0 0 18px rgba(255, 255, 255, 0.5),
+    0 10px 24px rgba(40, 20, 80, 0.22);
+}
+
+.lupa__mango {
+  position: absolute;
+  top: 88%;
+  left: 82%;
+  width: 1.15rem;
+  height: 3.6rem;
+  background: linear-gradient(90deg, #a78bfa, #6d28d9);
+  border-radius: 0.6rem;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+  transform: rotate(-45deg);
+  transform-origin: top center;
+}
+
+@keyframes lupa-flota {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(-0.5rem, 0.35rem) rotate(-4deg);
+  }
+}
+
+/* Destellos de cuatro puntas alrededor de la lupa, que se encienden y se apagan por turnos */
+.destello {
+  position: absolute;
+  width: 0.9rem;
+  height: 0.9rem;
+  background: #fde68a;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: destello 3s ease-in-out infinite;
+}
+
+:root[data-tema="claro"] .destello {
+  background: #f59e0b;
+}
+
+.destello--1 { top: 12%; left: 38%; }
+.destello--2 { top: 62%; left: 74%; width: 0.65rem; height: 0.65rem; animation-delay: 1s; }
+.destello--3 { top: 8%; left: 72%; width: 0.55rem; height: 0.55rem; animation-delay: 2s; }
+
+@keyframes destello {
+  0%, 100% {
+    opacity: 0.15;
+    scale: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lupa,
+  .destello {
+    animation: none;
+  }
+}
+
 /* ---- Pantallas estrechas: las escenas, más tenues, detrás del texto ---- */
 /* Con :root[data-tema] delante para ganar también a las reglas del tema claro de arriba */
 @media (max-width: 640px) {
   :root[data-tema] .escena--biblioteca,
-  :root[data-tema] .escena--sala {
+  :root[data-tema] .escena--sala,
+  :root[data-tema] .escena--buscar {
     opacity: 0.25;
+  }
+
+  .escena--buscar {
+    right: 0;
+    width: 100%;
   }
 
   /* Los periódicos son claros y llenos de líneas: aún más tenues, para que el texto se lea */

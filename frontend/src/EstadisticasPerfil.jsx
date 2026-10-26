@@ -14,7 +14,7 @@ function EstadisticasPerfil({ stats, mejores, soloLectura = false }) {
     return (
       <div className="estado-vacio">
         <p>{soloLectura ? t('stats.vacioOtro') : t('stats.vacio')}</p>
-        {!soloLectura && <Link to="/biblioteca?anadir=" className="btn btn--primario">{t('biblioteca.anadirJuegos')}</Link>}
+        {!soloLectura && <Link to="/buscar" className="btn btn--primario">{t('biblioteca.anadirJuegos')}</Link>}
       </div>
     )
   }

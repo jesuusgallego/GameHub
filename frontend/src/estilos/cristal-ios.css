@@ -144,6 +144,16 @@
   box-shadow: var(--cristal-canto), var(--cristal-sombra);
 }
 
+/* Las búsquedas recientes de la pestaña Buscar, cápsulas de cristal como las pastillas de los
+   filtros */
+:root.ios .buscar__reciente {
+  background: var(--cristal-reflejo), var(--cristal);
+  -webkit-backdrop-filter: var(--cristal-filtro);
+  backdrop-filter: var(--cristal-filtro);
+  border: 1px solid var(--cristal-borde);
+  box-shadow: var(--cristal-canto), 0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
 :root.ios .filtros-movil .filtros-movil__estado {
   box-shadow: var(--cristal-canto), 0 3px 10px rgba(0, 0, 0, 0.16);
 }

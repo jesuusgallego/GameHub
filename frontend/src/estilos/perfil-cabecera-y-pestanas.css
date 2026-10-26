@@ -335,6 +335,34 @@
   background-image: radial-gradient(rgba(15, 42, 40, 0.12) 1px, transparent 1.5px);
 }
 
+/* ---- Buscar: el catálogo y la lupa ---- */
+/* Fucsia e índigo, con un toque ámbar a la derecha (el brillo de la lupa) */
+.fondo--buscar {
+  background:
+    radial-gradient(ellipse 55% 140% at 4% -20%, rgba(217, 70, 239, 0.7), transparent 70%),
+    radial-gradient(ellipse 50% 120% at 48% 135%, rgba(99, 102, 241, 0.85), transparent 68%),
+    radial-gradient(ellipse 42% 110% at 98% 10%, rgba(251, 191, 36, 0.32), transparent 70%),
+    linear-gradient(135deg, #2a1640, #131628 55%, #1e1a46);
+}
+
+:root[data-tema="claro"] .fondo--buscar {
+  background:
+    radial-gradient(ellipse 55% 140% at 4% -20%, rgba(217, 70, 239, 0.28), transparent 70%),
+    radial-gradient(ellipse 50% 120% at 48% 135%, rgba(99, 102, 241, 0.32), transparent 68%),
+    radial-gradient(ellipse 42% 110% at 98% 10%, rgba(251, 191, 36, 0.3), transparent 70%),
+    linear-gradient(135deg, #f8e9fb, #f7f7fd 55%, #e8e9fc);
+}
+
+/* Círculos concéntricos muy tenues que salen de la lupa, como ondas de un radar que "busca" */
+.fondo--buscar::before {
+  background-image: repeating-radial-gradient(circle at 78% 45%, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 26px);
+  background-size: auto;
+}
+
+:root[data-tema="claro"] .fondo--buscar::before {
+  background-image: repeating-radial-gradient(circle at 78% 45%, rgba(40, 20, 80, 0.07) 0 1px, transparent 1px 26px);
+}
+
 /* ---- Perfil: pestañas y paneles (PestanasPerfil.jsx, Perfil.jsx) ------------- */
 .perfil__cuerpo {
   display: grid;

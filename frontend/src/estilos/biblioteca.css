@@ -651,10 +651,8 @@
   border-radius: 999px;
 }
 
-/* La lupa, por encima del campo: en el iPhone el campo es de cristal y la tapaba */
 .filtros-movil__busqueda svg {
   left: 1rem;
-  z-index: 1;
 }
 
 /* El botón de filtros: un círculo del alto del buscador */

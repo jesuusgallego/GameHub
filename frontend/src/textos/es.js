@@ -31,6 +31,7 @@ export default {
   // ---- Marca y barra superior ----
   'marca.irBiblioteca': 'GameHub, ir a Mi biblioteca',
   'menu.biblioteca': 'Mi biblioteca',
+  'menu.buscar': 'Buscar',
   'menu.usuario': 'Menú de usuario',
   'menu.verPerfil': 'Ver perfil',
   'menu.cerrarSesion': 'Cerrar sesión',
@@ -182,10 +183,11 @@ export default {
   'biblioteca.resumen.abandonadoN': '{n} abandonados',
   'biblioteca.resumen.pendiente': '{n} pendiente',
   'biblioteca.resumen.pendienteN': '{n} pendientes',
-  'anadir.titulo': 'Añadir juegos',
-  'anadir.texto': 'Busca en el catálogo de IGDB y guarda lo que quieras jugar. Los que añadas aparecen en tu biblioteca al momento.',
 
   // ---- Buscar ----
+  'buscar.titulo': 'Buscar juegos',
+  'buscar.texto': 'Busca en el catálogo de IGDB y guarda lo que quieras jugar. Los que añadas aparecen en tu biblioteca al momento.',
+  'buscar.recientes': 'Búsquedas recientes',
   'buscar.placeholder': 'Busca un juego...',
   'buscar.etiqueta': 'Buscar un juego',
   'buscar.vacio': 'Escribe el nombre de un juego para buscarlo en IGDB.',

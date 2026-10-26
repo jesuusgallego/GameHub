@@ -29,6 +29,7 @@ export default {
   // ---- Brand and top bar ----
   'marca.irBiblioteca': 'GameHub, go to My library',
   'menu.biblioteca': 'My library',
+  'menu.buscar': 'Search',
   'menu.usuario': 'User menu',
   'menu.verPerfil': 'View profile',
   'menu.cerrarSesion': 'Log out',
@@ -181,10 +182,11 @@ export default {
   'biblioteca.resumen.abandonadoN': '{n} dropped',
   'biblioteca.resumen.pendiente': '{n} pending',
   'biblioteca.resumen.pendienteN': '{n} pending',
-  'anadir.titulo': 'Add games',
-  'anadir.texto': 'Search the IGDB catalogue and save what you want to play. Whatever you add shows up in your library straight away.',
 
   // ---- Search ----
+  'buscar.titulo': 'Search games',
+  'buscar.texto': 'Search the IGDB catalogue and save what you want to play. Whatever you add shows up in your library straight away.',
+  'buscar.recientes': 'Recent searches',
   'buscar.placeholder': 'Search for a game...',
   'buscar.etiqueta': 'Search for a game',
   'buscar.vacio': 'Type the name of a game to look it up on IGDB.',

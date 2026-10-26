@@ -15,8 +15,8 @@ para traer tus juegos, tus horas y tus logros.
   **Siguiendo**, las de los portales que elijas, por orden de fecha. Ves de qué juegos tuyos se
   habla, y lo que no te interese no te vuelve a salir. Cada noticia enlaza al artículo original
   en su portal.
-- **Añadir juegos** buscándolos en la base de datos de [IGDB](https://www.igdb.com), sin salir
-  de tu biblioteca.
+- **Buscar y añadir juegos** de la base de datos de [IGDB](https://www.igdb.com) desde su
+  propia pestaña del menú, con tus búsquedas recientes a mano.
 - **Organizarlos:** estado (jugando, completado, abandonado, pendiente), tu nota del 1 al 10,
   una reseña y la plataforma en la que lo juegas.
 - **Ver la ficha completa** de cada juego: portada, descripción en español, géneros,
@@ -85,7 +85,8 @@ la app te avisa para actualizar. En Android también se puede instalar (Chrome �
    iniciar sesión con el email **o** con el nombre de usuario. En *Perfil → Editar perfil*
    puedes añadir, si quieres, tu nombre y apellidos, fecha de nacimiento, sexo, localización, país y
    teléfono.
-2. **Añade juegos** desde *Mi biblioteca → Añadir juegos*: búscalos por su nombre y guárdalos.
+2. **Añade juegos** desde la pestaña *Buscar* (la lupa del menú, o el botón «+» de *Mi biblioteca*):
+   búscalos por su nombre y guárdalos.
 3. **Gestiona tu biblioteca** en *Mi biblioteca*: cambia el estado desde la etiqueta de cada
    tarjeta; con el **clic derecho** sobre una tarjeta puedes editarla o quitarla, y con un clic
    normal se abre la ficha del juego.

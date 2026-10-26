@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useState, useEffect, useCallback } from 'react'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import JuegoGuardado from './JuegoGuardado'
 import DetalleJuego from './DetalleJuego'
-import AnadirJuegos from './AnadirJuegos'
 import FondoCabecera from './FondoCabecera'
 import FiltrosBiblioteca from './FiltrosBiblioteca'
 import OrdenBiblioteca from './OrdenBiblioteca'
@@ -19,10 +18,8 @@ import { useAnimacionLista } from './useAnimacionLista'
 import { leerCacheJuegos, guardarCacheJuegos } from './cacheBiblioteca'
 import { borrarToken } from './sesion'
 
-// Muestro los juegos que el usuario ha guardado (GET /games). El botón "Añadir juegos" abre la
-// ventana para buscar en IGDB y guardar más (AnadirJuegos). Esa ventana va en la URL
-// (/biblioteca?anadir=, con lo que haya que buscar ya escrito): así otras páginas pueden traer aquí
-// con ella abierta y el botón Atrás del navegador la cierra.
+// Muestro los juegos que el usuario ha guardado (GET /games). El botón "Añadir juegos" lleva a la
+// pestaña Buscar (Buscar.jsx), donde se buscan en IGDB y se guardan más.
 function Biblioteca({ setToken }) {
   const { t, locale } = useIdioma()
   // Si ya pedí la biblioteca en esta sesión, la enseño al instante y la refresco por detrás
@@ -47,13 +44,11 @@ function Biblioteca({ setToken }) {
   const [detalle, setDetalle] = useState(null)
   // Anima la rejilla al filtrar, ordenar o buscar (las tarjetas se deslizan, entran y salen)
   const rejillaRef = useAnimacionLista()
-  const [params, setParams] = useSearchParams()
+  const navigate = useNavigate()
+  const [params] = useSearchParams()
   // En pantallas estrechas la barra lateral de filtros no cabe al lado de los juegos y, encima de
   // ellos, ocupaba una pantalla entera: ahí van los filtros compactos (FiltrosBibliotecaMovil)
   const movil = useMedia(MOVIL)
-  const anadiendo = params.has('anadir')
-  // Los que ya tengo, por su id de IGDB, para marcarlos en la ventana de añadir
-  const guardados = useMemo(() => new Map(juegos.map((j) => [j.igdb_id, j])), [juegos])
 
   // Estable (useCallback): la ventana de añadir lo usa dentro de un efecto
   const cerrarSesion = useCallback(() => {
@@ -109,28 +104,9 @@ function Biblioteca({ setToken }) {
     }
   }
 
-  // Guardo un juego nuevo (desde la ventana de añadir o desde su ficha). Va el primero de la lista,
-  // como lo último que añadí. Relanzo el error para que lo enseñe el botón que lo pidió.
-  async function anadirJuego(juego) {
-    try {
-      const data = await apiFetch('/games', {
-        method: 'POST',
-        body: { igdb_id: juego.igdb_id, name: juego.name, cover_url: juego.cover_url },
-      })
-      setJuegos((prev) => [data.game, ...prev.filter((j) => j.id !== data.game.id)])
-    } catch (err) {
-      if (err.status === 401) cerrarSesion()
-      throw err
-    }
-  }
-
-  // Abrir la ventana de añadir, con algo ya escrito si se quiere; al cerrarla, se quita de la URL
-  function abrirAnadir(termino = "") {
-    setParams({ anadir: termino })
-  }
-
-  function cerrarAnadir() {
-    setParams((p) => { p.delete('anadir'); return p }, { replace: true })
+  // Ir a la pestaña Buscar, con algo ya escrito si se quiere (lo que filtraba sin encontrarlo)
+  function irABuscar(termino = "") {
+    navigate(termino ? `/buscar?q=${encodeURIComponent(termino)}` : '/buscar')
   }
 
   async function borrarJuego(id) {
@@ -159,6 +135,12 @@ function Biblioteca({ setToken }) {
     setDireccion(CRITERIOS.find((c) => c.id === id).porDefecto)
   }
 
+  // Los enlaces antiguos a la ventana de añadir (/biblioteca?anadir=zelda) llevan ahora a Buscar
+  if (params.has('anadir')) {
+    const q = params.get('anadir').trim()
+    return <Navigate to={q ? `/buscar?q=${encodeURIComponent(q)}` : '/buscar'} replace />
+  }
+
   if (cargando) return <Cargando texto={t('biblioteca.cargando')} tamano="grande" centrado />
 
   if (error) return <p className="mensaje mensaje--error" role="alert">{error}</p>
@@ -171,28 +153,14 @@ function Biblioteca({ setToken }) {
   // ninguna o si acaba de quitarse)
   const guardadoDelDetalle = detalle && juegos.find((j) => j.igdb_id === detalle.igdb_id)
 
-  // Las dos ventanas, iguales con la biblioteca vacía o llena. La ficha va después: si se abre
-  // desde la ventana de añadir, queda encima de ella.
+  // La ficha de un juego, igual con la biblioteca vacía o llena
   const ventanas = (
     <>
-      {anadiendo && (
-        <AnadirJuegos
-          guardados={guardados}
-          terminoInicial={params.get('anadir') ?? ""}
-          onAnadir={anadirJuego}
-          // Desde aquí la ficha ofrece "Añadir a mi biblioteca"
-          onVerDetalle={(juego) => setDetalle({ ...juego, desdeAnadir: true })}
-          onCerrar={cerrarAnadir}
-          cerrarSesion={cerrarSesion}
-        />
-      )}
-
       {detalle && (
         <DetalleJuego
           key={detalle.igdb_id}
           juego={detalle}
           guardado={guardadoDelDetalle}
-          onAnadir={detalle.desdeAnadir ? () => anadirJuego(detalle) : undefined}
           onActualizar={guardadoDelDetalle && ((cambios) => actualizarJuego(guardadoDelDetalle.id, cambios))}
           onBorrar={guardadoDelDetalle && (() => borrarJuego(guardadoDelDetalle.id))}
           onCerrar={() => setDetalle(null)}
@@ -207,7 +175,7 @@ function Biblioteca({ setToken }) {
         <div className="estado-vacio">
           <h1>{t('biblioteca.vaciaTitulo')}</h1>
           <p>{t('biblioteca.vaciaTexto')}</p>
-          <button type="button" className="btn btn--primario" onClick={() => abrirAnadir()}>
+          <button type="button" className="btn btn--primario" onClick={() => irABuscar()}>
             <IconoMas />
             {t('biblioteca.anadirJuegos')}
           </button>
@@ -254,8 +222,8 @@ function Biblioteca({ setToken }) {
           <h2>{t('biblioteca.sinResultadosTitulo')}</h2>
           <p>
             {t('biblioteca.sinResultadosAntes')}
-            {/* Abre la ventana de añadir con lo que estaba filtrando ya escrito */}
-            <button type="button" className="enlace-boton" onClick={() => abrirAnadir(consulta.trim())}>
+            {/* Lleva a Buscar con lo que estaba filtrando ya escrito */}
+            <button type="button" className="enlace-boton" onClick={() => irABuscar(consulta.trim())}>
               {t('biblioteca.sinResultadosEnlace')}
             </button>
             {t('biblioteca.sinResultadosDespues')}
@@ -293,7 +261,7 @@ function Biblioteca({ setToken }) {
             </p>
           </div>
 
-          <button type="button" className="btn btn--primario biblioteca__anadir" onClick={() => abrirAnadir()}>
+          <button type="button" className="btn btn--primario biblioteca__anadir" onClick={() => irABuscar()}>
             <IconoMas />
             {/* En el móvil el botón es un círculo con el "+": el texto queda para los lectores de
                 pantalla (ver .biblioteca__anadir-texto en biblioteca.css) */}

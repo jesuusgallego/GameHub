@@ -5,6 +5,7 @@
 //    colores entre ellas, como una colección
 //  - EscenaSala: tres amigos de espaldas en el sofá, con mandos, delante de una tele que enseña lo
 //    que juegan tus amigos
+//  - EscenaBuscar: portadas en abanico, como un catálogo, y una lupa de cristal encima de la del centro
 // Están dibujadas con HTML, CSS y SVG (sin ilustraciones descargadas): así siguen los colores de
 // cada tema y pesan casi nada. Son decoración: aria-hidden, sin nada que pulsar. Los estilos están
 // en estilos/escenas-cabecera.css.
@@ -113,6 +114,28 @@ export function EscenaBiblioteca({ imagenes }) {
           ))}
         </div>
       ))}
+    </div>
+  )
+}
+
+// ---- Buscar: el catálogo y la lupa ---------------------------------------------------------------
+// Cinco cajas en abanico (con las portadas de lo que buscas o, sin búsqueda, las de tu biblioteca) y
+// una lupa grande que flota despacio sobre la del centro, con unos destellos alrededor
+export function EscenaBuscar({ imagenes }) {
+  return (
+    <div className="escena escena--buscar" aria-hidden="true">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <span key={i} className={`ficha ficha--${i}`}>
+          <Foto url={imagenes[i]} className="ficha__portada" />
+        </span>
+      ))}
+      <span className="lupa">
+        <span className="lupa__cristal" />
+        <span className="lupa__mango" />
+      </span>
+      <span className="destello destello--1" />
+      <span className="destello destello--2" />
+      <span className="destello destello--3" />
     </div>
   )
 }

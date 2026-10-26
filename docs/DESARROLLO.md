@@ -698,15 +698,19 @@ horaria.
   hueco de debajo va dentro (por eso `.biblioteca-pagina` ya no tiene `gap`).
 - `ImagenSuave.jsx`: las portadas aparecen con un fundido al terminar de cargar.
 
-**Añadir juegos (antes, la página Buscar).** Es una ventana de Mi biblioteca (`AnadirJuegos.jsx`)
-que se abre con el botón "+ Añadir juegos" de la cabecera. Va en la URL (`/biblioteca?anadir=`, con
-lo que haya que buscar ya escrito: así "busca juegos nuevos" del aviso de sin resultados la abre con
-lo que filtrabas), de modo que otras páginas pueden traer aquí con ella abierta y el botón Atrás la
-cierra; `/buscar` redirige ahí. Quien guarda es la Biblioteca (`anadirJuego`), así que al cerrarla
-los juegos nuevos ya están en la rejilla. La ficha de un resultado no se abre dentro de la ventana
-sino a su lado, desde la Biblioteca: son dos `<dialog>` hermanos, y Esc o un clic fuera cierran solo
-el de arriba (Esc en el buscador primero lo vacía). Al abrirse, el foco se lleva al buscador a mano:
-`showModal()` lo pone en el primer botón, y `autoFocus` de React se aplica antes.
+**Buscar (pestaña del menú, `Buscar.jsx`).** Fue página propia hasta la 1.6, ventana "Añadir
+juegos" dentro de Mi biblioteca en la 1.7 y 1.8, y vuelve a ser pestaña del menú (entre Mi
+biblioteca y Social, también en la barra de abajo del iPhone). Lo escrito va en la URL
+(`/buscar?q=zelda`, con `replace` para no llenar el historial) y se recuerda mientras la app está
+abierta: al volver a la pestaña sigue la búsqueda. El botón "+" de Mi biblioteca lleva aquí, y
+"busca juegos nuevos" del aviso de sin resultados lleva con lo que filtrabas ya escrito; los
+enlaces antiguos (`/biblioteca?anadir=...`) redirigen. Sin nada escrito salen las búsquedas
+recientes (`busquedasRecientes()` de `cacheBusquedas.js`, sin los prefijos que se buscaron al ir
+escribiendo). Al guardar un juego se actualiza también la copia de la biblioteca
+(`cacheBiblioteca.js`), para que esté al ir a ella. La lógica de buscar (pausa, caché, cancelar)
+está en `useBusquedaIgdb.js`. La cabecera usa `FondoCabecera` con el estilo `buscar` (portadas en
+abanico y una lupa de cristal). En el ordenador el foco va al buscador al entrar; en pantallas
+táctiles no, para no abrir el teclado sin pedirlo.
 
 **Fluidez de la búsqueda.** Reutiliza las mismas piezas (`useAnimacionLista` con `{ escalonar: true }`,
 `Plegable` con su `hueco`, `ImagenSuave`, `cacheBiblioteca`) más `cacheBusquedas.js`: los
@@ -716,8 +720,6 @@ nueva se siguen viendo los resultados de la anterior, atenuados (`.rejilla--busc
 cabecera enseña "Buscando…"; solo la primera búsqueda muestra el spinner grande. Los bloques de
 estado (ayuda inicial, spinner, error, cabecera, "sin resultados") son `Plegable` dentro de
 `.buscar-zona`, que no tiene `gap`: el hueco va dentro de cada bloque para que se pliegue con él.
-La ventana tiene un alto fijo para no cambiar de tamaño a cada búsqueda; solo se desplazan los
-resultados.
 ### Steam
 
 Es la única plataforma con una API oficial para leer la biblioteca de un jugador (PSN, Xbox y

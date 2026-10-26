@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './Login'
 import Biblioteca from './Biblioteca'
+import Buscar from './Buscar'
 import Perfil from './Perfil'
 import Social from './Social'
 import Noticias from './Noticias'
@@ -46,9 +47,7 @@ function App() {
         >
           <Route path="/noticias" element={<Noticias setToken={setToken} />} />
           <Route path="/biblioteca" element={<Biblioteca setToken={setToken} />} />
-          {/* Buscar ya no es una página: es la ventana "Añadir juegos" de Mi biblioteca. La
-              dirección antigua sigue llevando allí, con la ventana abierta. */}
-          <Route path="/buscar" element={<Navigate to="/biblioteca?anadir=" replace />} />
+          <Route path="/buscar" element={<Buscar setToken={setToken} />} />
           <Route path="/perfil" element={<Perfil setToken={setToken} />} />
           <Route path="/social" element={<Social setToken={setToken} />} />
           <Route path="/usuarios/:username" element={<PerfilPublico setToken={setToken} />} />

@@ -42,10 +42,13 @@
   position: relative;
 }
 
+/* La lupa va por encima del campo: si el campo es de cristal (backdrop-filter), se pinta en su
+   propia capa y la tapaba */
 .caja-busqueda svg {
   position: absolute;
   left: 0.85rem;
   top: 50%;
+  z-index: 1;
   transform: translateY(-50%);
   color: var(--texto-suave);
   pointer-events: none;
@@ -79,7 +82,144 @@
   font-size: 1rem;
 }
 
-/* ---- Buscar juegos: la ventana "Añadir juegos" de Mi biblioteca ---------- */
+/* ---- Buscar: la pestaña para buscar juegos en IGDB (Buscar.jsx) ------------ */
+/* La página entra como las demás (fundido y un pequeño ascenso). "backwards" y no "both": con
+   "both" la transformación se quedaba aplicada y Safari dejaba de desenfocar el cristal de dentro. */
+.buscar-pagina {
+  display: flex;
+  flex-direction: column;
+  animation: biblioteca-entrada 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+/* La cabecera, con el fondo de las demás (FondoCabecera, estilo "buscar"): el título, una línea de
+   texto y el buscador grande dentro, a la izquierda; la escena de la lupa, a la derecha */
+.buscar__cabecera {
+  margin-bottom: 1.75rem;
+}
+
+.buscar__cabecera-contenido {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-width: 44rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 2.25rem 2rem;
+}
+
+.buscar__cabecera .titulo-pagina {
+  margin: 0;
+}
+
+.buscar__texto {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--banner-texto-suave);
+}
+
+/* El buscador, una cápsula de cristal sobre el fondo de la cabecera */
+.buscar__caja {
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+.buscar__caja input {
+  background: color-mix(in srgb, var(--campo) 80%, transparent);
+  border-color: var(--banner-cristal-borde);
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.buscar__caja input:focus-visible {
+  border-color: var(--acento);
+  box-shadow: 0 0 0 3px var(--acento-suave), 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Sin nada escrito: las búsquedas recientes, en pastillas con la portada del primer resultado */
+.buscar__subtitulo {
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.buscar__recientes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.buscar__reciente {
+  display: inline-flex;
+  max-width: 100%;
+  height: 42px;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 1rem 0 0.3rem;
+  overflow: hidden;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--texto-h);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  transition: border-color var(--transicion), background-color var(--transicion), scale 0.15s ease;
+  /* Entran una tras otra (el retraso de cada una, justo debajo) */
+  animation: biblioteca-entrada 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+.buscar__reciente:nth-child(2) { animation-delay: 0.04s; }
+.buscar__reciente:nth-child(3) { animation-delay: 0.08s; }
+.buscar__reciente:nth-child(4) { animation-delay: 0.12s; }
+.buscar__reciente:nth-child(5) { animation-delay: 0.16s; }
+.buscar__reciente:nth-child(6) { animation-delay: 0.2s; }
+
+@media (hover: hover) {
+  .buscar__reciente:hover {
+    border-color: var(--acento);
+  }
+}
+
+.buscar__reciente:active {
+  scale: 0.95;
+}
+
+.buscar__reciente img,
+.buscar__reciente-icono {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  object-fit: cover;
+  background: var(--degradado);
+  border-radius: 50%;
+}
+
+@media (max-width: 640px) {
+  .buscar__cabecera {
+    margin-bottom: 1.25rem;
+  }
+
+  .buscar__cabecera-contenido {
+    padding: 1.5rem 1.25rem 1.35rem;
+  }
+
+  .buscar__cabecera .titulo-pagina {
+    font-size: 1.6rem;
+  }
+
+  .buscar__texto {
+    font-size: 0.9rem;
+  }
+}
+
 /* Debajo del buscador: los bloques que se pliegan y la rejilla de resultados. Sin `gap`: el hueco
    entre bloques va dentro de cada Plegable, para que se pliegue con él. */
 .buscar-zona {

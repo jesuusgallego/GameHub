@@ -11,20 +11,20 @@ a su vez importa el resto de archivos con `@import`.
 | `marca.css` | Logo y animación del mando; indicador de carga | `Marca`, `Cargando` |
 | `botones.css` | `.btn` (primario, secundario, peligro...) y `.btn-icono` | todos |
 | `barra-superior.css` | Barra de arriba y su navegación | `Menu` |
-| `paginas.css` | Contenedor central, títulos de página/sección y el buscador de juegos de "Añadir juegos" | `AnadirJuegos` |
+| `paginas.css` | Contenedor central, títulos de página/sección y la pestaña Buscar (cabecera, búsquedas recientes, resultados) | `Buscar` |
 | `mensajes.css` | Mensajes de error, éxito y aviso; estados vacíos | `Mensaje` |
 | `app-instalada.css` | La app instalada (PWA): la explicación para instalarla en el iPhone y el aviso de versión nueva | `InstalarIOS`, `AvisoVersion` |
 | `tarjetas.css` | Rejilla de juegos, tarjetas, su animación de entrada, chips de estado, insignia de Steam, icono de plataforma | `GameCard`, `JuegoGuardado`, `InsigniaSteam`, `IconoPlataforma` |
 | `formularios.css` | `.formulario`, `.campo`, `.formulario__pareja` (dos campos por fila) y el subtítulo de sección | formularios |
 | `desplegable.css` | Desplegable propio (el del estado y filtros) | `Desplegable` |
 | `login.css` | Inicio de sesión, registro y recuperar contraseña | `Login`, `Registro`, `Recuperar` |
-| `biblioteca.css` | Mi biblioteca: fila "Jugando ahora", filtros laterales, el botón "Añadir juegos" y barra de orden, portadas pulsables | `Biblioteca`, `JugandoAhora`, `FiltrosBiblioteca`, `OrdenBiblioteca` |
-| `ventanas.css` | Ventanas modales: ficha del juego, visor de capturas, edición, confirmación, "Añadir juegos" | `DetalleJuego`, `VisorCapturas`, `EditarJuego`, `DialogoConfirmar`, `AnadirJuegos` |
+| `biblioteca.css` | Mi biblioteca: fila "Jugando ahora", filtros laterales y los del móvil, el botón "Añadir juegos" y barra de orden, portadas pulsables | `Biblioteca`, `JugandoAhora`, `FiltrosBiblioteca`, `FiltrosBibliotecaMovil`, `OrdenBiblioteca` |
+| `ventanas.css` | Ventanas modales: ficha del juego, visor de capturas, edición, confirmación | `DetalleJuego`, `VisorCapturas`, `EditarJuego`, `DialogoConfirmar` |
 | `menus.css` | Avatar, menú de usuario, menú de ajustes (idioma y tema) y menú contextual de las tarjetas | `Avatar`, `MenuUsuario`, `MenuAjustes`, `MenuContextual` |
 | `perfil.css` | Base del perfil, estadísticas, edición de foto/nombre/bio y el cambio animado `.vista` | `EstadisticasPerfil`, `EditarPerfil`, `SelectorArtwork`, `RecortadorFoto` |
 | `respuesta-al-pulsar.css` | Lo pulsable se encoge un poco mientras se mantiene pulsado | varios |
 | `perfil-cabecera-y-pestanas.css` | Banner del perfil con cifras (su tarjeta `.banner-perfil` la comparten las cabeceras de Social, Noticias y Mi biblioteca; los colores de los tres fondos de `FondoCabecera`, uno por apartado, también están aquí), pestañas con indicador deslizante y paneles | `CabeceraPerfil`, `FondoCabecera`, `PestanasPerfil`, `Perfil` |
-| `escenas-cabecera.css` | Las escenas ilustradas del fondo de las cabeceras: periódicos (Noticias), estantería (Mi biblioteca) y amigos jugando (Social) | `EscenasCabecera` |
+| `escenas-cabecera.css` | Las escenas ilustradas del fondo de las cabeceras: periódicos (Noticias), estantería (Mi biblioteca), amigos jugando (Social) y la lupa sobre el catálogo (Buscar) | `EscenasCabecera` |
 | `perfil-seguridad.css` | Tarjetas de ajustes, dato de solo lectura (el email), campo de contraseña con ojo, requisitos y fuerza | `CuentaPerfil`, `CampoContrasena`, `RequisitosContrasena` (también en `Recuperar`) |
 | `cuentas-vinculadas.css` | Tarjeta de plataforma (Steam), botón `.btn--steam`, escena animada de conexión | `CuentaSteam`, `ConexionSteam` |
 | `perfil-movil.css` | Perfil en pantallas estrechas | `Perfil` y sus piezas |
