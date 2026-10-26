@@ -2,6 +2,25 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [1.8.9] - 2026-10-26
+
+Buscar vuelve a tener su propia pestaña en el menú.
+
+### Cambiado
+- **Buscar, de nuevo en el menú principal.** Buscar juegos en IGDB y añadirlos deja de ser una
+  ventana dentro de Mi biblioteca y vuelve a ser una pestaña con su lupa, entre Mi biblioteca y
+  Social (también en la barra de abajo del iPhone). Tiene su propia cabecera ilustrada, recuerda lo
+  que buscabas al volver a ella y, sin nada escrito, enseña tus búsquedas recientes para repetirlas
+  de un toque. El botón «+» de Mi biblioteca lleva a ella.
+
+### Corregido
+- La lupa de los buscadores quedaba tapada cuando el campo es de cristal (en el iPhone).
+
+### Interno
+- `Buscar.jsx` (ruta `/buscar?q=`) y `useBusquedaIgdb.js`; se elimina `AnadirJuegos.jsx` y
+  `/biblioteca?anadir=` redirige a Buscar. `busquedasRecientes()` en `cacheBusquedas.js` y escena
+  `buscar` en `FondoCabecera`/`EscenasCabecera`.
+
 ## [1.8.8] - 2026-10-26
 
 Mi biblioteca en el móvil: tus juegos, lo primero; los filtros, minimalistas y de cristal.

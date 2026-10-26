@@ -11,6 +11,14 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.9': {
+    es: [
+      'Buscar vuelve a tener su pestaña en el menú, con tus búsquedas recientes a mano.',
+    ],
+    en: [
+      'Search is back as its own tab in the menu, with your recent searches at hand.',
+    ],
+  },
   '1.8.8': {
     es: [
       'En el móvil, Mi biblioteca enseña tus juegos nada más entrar, con filtros más sencillos y de cristal en el iPhone.',
