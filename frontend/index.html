@@ -60,22 +60,25 @@
         // La franja de la hora (y la barra de Android) del color de fondo de GameHub en cada tema.
         // Misma lógica que colorBarraEstado() de src/tema.js.
         document.querySelector('meta[name="theme-color"]').content = tema === 'claro' ? '#e8edf3' : '#111a27'
-        // iPhone y iPad: el CSS les da el aspecto "Liquid Glass" de iOS 26 (estilos/cristal-ios.css).
-        // El iPad con iPadOS se presenta como un Mac: se le reconoce por la pantalla táctil.
-        if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
-          document.documentElement.classList.add('ios')
-        }
+        var raiz = document.documentElement
+        // iPhone y iPad ("ios"): el CSS arregla aquí cosas propias de Safari. El iPad con iPadOS se
+        // presenta como un Mac: se le reconoce por la pantalla táctil.
+        var ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+        if (ios) raiz.classList.add('ios')
         // Abierta como app instalada (desde el icono de la pantalla de inicio): el CSS lo usa para
-        // la barra de pestañas de abajo en el iPhone (ver estilos/cristal-ios.css). Safari lo dice con
-        // navigator.standalone; el resto, con display-mode.
-        if (navigator.standalone === true || matchMedia('(display-mode: standalone)').matches) {
-          document.documentElement.classList.add('app-instalada')
-        }
+        // la barra de pestañas de abajo. Safari lo dice con navigator.standalone; el resto, con
+        // display-mode.
+        var instalada = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches
+        if (instalada) raiz.classList.add('app-instalada')
+        // El aspecto "Liquid Glass" (estilos/cristal.css): en el iPhone y el iPad siempre, y en
+        // Android con la app instalada (en su navegador, las barras de Chrome chocarían con las
+        // pestañas flotando abajo)
+        if (ios || (instalada && /Android/.test(navigator.userAgent))) raiz.classList.add('cristal')
       })()
     </script>
   </head>
   <body>
-    <!-- Solo en el iPhone con la app instalada (ver .franja-ios en estilos/cristal-ios.css): una
+    <!-- Solo en el iPhone con la app instalada (ver .franja-ios en estilos/cristal.css): una
          franja fija y opaca pegada al borde de arriba. Sin ella, iOS 27 desenfoca la parte de arriba
          de las apps web instaladas. -->
     <div class="franja-ios" aria-hidden="true"></div>

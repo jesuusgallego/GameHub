@@ -1192,6 +1192,14 @@ se puede instalar.
   zona segura. Con el tema claro, la franja de la hora se pinta en oscuro (la hora siempre es
   blanca con `black-translucent`): `index.html` pone la clase `app-instalada` en `<html>` al
   arrancar como app (`navigator.standalone` o `display-mode: standalone`).
+- **Aspecto "Liquid Glass"** (`estilos/cristal.css`): controles de cristal que flotan sobre el
+  contenido (cápsulas arriba, pestañas abajo con una lente que se arrastra, chat redondo). Va con
+  la clase `cristal` en `<html>`, que pone `index.html`: en iPhone y iPad siempre (también en
+  Safari, sin instalar) y en Android solo con la app instalada, porque en su navegador las barras
+  de Chrome chocarían con las pestañas de abajo. Es CSS normal (`backdrop-filter`, transparencias,
+  sombras), sin nada exclusivo de Apple. Unas pocas reglas siguen con la clase `ios` porque
+  arreglan cosas propias de Safari: la vista previa al mantener pulsado (`-webkit-touch-callout`),
+  la franja fija contra el borroso de iOS 27 (`.franja-ios`) y el campo de fecha.
 - **Detalles de iOS:** Safari amplía la página al tocar un campo de menos de 16 px, así que en iOS
   todos van a 16 px (`@supports (-webkit-touch-callout: none)`); sin el recuadro gris al tocar
   (`-webkit-tap-highlight-color`). **Los avisos del chat no se ofrecen en iOS** (`avisos.js`):

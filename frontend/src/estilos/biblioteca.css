@@ -622,7 +622,8 @@
 }
 
 /* ---- Filtros del móvil (FiltrosBibliotecaMovil.jsx) ------------------------ */
-/* Fuera del iPhone, con los colores de siempre; en el iPhone, de cristal (cristal-ios.css). */
+/* Con los colores de siempre; en el iPhone y en la app instalada de Android, de cristal
+   (cristal.css). */
 .biblioteca__contenido:has(> .filtros-movil) {
   gap: 1rem;
 }

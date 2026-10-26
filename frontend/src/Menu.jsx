@@ -126,9 +126,10 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
     return () => observador.disconnect()
   }, [])
 
-  // En el iPhone (barra de pestañas abajo), la línea es una lente de cristal que se mueve con un
-  // muelle y se puede arrastrar con el dedo de una pestaña a otra (useLente.js). Solo cuando la
-  // barra está abajo (position: fixed): en la de arriba del ordenador sigue la línea de siempre.
+  // En el móvil con la app instalada (barra de pestañas abajo), la línea es una lente de cristal
+  // que se mueve con un muelle y se puede arrastrar con el dedo de una pestaña a otra
+  // (useLente.js). Solo cuando la barra está abajo (position: fixed): en la de arriba del ordenador
+  // sigue la línea de siempre.
   const navigate = useNavigate()
   useLente({
     contenedorRef: navRef,
@@ -144,7 +145,7 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
   // La altura real de la barra, en la variable --alto-barra: lo que se queda pegado debajo de ella
   // al hacer scroll (las pestañas de Noticias y Social, los laterales) se coloca con ella. El CSS
   // trae un valor fijo (64px), pero en el móvil la barra tiene dos filas, o una más baja con la
-  // app instalada en el iPhone; sin medirla, las pestañas acababan escondidas detrás de la barra.
+  // app instalada en el móvil; sin medirla, las pestañas acababan escondidas detrás de la barra.
   const barraRef = useRef(null)
   useEffect(() => {
     const barra = barraRef.current
@@ -181,9 +182,9 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
             </NavLink>
           ))}
           <span className="barra__linea" ref={lineaRef} aria-hidden="true" />
-          {/* Solo en el iPhone (barra de abajo): los mismos iconos en color de acento, recortados
-              con la forma de la lente. Lo que queda debajo de la lente se ve de color, y el color
-              viaja con ella (ver useLente.js y .barra__tinta en cristal-ios.css). */}
+          {/* Solo en el móvil con la app instalada (barra de abajo): los mismos iconos en color de
+              acento, recortados con la forma de la lente. Lo que queda debajo de la lente se ve de
+              color, y el color viaja con ella (ver useLente.js y .barra__tinta en cristal.css). */}
           <span className="barra__tinta" aria-hidden="true">
             {ENLACES.map(({ to, texto, icono }) => (
               <span key={to} className="barra__tinta-pestana">

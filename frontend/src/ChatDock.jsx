@@ -98,8 +98,8 @@ function ChatDock({ abierto, sinLeer, clave, yo, borradores, setToken, ponerMens
         aria-controls="chat-dock"
         tabIndex={abierto ? -1 : 0}
         // Abre y cierra: en el ordenador, con el panel abierto, el botón queda escondido debajo
-        // (se cierra con la flecha del panel o con Esc); en el iPhone con la app instalada sigue a
-        // la vista, convertido en una X, y el mismo botón lo cierra (ver cristal-ios.css)
+        // (se cierra con la flecha del panel o con Esc); con la app instalada en el móvil sigue a
+        // la vista, convertido en una X, y el mismo botón lo cierra (ver cristal.css)
         onClick={abierto ? cerrar : onAbrir}
       >
         <svg className="chat-lanzador__icono" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -108,7 +108,7 @@ function ChatDock({ abierto, sinLeer, clave, yo, borradores, setToken, ponerMens
           <circle className="chat-lanzador__punto" cx="12" cy="12" r="1.15" fill="currentColor" stroke="none" />
           <circle className="chat-lanzador__punto" cx="15.5" cy="12" r="1.15" fill="currentColor" stroke="none" />
         </svg>
-        {/* La X en la que se convierte el botón con el panel abierto (solo se ve en el iPhone) */}
+        {/* La X en la que se convierte el botón con el panel abierto (solo se ve con la app instalada en el móvil) */}
         <svg className="chat-lanzador__x" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
           <path d="M6 6l12 12M18 6 6 18" />
         </svg>

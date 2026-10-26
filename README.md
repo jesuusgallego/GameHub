@@ -61,9 +61,10 @@ pregunta si quieres reiniciar para instalarla; si dices *Más tarde*, se instala
 > gratuito y se "duerme" tras un rato sin uso. La app te lo avisa en pantalla; después va con
 > normalidad. Necesitas conexión a internet.
 
-## En el iPhone
+## En el móvil (iPhone y Android)
 
-GameHub también funciona en el móvil, sin App Store: se instala desde Safari como una app.
+GameHub también funciona en el móvil, sin App Store ni Google Play: se instala desde el navegador
+como una app. **En el iPhone**, desde Safari:
 
 1. Abre **[jesuusgallego.github.io/GameHub](https://jesuusgallego.github.io/GameHub/)** en Safari.
 2. Pulsa **Compartir** (en iOS 26, dentro del botón **···**) y elige **Añadir a pantalla de
@@ -73,7 +74,11 @@ GameHub también funciona en el móvil, sin App Store: se instala desde Safari c
 
 GameHub te lo explica la primera vez que la abres en Safari, y lo tienes siempre en
 *Ajustes → Instalar en el iPhone*. **Se actualiza sola:** si hay una versión nueva, al volver a
-la app te avisa para actualizar. En Android también se puede instalar (Chrome → *Instalar app*).
+la app te avisa para actualizar.
+
+**En Android** se instala desde Chrome: abre la misma dirección y pulsa *Instalar app* (o, en el
+menú **⋮**, *Añadir a pantalla de inicio*). Instalada, se ve igual que en el iPhone, con los
+controles de cristal y las pestañas abajo.
 
 > En el iPhone, los avisos de mensajes nuevos del chat todavía no están disponibles.
 

@@ -11,7 +11,7 @@ import { CRITERIOS, TODOS } from './ordenFiltros'
 //  - una fila con el buscador y un botón redondo de filtros (con cuántos hay puestos);
 //  - ese botón despliega debajo el orden y los desplegables de género, compañía y plataforma;
 //  - debajo, el estado en pastillas que se deslizan de lado, como los filtros de las apps de iOS.
-// En el iPhone, todo es de cristal (estilos/cristal-ios.css).
+// En el iPhone y en la app instalada de Android, todo es de cristal (estilos/cristal.css).
 // Es un componente "tonto": no guarda los filtros, solo si el panel está abierto. Biblioteca.jsx
 // tiene los filtros, la búsqueda y el orden, igual que con la barra lateral.
 //  - juegos: TODA la biblioteca (los contadores son del total, no de lo visible)

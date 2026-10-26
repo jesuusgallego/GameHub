@@ -52,4 +52,4 @@
 
 /* El aspecto "Liquid Glass" de iOS 26: solo en el iPhone y el iPad, y después de movil.css porque
    cambia cosas del móvil (la barra de pestañas pasa abajo con la app instalada) */
-@import './cristal-ios.css';
+@import './cristal.css';

@@ -34,6 +34,7 @@ a su vez importa el resto de archivos con `@import`.
 | `chat.css` | El chat: el botón y el panel flotante (en toda la app), la lista de conversaciones, las burbujas, el cuadro para escribir y el aviso de mensajes nuevos. También usa `--tono` | `ChatDock`, `Chat`, `ListaChats`, `Conversacion`, `Burbuja` |
 | `noticias.css` | Noticias, la portada de la app: la cabecera (estado y logos de tus portales), las noticias sin cajas (con el logo del portal si no traen imagen; los logos salen también al elegir portales), la rejilla de noticias (la primera en grande), los motivos de "Para ti", la columna lateral y la elección de portales. Cada portal tiene su `--tono` | `Noticias`, `FeedNoticias`, `TarjetaNoticia`, `PortalesNoticias` |
 | `movil.css` | Ajustes generales para pantallas estrechas | varios |
+| `cristal.css` | El aspecto "Liquid Glass" (clase `cristal`: iPhone y app instalada en Android) y los arreglos propios de Safari (clase `ios`) | varios |
 
 ## Reglas para trabajar aquí
 
@@ -44,8 +45,8 @@ a su vez importa el resto de archivos con `@import`.
   (por ejemplo `plataforma`, `plataforma__cabecera`, `plataforma__estado--ok`).
 - **El orden de `index.css` importa.** En CSS, cuando dos reglas pesan lo mismo, gana
   la que va después. Los archivos están en el mismo orden en que se escribieron, y
-  `movil.css` va el último a propósito. Si una regla nueva "no hace efecto", mira
-  primero si otra posterior la pisa.
+  `movil.css` y `cristal.css` van los últimos a propósito (el cristal cambia cosas del
+  móvil). Si una regla nueva "no hace efecto", mira primero si otra posterior la pisa.
 - **Para añadir estilos de un componente nuevo**: crea un archivo (`mi-componente.css`),
   añade su `@import` en `index.css` en la zona que le toque y, si es nuevo, descríbelo
   en la tabla de arriba.

@@ -1,13 +1,19 @@
 /* ==========================================================================
-   "Liquid Glass" en el iPhone y el iPad (el aspecto de iOS 26, como en WhatsApp).
+   "Liquid Glass": el aspecto de iOS 26 (como en WhatsApp), en el iPhone y en Android.
 
-   Solo se aplica en iOS: index.html pone la clase "ios" en <html> al arrancar. El resto de sitios
-   (el ordenador, Android) siguen como estaban.
+   Se aplica con la clase "cristal" en <html>, que pone index.html al arrancar: en el iPhone y el
+   iPad siempre (también en Safari, sin instalar), y en Android solo con la app instalada (en su
+   navegador, las barras de Chrome chocarían con las pestañas flotando abajo). El ordenador y el
+   navegador de Android siguen con el diseño de siempre. No usa nada exclusivo de Apple: es CSS
+   normal (backdrop-filter, transparencias, sombras), y Chrome lo dibuja igual.
+
+   Unas pocas reglas van con la clase "ios" y no con "cristal": arreglan cosas propias de Safari
+   (la vista previa al mantener pulsado, la franja fija contra el borroso de iOS 27).
 
    La idea de Apple: los controles FLOTAN sobre el contenido y son de cristal: casi transparentes,
    con lo de detrás desenfocado y con más color, y un canto que brilla como el borde de un vidrio.
    El contenido (tarjetas, noticias) llega hasta los bordes de la pantalla y pasa por debajo de los
-   controles al hacer scroll. Con la app instalada en el iPhone:
+   controles al hacer scroll. Con la app instalada en el móvil:
      - arriba no hay barra: solo el logo y los menús, cada grupo en su cápsula de cristal;
      - abajo, las pestañas en una cápsula de cristal y el chat en un botón redondo a su lado;
      - arriba y abajo, un fundido suave para que lo que pasa por debajo no choque con los botones.
@@ -18,7 +24,7 @@
 /* ---- El material: las piezas del cristal ---- */
 /* Cada elemento de cristal usa estas variables juntas (ver la lista de abajo). Así, retocar el
    material es cambiarlo aquí y vale para todos. */
-:root.ios {
+:root.cristal {
   /* El tinte del vidrio: muy poco, para que se vea lo de detrás (el de iOS 26 es casi incoloro) */
   --cristal: rgba(30, 41, 58, 0.38);
   /* Más tupido, para menús y ventanas con mucho texto (que se lea sobre cualquier fondo) */
@@ -46,7 +52,7 @@
   --alto-pestanas-ios: 3.75rem;
 }
 
-:root.ios[data-tema="claro"] {
+:root.cristal[data-tema="claro"] {
   --cristal: rgba(255, 255, 255, 0.5);
   --cristal-tupido: rgba(255, 255, 255, 0.85);
   --cristal-reflejo: linear-gradient(170deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 55%);
@@ -61,7 +67,7 @@
 }
 
 /* ---- Lo que es de cristal ---- */
-:root.ios :is(
+:root.cristal :is(
   .pestanas--barra,
   .menu-usuario__lista,
   .menu-contextual,
@@ -81,26 +87,26 @@
    para siempre: el navegador lo trata entonces como una capa aparte y el cristal de dentro solo
    "ve" esa capa (vacía), así que no desenfocaba nada. Con "backwards" la animación se suelta al
    acabar y el cristal ve la página. */
-:root.ios .menu-usuario__panel:not(.menu-usuario__panel--saliendo) {
+:root.cristal .menu-usuario__panel:not(.menu-usuario__panel--saliendo) {
   animation-fill-mode: backwards;
 }
 
 /* Los menús, desplegables y avisos, con más cuerpo: se tienen que leer bien encima de lo que sea.
    Y con las esquinas más redondas, como los de iOS. */
-:root.ios :is(.menu-usuario__lista, .menu-contextual, .desplegable__lista, .instalar, .aviso-servidor .mensaje) {
+:root.cristal :is(.menu-usuario__lista, .menu-contextual, .desplegable__lista, .instalar, .aviso-servidor .mensaje) {
   background: var(--cristal-reflejo), var(--cristal-tupido);
 }
 
-:root.ios :is(.menu-usuario__lista, .menu-contextual, .desplegable__lista) {
+:root.cristal :is(.menu-usuario__lista, .menu-contextual, .desplegable__lista) {
   border-radius: 18px;
 }
 
-:root.ios :is(.menu-usuario__opcion, .desplegable__opcion) {
+:root.cristal :is(.menu-usuario__opcion, .desplegable__opcion) {
   border-radius: 11px;
 }
 
 /* Las ventanas pequeñas (confirmar, fecha de nacimiento...): cristal tupido y esquinas de iOS */
-:root.ios .dialogo {
+:root.cristal .dialogo {
   background: var(--cristal-reflejo), var(--cristal-tupido);
   -webkit-backdrop-filter: var(--cristal-filtro);
   backdrop-filter: var(--cristal-filtro);
@@ -110,25 +116,26 @@
 }
 
 /* Detrás de cualquier ventana, la página se desenfoca en lugar de quedarse casi negra */
-:root.ios :is(.detalle, .dialogo, .editar)::backdrop {
+:root.cristal :is(.detalle, .dialogo, .editar)::backdrop {
   background: var(--cristal-fondo-ventana);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
   backdrop-filter: blur(10px) saturate(140%);
 }
 
 /* Mantener pulsado un botón o un enlace de la app no hace nada: sin el menú ni la vista previa de
-   iOS y sin seleccionar el texto del botón (en los campos de texto sí se puede seleccionar) */
+   iOS (solo en iOS: es una propiedad de Safari) y sin seleccionar el texto del botón, también en
+   Android (en los campos de texto sí se puede seleccionar) */
 :root.ios :is(a, button, [role="tab"], [role="button"]) {
   -webkit-touch-callout: none;
 }
 
-:root.ios :is(button, [role="tab"], [role="button"]) {
+:root.cristal :is(button, [role="tab"], [role="button"]) {
   -webkit-user-select: none;
   user-select: none;
 }
 
 /* Botones en forma de cápsula, como los de iOS 26 */
-:root.ios .btn {
+:root.cristal .btn {
   border-radius: 999px;
 }
 
@@ -136,7 +143,7 @@
 /* El buscador, el botón de filtros, las pastillas de estado y el panel: cápsulas de cristal que
    flotan sobre la página, como los controles de iOS 26. Las pastillas con una sombra más corta:
    son muchas juntas y con la grande la fila se veía emborronada. */
-:root.ios :is(.filtros-movil__busqueda input, .filtros-movil__boton, .filtros-movil__estado, .filtros-movil__panel) {
+:root.cristal :is(.filtros-movil__busqueda input, .filtros-movil__boton, .filtros-movil__estado, .filtros-movil__panel) {
   background: var(--cristal-reflejo), var(--cristal);
   -webkit-backdrop-filter: var(--cristal-filtro);
   backdrop-filter: var(--cristal-filtro);
@@ -146,7 +153,7 @@
 
 /* Las búsquedas recientes de la pestaña Buscar, cápsulas de cristal como las pastillas de los
    filtros */
-:root.ios .buscar__reciente {
+:root.cristal .buscar__reciente {
   background: var(--cristal-reflejo), var(--cristal);
   -webkit-backdrop-filter: var(--cristal-filtro);
   backdrop-filter: var(--cristal-filtro);
@@ -154,69 +161,69 @@
   box-shadow: var(--cristal-canto), 0 3px 10px rgba(0, 0, 0, 0.16);
 }
 
-:root.ios .filtros-movil .filtros-movil__estado {
+:root.cristal .filtros-movil .filtros-movil__estado {
   box-shadow: var(--cristal-canto), 0 3px 10px rgba(0, 0, 0, 0.16);
 }
 
-:root.ios .filtros-movil .filtros-movil__panel {
+:root.cristal .filtros-movil .filtros-movil__panel {
   border-radius: 26px;
 }
 
 /* El aro de foco del buscador, que la regla de arriba quitaba */
-:root.ios .filtros-movil .filtros-movil__busqueda input:focus-visible {
+:root.cristal .filtros-movil .filtros-movil__busqueda input:focus-visible {
   border-color: var(--acento);
   box-shadow: var(--cristal-canto), 0 0 0 3px var(--acento-suave);
 }
 
-:root.ios .filtros-movil .filtros-movil__boton--abierto {
+:root.cristal .filtros-movil .filtros-movil__boton--abierto {
   border-color: color-mix(in srgb, var(--acento) 70%, transparent);
 }
 
 /* La pastilla elegida: cristal teñido del color de su estado (el "tinted glass" de iOS) */
-:root.ios .filtros-movil__estado.filtros-movil__estado--activo {
+:root.cristal .filtros-movil__estado.filtros-movil__estado--activo {
   background: var(--cristal-reflejo), color-mix(in srgb, var(--color) 30%, transparent);
   border-color: color-mix(in srgb, var(--color) 60%, transparent);
 }
 
 /* Dentro del panel, los desplegables y el sentido del orden son huecos más claros en el cristal
    (la "lente"), sin borde: el panel ya hace de marco */
-:root.ios .filtros-movil .desplegable__boton,
-:root.ios .filtros-movil .filtros-movil__sentido {
+:root.cristal .filtros-movil .desplegable__boton,
+:root.cristal .filtros-movil .filtros-movil__sentido {
   background: var(--cristal-lente);
   border-color: transparent;
 }
 
-:root.ios .filtros-movil .desplegable__boton[aria-expanded="true"] {
+:root.cristal .filtros-movil .desplegable__boton[aria-expanded="true"] {
   border-color: var(--acento);
 }
 
 /* La mitad elegida del sentido: una gota de cristal más clara, con su canto */
-:root.ios .filtros-movil__sentido-lente {
+:root.cristal .filtros-movil__sentido-lente {
   background: rgba(255, 255, 255, 0.16);
   box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.22), inset -1px -1px 0 rgba(255, 255, 255, 0.06), 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
-:root.ios[data-tema="claro"] .filtros-movil__sentido-lente {
+:root.cristal[data-tema="claro"] .filtros-movil__sentido-lente {
   background: #fff;
   box-shadow: 0 1px 6px rgba(31, 52, 80, 0.18);
 }
 
 /* El panel se despliega con una animación (Plegable) que, con "both", se quedaba aplicada y
    anulaba el desenfoque del cristal de dentro (la misma trampa que en los menús de la barra) */
-:root.ios .filtros-movil .plegable:not(.plegable--saliendo),
-:root.ios .filtros-movil .plegable:not(.plegable--saliendo) .plegable__interior {
+:root.cristal .filtros-movil .plegable:not(.plegable--saliendo),
+:root.cristal .filtros-movil .plegable:not(.plegable--saliendo) .plegable__interior {
   animation-fill-mode: backwards;
 }
 
 /* ---- Pestañas de Noticias, Social y Perfil: la misma lente que la barra de abajo ---- */
 /* Una gota de cristal más clara que la cápsula, y el color de acento dentro de ella (la capa de
    color, .pestanas__tinta en sala.css). La mueve el mismo muelle (useLente.js). */
-:root.ios .pestanas--barra .pestanas__indicador {
+:root.cristal .pestanas--barra .pestanas__indicador {
   background: var(--cristal-lente);
   box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.18), inset -1px -1px 0 rgba(255, 255, 255, 0.06);
 }
 
-:root.ios .pestanas--barra.lente--arrastrando .pestanas__indicador {
+:root.cristal .pestanas--barra.lente--arrastrando .pestanas__indicador {
   filter: none;
   background: color-mix(in srgb, var(--cristal-lente), white 9%);
   box-shadow:
@@ -225,7 +232,7 @@
     0 4px 16px rgba(0, 0, 0, 0.18);
 }
 
-:root.ios .pestanas--barra .pestanas__tinta {
+:root.cristal .pestanas--barra .pestanas__tinta {
   color: var(--acento);
 }
 
@@ -258,20 +265,22 @@
 }
 
 @media (max-width: 640px) {
-  /* En el móvil, del color del fondo de la página (no hay barra opaca arriba). Sin el resplandor
-     violeta de arriba del fondo: así la franja y la página son del mismo color. */
+  /* En el móvil, del color del fondo de la página (no hay barra opaca arriba) */
   :root.ios.app-instalada .franja-ios {
     background-color: var(--bg);
   }
 
-  :root.ios.app-instalada body {
+  /* El fondo, liso y sin el resplandor violeta de arriba: así la parte de arriba de la página es del
+     mismo color que la franja de la hora (en iOS) o la barra de estado (en Android, que toma el
+     color de theme-color, igual a --bg) */
+  :root.cristal.app-instalada body {
     background: var(--bg);
   }
 
   /* ---- Arriba: sin barra, solo cápsulas de cristal ---- */
   /* La barra se queda (sigue "pegada" arriba al hacer scroll), pero transparente: el contenido pasa
      por debajo y solo se ven sus dos cápsulas */
-  :root.ios.app-instalada .barra {
+  :root.cristal.app-instalada .barra {
     background: transparent;
     border-bottom-color: transparent;
   }
@@ -280,7 +289,7 @@
      desvanezca antes de llegar a la franja de la hora (lo que en iOS hace el sistema). Aparece
      poco a poco al empezar a bajar (animación ligada al scroll; en un navegador que no la tenga,
      se queda siempre puesto). z-index -1: detrás de las cápsulas, delante de la página. */
-  :root.ios.app-instalada .barra::before {
+  :root.cristal.app-instalada .barra::before {
     position: absolute;
     inset: 0 0 -2rem;
     z-index: -1;
@@ -300,13 +309,13 @@
 
   /* Las cápsulas empiezan DEBAJO de la franja fija de arriba (12 px, .franja-ios): si no, la
      franja, que va encima de todo, les cortaba el borde de arriba */
-  :root.ios.app-instalada .barra__interior {
+  :root.cristal.app-instalada .barra__interior {
     min-height: 3.75rem;
     padding: calc(12px + 0.35rem) max(1rem, var(--seguro-derecha)) 0.45rem max(1rem, var(--seguro-izquierda));
   }
 
   /* El logo, en su cápsula (del mismo alto que la de la derecha) */
-  :root.ios.app-instalada .barra__interior > .marca {
+  :root.cristal.app-instalada .barra__interior > .marca {
     height: calc(2.8rem + 2px);
     padding: 0 1rem 0 0.75rem;
     font-size: 1.25rem;
@@ -321,7 +330,7 @@
   /* La foto y el menú, juntos en otra cápsula (iOS agrupa así los botones de una barra). Los dos
      son círculos de 2,4 rem con el mismo margen alrededor (0,2 rem): así cada círculo queda justo
      en el centro del extremo redondo de la cápsula, como en iOS. */
-  :root.ios.app-instalada .barra__acciones {
+  :root.cristal.app-instalada .barra__acciones {
     gap: 0.2rem;
     height: auto;
     padding: 0.2rem;
@@ -333,7 +342,7 @@
     box-shadow: var(--cristal-canto), var(--cristal-sombra);
   }
 
-  :root.ios.app-instalada .barra__acciones .btn-icono {
+  :root.cristal.app-instalada .barra__acciones .btn-icono {
     width: 2.4rem;
     height: 2.4rem;
     color: var(--texto-h);
@@ -343,26 +352,26 @@
   }
 
   /* Pulsado o con su menú abierto: la lente dentro de la cápsula */
-  :root.ios.app-instalada .barra__acciones .btn-icono:is(:active, [aria-expanded="true"]) {
+  :root.cristal.app-instalada .barra__acciones .btn-icono:is(:active, [aria-expanded="true"]) {
     background: var(--cristal-lente);
   }
 
   /* Los contenedores de los dos menús, en flex: si no, Safari les añade debajo el hueco de una
      línea de texto (los botones van "en línea") y la foto quedaba desplazada hacia arriba */
-  :root.ios.app-instalada .barra__acciones > .menu-usuario,
-  :root.ios.app-instalada .barra__acciones .menu-usuario__boton {
+  :root.cristal.app-instalada .barra__acciones > .menu-usuario,
+  :root.cristal.app-instalada .barra__acciones .menu-usuario__boton {
     display: flex;
   }
 
-  :root.ios.app-instalada .barra__acciones .menu-usuario__boton .avatar {
+  :root.cristal.app-instalada .barra__acciones .menu-usuario__boton .avatar {
     width: 2.4rem;
     height: 2.4rem;
     font-size: 1.2rem;
   }
 
   /* El aro de la foto: del color del cristal, no del de la barra (que ya no se ve) */
-  :root.ios.app-instalada .menu-usuario__boton:is(:hover, [aria-expanded="true"]),
-  :root.ios.app-instalada .menu-usuario__boton--activo {
+  :root.cristal.app-instalada .menu-usuario__boton:is(:hover, [aria-expanded="true"]),
+  :root.cristal.app-instalada .menu-usuario__boton--activo {
     box-shadow: 0 0 0 2px var(--acento);
   }
 
@@ -371,7 +380,7 @@
      de las apps de iOS 26). Funciona con position: fixed aunque esté dentro de la barra de arriba
      porque esa barra no tiene filtros ni transformaciones (si los tuviera, la cápsula se colocaría
      respecto a ella). */
-  :root.ios.app-instalada .barra__nav {
+  :root.cristal.app-instalada .barra__nav {
     position: fixed;
     right: calc(1rem + var(--alto-pestanas-ios) + 0.6rem + var(--seguro-derecha));
     bottom: var(--abajo-flotante);
@@ -409,7 +418,7 @@
 
   /* El fundido de abajo: lo que pasa por detrás de las pestañas se oscurece un poco hacia el borde.
      Cuelga de la barra (z-index -1: detrás de las pestañas); el botón del chat va por encima. */
-  :root.ios.app-instalada .barra::after {
+  :root.cristal.app-instalada .barra::after {
     position: fixed;
     right: 0;
     bottom: 0;
@@ -422,7 +431,7 @@
   }
 
   /* Cada pestaña: el icono y, debajo, su nombre en pequeño, como en iOS */
-  :root.ios.app-instalada .barra__nav a {
+  :root.cristal.app-instalada .barra__nav a {
     z-index: 1; /* por encima de la lente de la pestaña activa */
     flex: 1;
     flex-direction: column;
@@ -436,7 +445,7 @@
     -webkit-touch-callout: none;
   }
 
-  :root.ios.app-instalada .barra__pista {
+  :root.cristal.app-instalada .barra__pista {
     position: static;
     display: block;
     padding: 0;
@@ -451,13 +460,13 @@
     transform: none;
   }
 
-  :root.ios.app-instalada .barra__icono {
+  :root.cristal.app-instalada .barra__icono {
     width: 22px;
     height: 22px;
   }
 
   /* En el móvil no hay ratón: el icono no sube al "pasar por encima" */
-  :root.ios.app-instalada .barra__nav a:is(:hover, :focus-visible) .barra__icono {
+  :root.cristal.app-instalada .barra__nav a:is(:hover, :focus-visible) .barra__icono {
     transform: none;
   }
 
@@ -466,7 +475,7 @@
      borde izquierdo (--lx), su ancho (--lw) y cuánto se hincha (--lgx a los lados, --lgy arriba y
      abajo). Por eso aquí no hay transiciones de posición ni de tamaño: el muelle ya es la
      animación. El "transform: none" anula el que Menu.jsx pone para la línea del escritorio. */
-  :root.ios.app-instalada .barra__linea {
+  :root.cristal.app-instalada .barra__linea {
     top: calc(0.3rem - var(--lgy, 0px));
     bottom: calc(0.3rem - var(--lgy, 0px));
     left: calc(var(--lx, 0px) - var(--lgx, 0px));
@@ -481,7 +490,7 @@
   }
 
   /* Con el dedo encima, la lente se aclara y brilla un poco más, como una gota bajo el dedo */
-  :root.ios.app-instalada .lente--arrastrando .barra__linea {
+  :root.cristal.app-instalada .lente--arrastrando .barra__linea {
     background: color-mix(in srgb, var(--cristal-lente), white 9%);
     box-shadow:
       inset 1px 1px 0 rgba(255, 255, 255, 0.3),
@@ -493,7 +502,7 @@
      encima de ellos y recortados con la forma exacta de la lente (las mismas variables). Lo que la
      lente tapa se ve de color; lo de fuera, no. Así solo hay UN selector, y el color se mueve con
      él de forma continua (un icono a medio tapar se ve medio coloreado). No recibe toques. */
-  :root.ios.app-instalada .barra__tinta {
+  :root.cristal.app-instalada .barra__tinta {
     position: absolute;
     inset: 0;
     z-index: 2;
@@ -512,7 +521,7 @@
   }
 
   /* Cada copia, colocada igual que su pestaña de verdad (mismo reparto y mismo hueco) */
-  :root.ios.app-instalada .barra__tinta-pestana {
+  :root.cristal.app-instalada .barra__tinta-pestana {
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -522,14 +531,14 @@
   }
 
   /* La insignia de avisos de Social, en la esquina del icono */
-  :root.ios.app-instalada .barra__nav .insignia--icono {
+  :root.cristal.app-instalada .barra__nav .insignia--icono {
     top: 0.3rem;
     right: calc(50% - 1.35rem);
     box-shadow: none;
   }
 
   /* ---- El botón del chat: un círculo de cristal a la derecha de las pestañas ---- */
-  :root.ios.app-instalada .chat-lanzador {
+  :root.cristal.app-instalada .chat-lanzador {
     right: calc(1rem + var(--seguro-derecha));
     bottom: var(--abajo-flotante);
     z-index: 46; /* por encima del fundido de abajo y del panel del chat */
@@ -545,34 +554,34 @@
   }
 
   /* Solo el icono: el rótulo "Chat" ya lo dice el aria-label del botón */
-  :root.ios.app-instalada .chat-lanzador > span:not(.chat-lanzador__cuenta) {
+  :root.cristal.app-instalada .chat-lanzador > span:not(.chat-lanzador__cuenta) {
     display: none;
   }
 
-  :root.ios.app-instalada .chat-lanzador:hover {
+  :root.cristal.app-instalada .chat-lanzador:hover {
     transform: none;
     animation: none;
   }
 
   /* Al pulsarlo se hincha un poco, como los botones de cristal de iOS */
-  :root.ios.app-instalada .chat-lanzador:active {
+  :root.cristal.app-instalada .chat-lanzador:active {
     transform: scale(1.08);
   }
 
-  :root.ios.app-instalada .chat-lanzador__cuenta {
+  :root.cristal.app-instalada .chat-lanzador__cuenta {
     top: -0.2rem;
     right: -0.2rem;
   }
 
   /* Con el panel abierto, el botón NO se esconde: se queda en su sitio convertido en una X (el
      bocadillo gira y se desvanece, la X entra girando) y el mismo botón cierra el chat */
-  :root.ios.app-instalada .chat-lanzador--oculto {
+  :root.cristal.app-instalada .chat-lanzador--oculto {
     opacity: 1;
     transform: none;
     pointer-events: auto;
   }
 
-  :root.ios.app-instalada .chat-lanzador__x {
+  :root.cristal.app-instalada .chat-lanzador__x {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -583,30 +592,30 @@
     transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  :root.ios.app-instalada .chat-lanzador__icono {
+  :root.cristal.app-instalada .chat-lanzador__icono {
     transition: opacity 0.2s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  :root.ios.app-instalada .chat-lanzador--oculto .chat-lanzador__icono {
+  :root.cristal.app-instalada .chat-lanzador--oculto .chat-lanzador__icono {
     opacity: 0;
     transform: rotate(90deg) scale(0.5);
   }
 
-  :root.ios.app-instalada .chat-lanzador--oculto .chat-lanzador__x {
+  :root.cristal.app-instalada .chat-lanzador--oculto .chat-lanzador__x {
     opacity: 1;
     transform: translate(-50%, -50%) rotate(0) scale(1);
   }
 
   /* Con el chat abierto no hay aviso de mensajes nuevos en el botón: ya los estás viendo */
-  :root.ios.app-instalada .chat-lanzador--oculto::before,
-  :root.ios.app-instalada .chat-lanzador--oculto .chat-lanzador__cuenta {
+  :root.cristal.app-instalada .chat-lanzador--oculto::before,
+  :root.cristal.app-instalada .chat-lanzador--oculto .chat-lanzador__cuenta {
     display: none;
   }
 
   /* El panel del chat sale justo encima del botón y de las pestañas, que siguen a la vista. Entre
      la barra de arriba y la de abajo: por debajo de la barra (z-index 45, ver barra-superior.css)
      para que sus menús se abran por encima del chat. */
-  :root.ios.app-instalada .chat-dock {
+  :root.cristal.app-instalada .chat-dock {
     right: calc(1rem + var(--seguro-derecha));
     bottom: calc(var(--abajo-flotante) + var(--alto-pestanas-ios) + 0.6rem);
     left: calc(1rem + var(--seguro-izquierda));
@@ -616,23 +625,23 @@
 
   /* Con el chat abierto, los fundidos de arriba y abajo (que van por encima de la página) no
      deben tapar el borde del panel */
-  :root.ios.app-instalada:has(.chat-dock) .barra::before,
-  :root.ios.app-instalada:has(.chat-dock) .barra::after {
+  :root.cristal.app-instalada:has(.chat-dock) .barra::before,
+  :root.cristal.app-instalada:has(.chat-dock) .barra::after {
     visibility: hidden;
   }
 
-  :root.ios.app-instalada .chat-dock__marco {
+  :root.cristal.app-instalada .chat-dock__marco {
     border-radius: 28px;
     clip-path: inset(0 round 28px);
     animation-name: chat-dock-entrada-ios;
   }
 
-  :root.ios.app-instalada .chat-dock--saliendo .chat-dock__marco {
+  :root.cristal.app-instalada .chat-dock--saliendo .chat-dock__marco {
     animation-name: chat-dock-salida-ios;
   }
 
   /* Lo que avisa abajo (instalar, versión nueva, servidor tardando), por encima de las pestañas */
-  :root.ios.app-instalada :is(.instalar, .aviso-version, .aviso-servidor) {
+  :root.cristal.app-instalada :is(.instalar, .aviso-version, .aviso-servidor) {
     bottom: calc(var(--abajo-flotante) + var(--alto-pestanas-ios) + 0.75rem);
   }
 }
@@ -654,7 +663,7 @@
 /* Sin desenfoques para quien pide menos efectos (Reducir transparencia en Accesibilidad): el
    cristal pasa a ser sólido */
 @media (prefers-reduced-transparency: reduce) {
-  :root.ios {
+  :root.cristal {
     --cristal: var(--superficie);
     --cristal-tupido: var(--superficie);
     --cristal-filtro: none;

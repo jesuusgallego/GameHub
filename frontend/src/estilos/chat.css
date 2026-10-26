@@ -58,7 +58,7 @@
   transition: transform 0.2s ease, opacity 0.12s ease;
 }
 
-/* La X del botón con el panel abierto: solo existe en el iPhone (cristal-ios.css) */
+/* La X del botón con el panel abierto: solo existe con la app instalada en el móvil (cristal.css) */
 .chat-lanzador__x {
   display: none;
 }
