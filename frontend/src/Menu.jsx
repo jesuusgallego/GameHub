@@ -3,6 +3,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import Marca from './Marca'
 import MenuUsuario from './MenuUsuario'
 import MenuAjustes from './MenuAjustes'
+import BotonAcceder from './BotonAcceder'
 import { useIdioma } from './IdiomaContext'
 import { useLente } from './useLente'
 
@@ -97,7 +98,9 @@ const ENLACES = [
 //  - mensajes: cuántos mensajes del chat no he leído
 //    Las dos se suman en una sola insignia de "Social", que es donde viven (el chat es una de sus
 //    pestañas); dentro, cada pestaña enseña su propio número.
-function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
+//  - invitado: sin cuenta, en lugar de la foto sale el botón "Entrar" (BotonAcceder), con las
+//    opciones de iniciar sesión o crear una cuenta
+function Menu({ setToken, invitado = false, perfil, solicitudes = 0, mensajes = 0 }) {
   const { t } = useIdioma()
   const avisos = solicitudes + mensajes
   const navRef = useRef(null)
@@ -198,8 +201,8 @@ function Menu({ setToken, perfil, solicitudes = 0, mensajes = 0 }) {
         </nav>
 
         <div className="barra__acciones">
-          <MenuUsuario perfil={perfil} setToken={setToken} />
-          <MenuAjustes conAvisos />
+          {invitado ? <BotonAcceder /> : <MenuUsuario perfil={perfil} setToken={setToken} />}
+          <MenuAjustes conAvisos={!invitado} />
         </div>
       </div>
     </header>

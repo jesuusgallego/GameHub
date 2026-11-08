@@ -14,6 +14,29 @@ async function verifyToken(req, res, next) {
     return res.status(401).json({ error: 'Token no proporcionado' });
   }
 
+  return comprobarToken(authHeader, req, res, next);
+}
+
+// Para lo que se puede usar SIN cuenta (leer noticias, buscar juegos, ver su ficha): sin la
+// cabecera Authorization deja req.user = null (un invitado) y sigue. Si la cabecera viene, se
+// comprueba igual que en verifyToken: un token caducado sigue dando 401, para que la interfaz
+// cierre la sesión en vez de enseñar como invitado a quien cree que ha entrado.
+async function sesionOpcional(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    req.user = null;
+    return next();
+  }
+  if (!authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  return comprobarToken(authHeader, req, res, next);
+}
+
+// Lo común a los dos: la firma, la caducidad y que la sesión siga vigente en la base de datos
+async function comprobarToken(authHeader, req, res, next) {
   const token = authHeader.split(' ')[1];
 
   let decoded;
@@ -46,3 +69,4 @@ async function verifyToken(req, res, next) {
 }
 
 module.exports = verifyToken;
+module.exports.sesionOpcional = sesionOpcional;

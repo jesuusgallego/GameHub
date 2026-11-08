@@ -9,6 +9,10 @@ para traer tus juegos, tus horas y tus logros.
 
 ## Qué puedes hacer
 
+> **Sin cuenta también:** puedes leer las noticias, buscar cualquier juego y ver su ficha sin
+> registrarte. Arriba a la derecha está el botón **Entrar** para iniciar sesión o crear una cuenta
+> cuando quieras guardar tu biblioteca, añadir amigos o chatear.
+
 - **Noticias, lo primero al entrar:** lo último de 24 portales de videojuegos en español e inglés
   (Vandal, 3DJuegos, IGN, Eurogamer, PC Gamer…). En **Para ti**, las que te pueden interesar según
   los juegos de tu biblioteca, con el motivo a la vista ("Porque tienes Elden Ring"); en
@@ -84,7 +88,7 @@ controles de cristal y las pestañas abajo.
 
 ## Cómo se usa
 
-1. **Crea una cuenta** con un nombre de usuario, tu email y una contraseña (8 caracteres o
+1. **Crea una cuenta** (botón *Entrar* de arriba a la derecha → *Crear cuenta*) con un nombre de usuario, tu email y una contraseña (8 caracteres o
    más, con mayúscula, minúscula y número). El nombre de usuario es único y va siempre en
    minúsculas: de 3 a 20 caracteres, con letras, números y guion bajo (`_`). Después puedes
    iniciar sesión con el email **o** con el nombre de usuario. En *Perfil → Editar perfil*

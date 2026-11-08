@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import SeguirSinCuenta from './SeguirSinCuenta'
+import { rutaDeVuelta } from './invitado'
 import { apiFetch } from './api'
 import Marca from './Marca'
 import MenuAjustes from './MenuAjustes'
@@ -22,6 +24,9 @@ function Registro() {
   const [error, setError] = useState("")
   const [enviando, setEnviando] = useState(false)
   const navigate = useNavigate()
+  // La página de la app a la que volver al terminar (sin cuenta, se llega con state.desde)
+  const { state } = useLocation()
+  const desde = rutaDeVuelta(state?.desde)
   const { min: nacimientoMin, max: nacimientoMax } = limitesFechaNacimiento()
 
   function handleRegistro(e) {
@@ -59,7 +64,8 @@ function Registro() {
       method: 'POST',
       body: { username, email, password, birth_date: nacimiento }
     })
-      .then(() => navigate('/login'))
+      // La cuenta está creada: al login, con el nombre ya escrito y la página a la que volver
+      .then(() => navigate('/login', { state: { cuentaCreada: true, usuario: username, desde } }))
       .catch(err => setError(err.message))
       .finally(() => setEnviando(false))
   }
@@ -131,7 +137,11 @@ function Registro() {
         </form>
 
         <p className="auth__pie">
-          {t('auth.registro.yaCuenta')} <Link to="/login">{t('auth.registro.iniciaSesion')}</Link>
+          {t('auth.registro.yaCuenta')} <Link to="/login" state={{ desde }}>{t('auth.registro.iniciaSesion')}</Link>
+        </p>
+
+        <p className="auth__pie">
+          <SeguirSinCuenta desde={desde} />
         </p>
       </div>
     </main>

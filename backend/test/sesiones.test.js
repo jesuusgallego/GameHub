@@ -96,3 +96,42 @@ test('emitirToken firma el id, el nombre y la versión, y caduca', () => {
   assert.strictEqual(t.v, 5);
   assert.ok(t.exp > t.iat);
 });
+
+// ---- Sesión opcional: lo que se puede usar sin cuenta (noticias, buscar juegos, fichas) ----
+
+const { sesionOpcional } = require('../src/middleware/authMiddleware');
+
+async function pasarOpcional(authorization) {
+  const res = {
+    status(c) { this.codigo = c; return this; },
+    json(o) { this.cuerpo = o; },
+  };
+  const req = { headers: authorization ? { authorization } : {} };
+  let siguio = false;
+  await sesionOpcional(req, res, () => { siguio = true; });
+  return { status: res.codigo, siguio, user: req.user };
+}
+
+test('sesión opcional: sin cabecera sigue como invitado (req.user = null) sin tocar la base de datos', async () => {
+  const r = await pasarOpcional(undefined);
+  assert.strictEqual(r.siguio, true);
+  assert.strictEqual(r.user, null);
+  assert.strictEqual(consultas.length, 0);
+});
+
+test('sesión opcional: con un token vigente deja el usuario como verifyToken', async () => {
+  filas = [{ token_version: 2 }];
+  const r = await pasarOpcional(conToken({ userId: 9, username: 'beto', v: 2 }));
+  assert.strictEqual(r.siguio, true);
+  assert.deepStrictEqual(r.user, { id: 9, username: 'beto' });
+});
+
+test('sesión opcional: un token caducado, mal formado o de una sesión cerrada sigue siendo 401', async () => {
+  assert.strictEqual((await pasarOpcional('Bearer basura')).status, 401);
+  assert.strictEqual((await pasarOpcional('Basic abc')).status, 401);
+  assert.strictEqual((await pasarOpcional(conToken({ userId: 9, v: 0 }, { expiresIn: -10 }))).status, 401);
+  filas = [{ token_version: 5 }];
+  const r = await pasarOpcional(conToken({ userId: 9, username: 'beto', v: 4 }));
+  assert.strictEqual(r.status, 401);
+  assert.strictEqual(r.siguio, false, 'no se cuela como invitado');
+});

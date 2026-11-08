@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useSearchParams, useOutletContext } from 'react-router-dom'
-import { apiFetch } from './api'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Link, useSearchParams, useOutletContext } from 'react-router-dom'
 import PestanasPerfil from './PestanasPerfil'
 import FeedNoticias from './FeedNoticias'
 import { VentanaPortales } from './PortalesNoticias'
+import { pedirPortales } from './apiNoticias'
 import { useEventosNoticias } from './useEventosNoticias'
 import { useIdioma } from './IdiomaContext'
 import { borrarToken } from './sesion'
@@ -74,9 +74,11 @@ function leerOpciones() {
 // (recomendadas según tu biblioteca, ver backend/src/services/recomendador.js) y "Siguiendo" (lo
 // último de tus portales), y al lado "Se habla de tus juegos" (pulsar uno enseña sus noticias) y
 // "Tus portales". La pestaña va en la URL (?tab=siguiendo).
+// Sin cuenta también se leen: "Para ti" se ordena sin biblioteca ni amigos, los portales que sigues se
+// guardan en este navegador, y no se registra lo que lees ni hay "No me interesa".
 function Noticias({ setToken }) {
   const { t, idioma } = useIdioma()
-  const { perfil } = useOutletContext()
+  const { perfil, invitado } = useOutletContext()
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') === 'siguiendo' ? 'siguiendo' : 'para_ti'
   const [portales, setPortales] = useState(null)
@@ -94,7 +96,13 @@ function Noticias({ setToken }) {
   const [abiertas, setAbiertas] = useState(() => new Set([tab]))
   if (!abiertas.has(tab)) setAbiertas(new Set(abiertas).add(tab))
   // El orden y los filtros de cada pestaña ({ para_ti, siguiendo }, ver OpcionesNoticias.jsx)
-  const [opciones, setOpciones] = useState(leerOpciones)
+  const [opcionesGuardadas, setOpciones] = useState(leerOpciones)
+  // Sin cuenta no hay biblioteca: "Solo de mis juegos" no vale aunque se dejara puesto con la sesión.
+  // Con useMemo, para que sea el MISMO objeto mientras no cambie nada: la lista pide las noticias de
+  // nuevo cada vez que cambian sus opciones, y un objeto nuevo en cada pintado las pedía sin parar.
+  const opciones = useMemo(() => (invitado
+    ? { ...opcionesGuardadas, para_ti: { ...opcionesGuardadas.para_ti, misJuegos: false } }
+    : opcionesGuardadas), [invitado, opcionesGuardadas])
 
   function cambiarOpciones(id, nuevas) {
     setOpciones((previas) => {
@@ -113,15 +121,16 @@ function Noticias({ setToken }) {
     setToken('')
   }, [setToken])
 
-  const eventos = useEventosNoticias({ activo: perfil?.news_personalization !== false, idioma })
+  const eventos = useEventosNoticias({ activo: !invitado && perfil?.news_personalization !== false, idioma })
 
+  // El catálogo de portales. También al entrar o salir de la cuenta (los que sigues cambian).
   useEffect(() => {
     let vivo = true
-    apiFetch('/news/sources', { avisoLento: false })
-      .then((data) => { if (vivo) setPortales(data.sources) })
+    pedirPortales({ avisoLento: false })
+      .then((lista) => { if (vivo) setPortales(lista) })
       .catch((err) => { if (err.status === 401) cerrarSesion() })
     return () => { vivo = false }
-  }, [cerrarSesion, recarga])
+  }, [cerrarSesion, recarga, invitado])
 
   // Lo que llega de cada pestaña: los juegos de los que se habla (solo Para ti) y la noticia más
   // reciente (de las dos, la que lo sea más)
@@ -177,6 +186,7 @@ function Noticias({ setToken }) {
               opciones={opciones[tab]}
               portales={portales && (tab === 'siguiendo' ? seguidos : portales)}
               onCambiar={(nuevas) => cambiarOpciones(tab, nuevas)}
+              conMisJuegos={!invitado}
             />
           )}
           {['para_ti', 'siguiendo'].filter((id) => abiertas.has(id)).map((id) => (
@@ -190,8 +200,9 @@ function Noticias({ setToken }) {
             >
               <FeedNoticias
                 // Cambiar la key lo crea de nuevo, desde cero: al cambiar de portales, de idioma o de juego
-                key={`${id}:${recarga}:${idioma}:${id === 'para_ti' ? juego?.igdb_id ?? '' : ''}:${JSON.stringify(opciones[id])}`}
+                key={`${id}:${recarga}:${idioma}:${invitado}:${id === 'para_ti' ? juego?.igdb_id ?? '' : ''}:${JSON.stringify(opciones[id])}`}
                 tipo={id}
+                invitado={invitado}
                 opciones={opciones[id]}
                 onQuitarFiltros={() => cambiarOpciones(id, { ...OPCIONES_INICIALES, orden: opciones[id].orden })}
                 juego={id === 'para_ti' ? juego : null}
@@ -209,7 +220,13 @@ function Noticias({ setToken }) {
         <aside className="noticias-lateral">
           <section className={mencionados.length === 0 ? 'lateral__bloque noticias-bloque noticias-bloque--vacio' : 'lateral__bloque noticias-bloque'}>
             <h3 className="titulo-seccion lateral__titulo">{t('noticias.seHabla')}</h3>
-            {mencionados.length === 0 ? (
+            {invitado ? (
+              // Sin cuenta no hay biblioteca: se explica qué saldría aquí y cómo conseguirlo
+              <>
+                <p className="lateral__ayuda">{t('invitado.noticias.seHabla')}</p>
+                <Link to="/registro" state={{ desde: '/noticias' }} className="lateral__mas">{t('invitado.crearCuenta')}</Link>
+              </>
+            ) : mencionados.length === 0 ? (
               <p className="lateral__ayuda">{t('noticias.seHablaVacio')}</p>
             ) : (
               <>

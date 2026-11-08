@@ -32,25 +32,21 @@ function App() {
   return (
     <Router basename={BASENAME}>
       <Routes>
-        {/* Lo primero que se ve al entrar son las noticias (1.6); sin sesión, el inicio de sesión */}
-        <Route path="/" element={<Navigate to={token ? '/noticias' : '/login'} replace />} />
+        {/* Lo primero que se ve al entrar son las noticias, con cuenta o sin ella */}
+        <Route path="/" element={<Navigate to="/noticias" replace />} />
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/recuperar" element={<Recuperar />} />
-        {/* Esta ruta no tiene path: la uso para proteger a sus hijas y envolverlas con la barra */}
-        <Route
-          element={
-            <RutaProtegida token={token}>
-              <Layout setToken={setToken} />
-            </RutaProtegida>
-          }
-        >
+        {/* Esta ruta no tiene path: envuelve a sus hijas con la barra (Layout). Noticias y Buscar se
+            usan sin cuenta (como invitado); las demás piden iniciar sesión (RutaProtegida enseña
+            entonces una invitación a entrar o registrarse, sin salir de la app). */}
+        <Route element={<Layout token={token} setToken={setToken} />}>
           <Route path="/noticias" element={<Noticias setToken={setToken} />} />
-          <Route path="/biblioteca" element={<Biblioteca setToken={setToken} />} />
           <Route path="/buscar" element={<Buscar setToken={setToken} />} />
-          <Route path="/perfil" element={<Perfil setToken={setToken} />} />
-          <Route path="/social" element={<Social setToken={setToken} />} />
-          <Route path="/usuarios/:username" element={<PerfilPublico setToken={setToken} />} />
+          <Route path="/biblioteca" element={<RutaProtegida token={token} seccion="biblioteca"><Biblioteca setToken={setToken} /></RutaProtegida>} />
+          <Route path="/perfil" element={<RutaProtegida token={token} seccion="perfil"><Perfil setToken={setToken} /></RutaProtegida>} />
+          <Route path="/social" element={<RutaProtegida token={token} seccion="social"><Social setToken={setToken} /></RutaProtegida>} />
+          <Route path="/usuarios/:username" element={<RutaProtegida token={token} seccion="usuarios"><PerfilPublico setToken={setToken} /></RutaProtegida>} />
         </Route>
       </Routes>
     </Router>

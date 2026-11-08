@@ -421,7 +421,9 @@ docker exec -i biblioteca_db psql -U biblioteca_user -d biblioteca_db < backend/
 ## 7. Referencia de la API
 
 Todas las rutas con `Bearer token` necesitan la cabecera `Authorization: Bearer <token>` (el
-token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }` en español.
+token lo devuelve `/auth/login`). Las marcadas **Opcional** se pueden usar sin cuenta (como
+invitado, ver *Usar GameHub sin cuenta* en la sección 9); si llega la cabecera, se comprueba igual y
+un token caducado sigue dando 401. Los errores llegan como `{ "error": "texto" }` en español.
 
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
@@ -430,8 +432,8 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | POST | `/auth/login` | No | Inicia sesión y devuelve un token JWT. `identifier` es el email o el nombre de usuario (este se acepta también con mayúsculas: se busca en minúsculas). Sigue valiendo el campo antiguo `email`, que mandan las apps de escritorio ya instaladas |
 | POST | `/auth/forgot-password` | No | Envía al email un código de 6 dígitos para restablecer la contraseña (`email`, y `idioma` opcional: `es` o `en`). Responde siempre `{ ok: true }`, exista o no la cuenta, para no revelar qué emails están registrados. Un código por minuto como máximo y cinco peticiones por hora y IP |
 | POST | `/auth/reset-password` | No | Cambia la contraseña con el código recibido (`email`, `code`, `new_password`). El código caduca a los 15 minutos, se invalida a los 5 intentos fallidos y solo sirve una vez. 400 con "El código no es válido o ha caducado" para cualquier fallo del código. Cierra todas las sesiones abiertas |
-| GET | `/games/search?q=<nombre>` | Bearer token | Busca juegos por nombre en IGDB |
-| GET | `/games/details/:igdbId?lang=es` | Bearer token | Ficha completa de un juego desde IGDB: descripción (con `lang=es` se traduce al español con Azure Translator o, si no está disponible, con LibreTranslate, y se guarda en la tabla `translations`; si no responde ninguno, sale en inglés y `summary_lang` vale `en`), fecha de lanzamiento, desarrolladora, publishers, géneros, plataformas, nota, capturas (caché de 1 hora en memoria) |
+| GET | `/games/search?q=<nombre>` | Opcional | Busca juegos por nombre en IGDB |
+| GET | `/games/details/:igdbId?lang=es` | Opcional | Ficha completa de un juego desde IGDB: descripción (con `lang=es` se traduce al español con Azure Translator o, si no está disponible, con LibreTranslate, y se guarda en la tabla `translations`; si no responde ninguno, sale en inglés y `summary_lang` vale `en`), fecha de lanzamiento, desarrolladora, publishers, géneros, plataformas, nota, capturas (caché de 1 hora en memoria) |
 | GET | `/games/artworks` | Bearer token | Ilustraciones oficiales (artworks) de IGDB de los juegos de tu biblioteca, agrupadas por juego (máx. 12 por juego, caché de 1 hora en memoria). Sirven para elegir la foto de perfil |
 | POST | `/games` | Bearer token | Añade un juego a tu biblioteca (`igdb_id` y `name` obligatorios; 409 si ya lo tienes) |
 | GET | `/games` | Bearer token | Lista los juegos de tu biblioteca |
@@ -479,10 +481,10 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 | DELETE | `/chat/g/:id/members/:username` | Bearer token | Con tu nombre, sales; con el de otra persona, la sacas (solo quien administra). Si sale quien administra, pasa a quien lleve más tiempo dentro; si sale el último, el grupo se borra (`{ left, group_deleted }`) |
 | POST | `/chat/g/:id/read` · `/typing` · `/clear` | Bearer token | Igual que en la conversación entre dos personas |
 | DELETE | `/chat/g/:id/messages/:mid` | Bearer token | Borra un mensaje tuyo del grupo |
-| GET | `/news/sources` | Bearer token | El catálogo de portales: `slug`, `name`, `site`, `lang`, `tono`, si lo sigues (`following`) y su último titular (`latest`) |
+| GET | `/news/sources` | Opcional | El catálogo de portales: `slug`, `name`, `site`, `lang`, `tono`, si lo sigues (`following`, siempre `false` sin cuenta) y su último titular (`latest`) |
 | PUT | `/news/follows` | Bearer token | Los portales que sigues (`slugs`, sustituye la lista entera). 400 si alguno no existe |
-| GET | `/news/following` | Bearer token | Lo último de tus portales, por fecha, 20 por página (`?before=<fecha>&before_id=<id>` para la siguiente). Trae `following` (cuántos sigues) y `refreshing` (si el servidor está leyendo los portales en ese momento) |
-| GET | `/news/for-you` | Bearer token | "Para ti": la clasificación del recomendador, 20 por página (`?offset=`), cada una con `reason` (`kind` y, si es por un juego, `game`) y `position`. `?lang=es\|en` (idioma de la interfaz), `?fresh=1` rehace la clasificación, `?game=<igdb_id>` solo las de ese juego. En la primera página, `mentioned` (tus juegos de los que más se habla) y `library_size` |
+| GET | `/news/following` | Opcional | Lo último de tus portales, por fecha, 20 por página (`?before=<fecha>&before_id=<id>` para la siguiente). Trae `following` (cuántos sigues) y `refreshing` (si el servidor está leyendo los portales en ese momento). Sin cuenta, los portales van en `?sources=slug1,slug2` (hasta 60; 400 si alguno no tiene el formato) |
+| GET | `/news/for-you` | Opcional | "Para ti": la clasificación del recomendador, 20 por página (`?offset=`), cada una con `reason` (`kind` y, si es por un juego, `game`) y `position`. `?lang=es\|en` (idioma de la interfaz), `?fresh=1` rehace la clasificación, `?game=<igdb_id>` solo las de ese juego. En la primera página, `mentioned` (tus juegos de los que más se habla) y `library_size`. Sin cuenta, sin biblioteca ni amigos: cuentan la novedad, la variedad y los portales de `?sources=`; la clasificación se comparte entre los invitados con los mismos portales y `fresh` no la rehace |
 | POST | `/news/events` | Bearer token | Tanda de sucesos (`events`: `article_id`, `kind` `impression`\|`click`, `feed`, `position`; hasta 50). Se guardan con las señales del momento; con la personalización apagada, nada (204 igual). 120 tandas por minuto y usuario |
 | POST · DELETE | `/news/articles/:id/hide` | Bearer token | "No me interesa" y deshacerlo. Ocultar también deja un suceso `hide` (con la personalización activa) |
 | GET | `/accounts` | Bearer token | Cuentas vinculadas del usuario y `steam_disponible` (si el servidor tiene `STEAM_API_KEY`) |
@@ -495,7 +497,9 @@ token lo devuelve `/auth/login`). Los errores llegan como `{ "error": "texto" }`
 
 Límites de peticiones por IP (responden `429`): 10 inicios de sesión fallidos cada 15 minutos,
 10 registros por hora, 5 códigos de recuperación pedidos por hora, 10 códigos probados cada 15
-minutos y 1000 peticiones cada 15 minutos en total.
+minutos y 1000 peticiones cada 15 minutos en total. Sin cuenta, las rutas **Opcional** de juegos y
+noticias (menos `/news/sources`) tienen además un tope de 150 cada 5 minutos (`limitadorInvitados`):
+tiran de IGDB, del traductor y del recomendador, y así nadie usa la API como un IGDB gratis.
 
 ### Probar la API sin el frontend
 
@@ -624,6 +628,36 @@ Decisiones y detalles que no se ven leyendo un solo archivo.
   por SMS.
 - Un 401 significa "sesión caducada" y el frontend cierra la sesión; por eso una contraseña
   incorrecta al confirmar un cambio responde **403**, no 401.
+
+### Usar GameHub sin cuenta
+
+Sin iniciar sesión se pueden leer las noticias, buscar juegos y abrir sus fichas. Lo que depende de
+una cuenta (Mi biblioteca, Social, el chat, el perfil y los perfiles de otras personas) la pide.
+
+- **Backend:** `sesionOpcional` (en `middleware/authMiddleware.js`) deja `req.user = null` si no
+  llega la cabecera `Authorization`; si llega, la comprueba como `verifyToken` (un token caducado
+  sigue siendo 401: así la interfaz cierra la sesión en vez de enseñar como invitado a quien cree
+  haber entrado). Se usa en `/games/search`, `/games/details/:igdbId` y las tres lecturas de
+  noticias; esas rutas se declaran **antes** del `router.use(verifyToken)` de su archivo, que solo
+  afecta a lo que va después. `limitadorInvitados` (150 cada 5 minutos por IP) solo cuenta a quien
+  no tiene sesión.
+- **Noticias sin cuenta:** los portales que sigue el invitado se guardan en su navegador
+  (`frontend/src/invitado.js`, clave `noticias.portalesInvitado`) y viajan en `?sources=`;
+  `apiNoticias.js` los marca en el catálogo (`following`) y los guarda en el sitio que toca. No se
+  registran impresiones ni clics y no hay "No me interesa" (se guarda en la cuenta).
+- **Interfaz:** el `Layout` envuelve todas las páginas, con o sin sesión, y pasa `invitado` en el
+  contexto de `<Outlet />`. Sin sesión no pide el perfil, no sondea avisos y no monta el chat; en la
+  barra, el botón **Entrar** (`BotonAcceder.jsx`) sustituye a la foto y abre un desplegable con
+  *Iniciar sesión* y *Crear cuenta*. `RutaProtegida` ya no lleva al login: enseña `PideCuenta.jsx`
+  (qué hay en esa sección y qué ganas con una cuenta). "Añadir a mi biblioteca" abre
+  `VentanaCuenta.jsx`.
+- **Volver a donde estabas:** los enlaces al login y al registro llevan `state.desde`; al entrar se
+  vuelve ahí (`rutaDeVuelta` solo admite rutas internas y nunca el propio login o registro). El
+  registro pasa al login con el nombre ya escrito y el aviso de cuenta creada. Al cerrar sesión se
+  sigue en la app, en Noticias, como invitado.
+- **Trampa:** las opciones de Noticias que dependen de `invitado` se calculan con `useMemo`. Un
+  objeto nuevo en cada pintado cambia la `ruta` de `FeedNoticias`, que vuelve a pedir la página, que
+  vuelve a pintar... (se vio como 150 peticiones en segundos y el 429 del limitador).
 
 ### Recuperación de contraseña
 

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { apiFetch } from './api'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
 import { useVentana } from './useVentana'
@@ -7,6 +6,7 @@ import { useIdioma } from './IdiomaContext'
 import { portalesPorIdioma, preseleccion } from './logicaNoticias'
 import { tiempoRelativo } from './tiempo'
 import { logoPortal } from './logosPortales'
+import { guardarPortales } from './apiNoticias'
 
 // La lista de portales para elegir cuáles seguir, en dos grupos por idioma (el de la interfaz
 // primero). Cada portal es un botón que se marca y desmarca, con su logo, su nombre y su último
@@ -57,13 +57,6 @@ export function ListaPortales({ portales, elegidos, onAlternar }) {
       ))}
     </div>
   )
-}
-
-// Guarda la lista de portales que sigues (PUT /news/follows) y devuelve el catálogo al día
-async function guardarPortales(slugs) {
-  await apiFetch('/news/follows', { method: 'PUT', body: { slugs } })
-  const data = await apiFetch('/news/sources')
-  return data.sources
 }
 
 // La primera vez que entras en "Siguiendo" sin seguir nada: la lista con los portales de tu

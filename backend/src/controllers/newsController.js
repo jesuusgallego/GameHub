@@ -40,12 +40,32 @@ function aNoticia(fila, extra = {}) {
   };
 }
 
+// Quien entra sin cuenta no tiene portales guardados en la base de datos: los elige en la interfaz,
+// que los guarda en el navegador y los manda en ?sources=slug1,slug2. Devuelve la lista (vacía si
+// no viene) o null si no es válida.
+function portalesDelInvitado(texto) {
+  if (texto === undefined || texto === '') return [];
+  if (typeof texto !== 'string') return null;
+  const slugs = [...new Set(texto.split(','))];
+  if (slugs.length > 60 || !slugs.every((s) => /^[a-z0-9-]{1,40}$/.test(s))) return null;
+  return slugs.sort();
+}
+
 const COLUMNAS = `a.id, a.source_id, a.url, a.title, a.excerpt, a.image_url, a.published_at,
        s.slug, s.name, s.tono, s.site_url, s.lang`;
 
 // ---- Lo que el recomendador necesita saber de una persona --------------------------------
 
-async function contextoDe(yo) {
+async function contextoDe(yo, portalesInvitado) {
+  // Sin cuenta no hay biblioteca ni amigos: solo cuentan los portales que eligió (y la novedad, la
+  // variedad... que no dependen de nadie)
+  if (yo === null) {
+    const r = await pool.query('SELECT id FROM news_sources WHERE active AND slug = ANY($1::text[])', [portalesInvitado]);
+    return {
+      biblioteca: [], catalogoAmigos: [], juegosAmigos: new Map(),
+      seguidos: new Set(r.rows.map((f) => f.id)), personalizar: true,
+    };
+  }
   const [biblioteca, amigos, seguidos, usuario] = await Promise.all([
     pool.query(
       `SELECT igdb_id, name, cover_url, status, rating, playtime_minutes, genres, developers, publishers, platform
@@ -101,18 +121,24 @@ function preparar(fila) {
 }
 
 // La clasificación de "Para ti" de cada persona: usuario -> { hasta, idioma, lista, porId, idf, contexto }
+// Los invitados la comparten: una por cada combinación de portales elegidos (clave "invitado:...").
 const clasificaciones = new Map();
 
-async function clasificacionDe(yo, idioma, { nueva = false } = {}) {
-  const guardada = clasificaciones.get(yo);
+// La clave con la que se guarda la clasificación de alguien: su id, o la de los invitados con esos
+// portales
+const claveDe = (yo, portalesInvitado = []) => yo ?? `invitado:${portalesInvitado.join(',')}`;
+
+async function clasificacionDe(yo, idioma, { nueva = false, portalesInvitado = [] } = {}) {
+  const clave = claveDe(yo, portalesInvitado);
+  const guardada = clasificaciones.get(clave);
   if (!nueva && guardada && guardada.idioma === idioma && guardada.hasta > Date.now()) return guardada;
 
-  const [contexto, filas] = await Promise.all([contextoDe(yo), candidatasDe(yo)]);
+  const [contexto, filas] = await Promise.all([contextoDe(yo, portalesInvitado), candidatasDe(yo)]);
   const noticias = filas.map(preparar);
   const idf = R.idfDe(noticias);
   const hoy = new Date().toISOString().slice(0, 10);
   const puntuadas = R.puntuar(noticias, { ...contexto, idioma, idf });
-  const lista = R.ordenar(puntuadas, { clave: `${yo}:${hoy}` });
+  const lista = R.ordenar(puntuadas, { clave: `${clave}:${hoy}` });
   const porId = new Map(puntuadas.map((r) => [r.noticia.id, r]));
   for (const r of lista) porId.set(r.noticia.id, r);
 
@@ -120,7 +146,7 @@ async function clasificacionDe(yo, idioma, { nueva = false } = {}) {
   const nuevaClasificacion = {
     hasta: Date.now() + MINUTOS_CLASIFICACION * 60_000, idioma, lista, porId, idf, contexto, ocultas: new Set(),
   };
-  clasificaciones.set(yo, nuevaClasificacion);
+  clasificaciones.set(clave, nuevaClasificacion);
   return nuevaClasificacion;
 }
 
@@ -138,7 +164,8 @@ function aMotivo(m) {
 
 // ---- Rutas -----------------------------------------------------------------------------
 
-// GET /news/sources — el catálogo de portales, si sigo cada uno y su último titular
+// GET /news/sources — el catálogo de portales, si sigo cada uno y su último titular. Sin cuenta,
+// `following` sale siempre a false (los portales del invitado los marca la interfaz).
 async function listSources(req, res) {
   try {
     const r = await pool.query(
@@ -152,7 +179,7 @@ async function listSources(req, res) {
          ) u ON TRUE
         WHERE s.active
         ORDER BY s.lang, s.name`,
-      [req.user.id]
+      [req.user?.id ?? null]
     );
     res.json({
       sources: r.rows.map((f) => ({
@@ -202,35 +229,41 @@ async function setFollows(req, res) {
 // GET /news/following?before=<fecha ISO>&before_id=<id> — lo último de mis portales, por fecha
 // (20 por página; para la siguiente, la fecha y el id de la última recibida). Admite sort ('recent'
 // u 'oldest'), period y source (ver services/filtrosNoticias.js).
+// Sin cuenta, los portales son los de ?sources=slug1,slug2 (los que eligió y guarda su navegador).
 async function listFollowing(req, res) {
   const { before, before_id: antesId } = req.query;
   const fecha = before === undefined ? null : new Date(before);
   const id = antesId === undefined ? null : Number(antesId);
   const opciones = leerOpciones(req.query);
-  if ((fecha && Number.isNaN(fecha.getTime())) || (antesId !== undefined && !Number.isInteger(id)) || !opciones) {
+  const yo = req.user?.id ?? null;
+  const portalesInvitado = yo === null ? portalesDelInvitado(req.query.sources) : [];
+  if ((fecha && Number.isNaN(fecha.getTime())) || (antesId !== undefined && !Number.isInteger(id)) || !opciones || !portalesInvitado) {
     return res.status(400).json({ error: 'Parámetro no válido' });
   }
   // "Siguiendo" va siempre por fecha: 'relevance' (que es de "Para ti") cuenta como 'recent'. Con
   // 'oldest', al revés, y el cursor (la última que ya tienes) pide las de DESPUÉS en vez de antes.
   const antiguas = opciones.sort === 'oldest';
   const sentido = antiguas ? 'ASC' : 'DESC';
-  const yo = req.user.id;
   try {
     const refrescando = await asegurarFrescas();
+    // Los portales: con cuenta, los que sigo ($1); sin ella, los que manda el navegador ($6)
     const r = await pool.query(
       `SELECT ${COLUMNAS}
          FROM news_articles a
          JOIN news_sources s ON s.id = a.source_id AND s.active
-         JOIN news_follows f ON f.source_id = s.id AND f.user_id = $1
-        WHERE NOT EXISTS (SELECT 1 FROM news_hidden h WHERE h.user_id = $1 AND h.article_id = a.id)
+        WHERE ($1::int IS NULL AND s.slug = ANY($6::text[])
+               OR EXISTS (SELECT 1 FROM news_follows f WHERE f.source_id = s.id AND f.user_id = $1))
+          AND NOT EXISTS (SELECT 1 FROM news_hidden h WHERE h.user_id = $1 AND h.article_id = a.id)
           AND ($2::timestamptz IS NULL OR (a.published_at, a.id) ${antiguas ? '>' : '<'} ($2::timestamptz, $3::int))
           AND ($4::text IS NULL OR s.slug = $4)
           AND ($5::int IS NULL OR a.published_at > NOW() - make_interval(hours => $5))
         ORDER BY a.published_at ${sentido}, a.id ${sentido}
         LIMIT ${POR_PAGINA + 1}`,
-      [yo, fecha ? fecha.toISOString() : null, id ?? (antiguas ? 0 : 2147483647), opciones.source, opciones.horas]
+      [yo, fecha ? fecha.toISOString() : null, id ?? (antiguas ? 0 : 2147483647), opciones.source, opciones.horas, portalesInvitado]
     );
-    const seguidos = await pool.query('SELECT COUNT(*)::int AS n FROM news_follows WHERE user_id = $1', [yo]);
+    const seguidos = yo === null
+      ? await pool.query('SELECT COUNT(*)::int AS n FROM news_sources WHERE active AND slug = ANY($1::text[])', [portalesInvitado])
+      : await pool.query('SELECT COUNT(*)::int AS n FROM news_follows WHERE user_id = $1', [yo]);
     const filas = r.rows.slice(0, POR_PAGINA);
     res.json({
       articles: filas.map((f) => aNoticia(f)),
@@ -249,16 +282,22 @@ async function listFollowing(req, res) {
 // (sort, period, source, mine). `fresh=1` rehace la clasificación (al recargar a propósito);
 // `game=<id>` da solo las de un juego de mi biblioteca.
 // Trae también los juegos de mi biblioteca de los que más se habla estos dos días (`mentioned`).
+// Sin cuenta también funciona: sin biblioteca ni amigos, el orden lo deciden la novedad, la variedad
+// y los portales de ?sources= (los que el invitado eligió). Esa clasificación la comparten todos los
+// invitados con los mismos portales, y `fresh` no la rehace (si no, cualquiera podría obligar al
+// servidor a recalcularla en cada petición).
 async function listForYou(req, res) {
   const offset = req.query.offset === undefined ? 0 : Number(req.query.offset);
   if (!Number.isInteger(offset) || offset < 0 || offset > 1000) return res.status(400).json({ error: 'Parámetro no válido' });
   const opciones = leerOpciones(req.query);
-  if (!opciones) return res.status(400).json({ error: 'Parámetro no válido' });
+  const yo = req.user?.id ?? null;
+  const portalesInvitado = yo === null ? portalesDelInvitado(req.query.sources) : [];
+  if (!opciones || !portalesInvitado) return res.status(400).json({ error: 'Parámetro no válido' });
   const idioma = idiomaDe(req.query.lang);
-  const yo = req.user.id;
   try {
     const refrescando = await asegurarFrescas();
-    const c = await clasificacionDe(yo, idioma, { nueva: offset === 0 && req.query.fresh === '1' });
+    const nueva = yo !== null && offset === 0 && req.query.fresh === '1';
+    const c = await clasificacionDe(yo, idioma, { nueva, portalesInvitado });
 
     // ?game=<igdb_id>: solo las noticias que mencionan ese juego de mi biblioteca (lo usa "Se
     // habla de tus juegos"), de la más nueva a la más antigua, sin paginar

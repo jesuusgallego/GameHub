@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useOutletContext } from 'react-router-dom'
 import GameCard from './GameCard'
 import DetalleJuego from './DetalleJuego'
+import VentanaCuenta from './VentanaCuenta'
 import FondoCabecera from './FondoCabecera'
 import { apiFetch } from './api'
 import Cargando from './Cargando'
@@ -21,8 +22,13 @@ let ultimoTermino = ''
 // se busca va en la URL (/buscar?q=zelda): otras páginas pueden traer aquí con algo ya escrito (el
 // "busca juegos nuevos" de Mi biblioteca), y al volver atrás desde una página sigue la búsqueda.
 // La ficha de un resultado se abre encima y también deja añadirlo.
+// Sin cuenta también se busca y se ven las fichas; al pulsar "Añadir" sale la ventana que invita a
+// crear una cuenta (VentanaCuenta).
 function Buscar({ setToken }) {
   const { t } = useIdioma()
+  const { invitado } = useOutletContext()
+  // Sin cuenta: el juego que se quería añadir (abre la ventana de "Necesitas una cuenta")
+  const [pideCuenta, setPideCuenta] = useState(null)
   const [params, setParams] = useSearchParams()
   const [texto, setTexto] = useState(() => params.get('q') ?? ultimoTermino)
   const inputRef = useRef(null)
@@ -69,6 +75,7 @@ function Buscar({ setToken }) {
   // Mi biblioteca, para marcar los que ya tengo. Si falla no es grave: los botones salen como
   // "Añadir" y, si pulsas uno que ya tenías, el backend responde 409 y la tarjeta lo dice.
   useEffect(() => {
+    if (invitado) return undefined
     let cancelado = false
     apiFetch('/games')
       .then((data) => {
@@ -78,10 +85,16 @@ function Buscar({ setToken }) {
         if (!cancelado && err.status === 401) cerrarSesion()
       })
     return () => { cancelado = true }
-  }, [cerrarSesion])
+  }, [cerrarSesion, invitado])
 
   // Guardo un juego en mi biblioteca. Relanzo el error para que lo enseñe el botón que lo pidió.
+  // Sin cuenta no hay biblioteca: abro la ventana que lo explica y aviso al botón (`sinCuenta`) para
+  // que vuelva a estar como antes, sin enseñar un error.
   async function anadirJuego(juego) {
+    if (invitado) {
+      setPideCuenta(juego)
+      throw Object.assign(new Error(''), { sinCuenta: true })
+    }
     try {
       const data = await apiFetch('/games', {
         method: 'POST',
@@ -205,6 +218,13 @@ function Buscar({ setToken }) {
           guardado={guardados.get(detalle.igdb_id)}
           onAnadir={() => anadirJuego(detalle)}
           onCerrar={() => setDetalle(null)}
+        />
+      )}
+
+      {pideCuenta && (
+        <VentanaCuenta
+          mensaje={t('invitado.ventana.anadir', { juego: pideCuenta.name })}
+          onCerrar={() => setPideCuenta(null)}
         />
       )}
     </div>

@@ -13,7 +13,8 @@ import { ORDENES, PERIODOS, OPCIONES_INICIALES, filtrosActivos, limpiarOpciones 
 //  - opciones: { orden, periodo, portal, misJuegos } (ver logicaNoticias.js)
 //  - portales: los que se pueden elegir ([{ slug, name }]); null mientras llegan
 //  - onCambiar(opcionesNuevas)
-function OpcionesNoticias({ tipo, opciones, portales, onCambiar }) {
+//  - conMisJuegos: si sale "Solo de mis juegos" (sin cuenta no hay biblioteca, así que no)
+function OpcionesNoticias({ tipo, opciones, portales, onCambiar, conMisJuegos = true }) {
   const { t } = useIdioma()
   const id = useId()
   const [abierto, setAbierto] = useState(false)
@@ -94,7 +95,7 @@ function OpcionesNoticias({ tipo, opciones, portales, onCambiar }) {
             />
           </div>
 
-          {tipo === 'para_ti' && (
+          {tipo === 'para_ti' && conMisJuegos && (
             <div className="opciones-noticias__grupo opciones-noticias__grupo--interruptor">
               <span className="opciones-noticias__texto">
                 <strong>{t('noticias.soloMisJuegos')}</strong>

@@ -71,6 +71,17 @@ const limitadorEventosNoticias = limitador({
   keyGenerator: (req) => `noticias-${req.user.id}`,
 });
 
+// Lo que se puede usar sin cuenta y tira de servicios con cupo (IGDB, el traductor de Azure, el
+// cálculo de "Para ti"): 150 peticiones cada 5 minutos por IP, SOLO para quien entra sin cuenta.
+// Buscar espera a que dejes de escribir y una ficha es una petición, así que alguien navegando no
+// se acerca; corta a quien quiera usar la API como un IGDB gratis. Con sesión no cuenta (ya tienen
+// el tope general). Va después de sesionOpcional: necesita saber si hay usuario.
+const limitadorInvitados = limitador({
+  ventanaMinutos: 5,
+  maximo: 150,
+  skip: (req) => Boolean(req.user),
+});
+
 // ¿Es una lectura del chat con sesión? Esas peticiones las limita limitadorLecturaChat. Los
 // avisos de "escribiendo" (POST .../typing, uno cada pocos segundos mientras escribes) cuentan
 // como lecturas por lo mismo: se repiten mucho y no guardan nada.
@@ -87,5 +98,5 @@ const limitadorGeneral = limitador({ ventanaMinutos: 15, maximo: 1000, skip: esL
 module.exports = {
   limitadorLogin, limitadorRegistro, limitadorPedirCodigo, limitadorUsarCodigo, limitadorGeneral,
   limitadorBusqueda, limitadorSolicitudes, limitadorLogros, limitadorMensajes, limitadorLecturaChat,
-  limitadorEventosNoticias,
+  limitadorEventosNoticias, limitadorInvitados,
 };

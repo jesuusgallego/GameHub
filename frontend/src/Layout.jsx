@@ -30,8 +30,14 @@ import { useIdioma } from './IdiomaContext'
 //
 // También salen de aquí los avisos del sistema de los mensajes nuevos (ver avisos.js) y, si la
 // cuenta es de antes de que hubiera edad mínima, la ventana que pide la fecha de nacimiento.
-function Layout({ setToken }) {
+//
+// Sin cuenta (token vacío) se usa como invitado: Noticias y Buscar funcionan, y Mi biblioteca,
+// Social y Perfil enseñan la invitación a entrar (RutaProtegida). Entonces no se pide el perfil ni
+// se sondean avisos, no hay chat y, arriba a la derecha, la foto deja sitio al botón "Entrar". Las
+// páginas lo saben por `invitado` en el contexto de <Outlet />.
+function Layout({ token, setToken }) {
   const { t } = useIdioma()
+  const invitado = !token
   const { activos: avisosActivos } = useAvisos()
   const [perfil, setPerfil] = useState(null)
   // Cuántas solicitudes de amistad me han enviado y aún no he respondido
@@ -95,8 +101,8 @@ function Layout({ setToken }) {
   // Al entrar y cada vez que cambio de página: así llegan las solicitudes y los mensajes
   // nuevos sin esperar al sondeo
   useEffect(() => {
-    refrescarAvisos()
-  }, [pathname, refrescarAvisos])
+    if (!invitado) refrescarAvisos()
+  }, [pathname, refrescarAvisos, invitado])
 
   // Y mientras estoy en una página, sondeo cada minuto. Solo corre si la pestaña se ve y
   // hay actividad (ver sondeo.js): así una ventana olvidada no mantiene despiertos el
@@ -104,9 +110,12 @@ function Layout({ setToken }) {
   // Con los avisos del sistema activos, cada medio minuto y también con la ventana oculta o
   // minimizada (si no, nunca avisaría de nada), pero solo hasta 15 minutos después de la última
   // vez que tocaste la app. Es el precio de los avisos: ese rato el servidor no se duerme.
-  useEffect(() => iniciarSondeo(refrescarAvisos, avisosActivos
-    ? { cada: 30_000, seguirOculto: true, inactividad: 15 * 60_000 }
-    : {}), [refrescarAvisos, avisosActivos])
+  useEffect(() => {
+    if (invitado) return undefined
+    return iniciarSondeo(refrescarAvisos, avisosActivos
+      ? { cada: 30_000, seguirOculto: true, inactividad: 15 * 60_000 }
+      : {})
+  }, [refrescarAvisos, avisosActivos, invitado])
 
   // Con mensajes sin leer, el título de la pestaña lo dice: "(2) GameHub"
   useEffect(() => {
@@ -114,7 +123,21 @@ function Layout({ setToken }) {
     return () => { document.title = 'GameHub' }
   }, [mensajes])
 
+  // Al cerrar sesión (o al caducar), fuera lo que quedaba de la cuenta: el perfil y los contadores
+  // de la barra. Se ajusta mientras se pinta, comparando con el valor anterior (como recomienda React).
+  const [invitadoAntes, setInvitadoAntes] = useState(invitado)
+  if (invitado !== invitadoAntes) {
+    setInvitadoAntes(invitado)
+    if (invitado) {
+      setPerfil(null)
+      setSolicitudes(0)
+      setMensajes(0)
+      setChat({ abierto: false, con: null })
+    }
+  }
+
   useEffect(() => {
+    if (invitado) return undefined
     let cancelado = false
 
     apiFetch('/profile')
@@ -133,20 +156,20 @@ function Layout({ setToken }) {
       })
 
     return () => { cancelado = true }
-  }, [setToken])
+  }, [setToken, invitado])
 
   return (
     <>
-      <Menu setToken={setToken} perfil={perfil} solicitudes={solicitudes} mensajes={mensajes} />
+      <Menu setToken={setToken} invitado={invitado} perfil={perfil} solicitudes={solicitudes} mensajes={mensajes} />
       <main className="contenedor">
-        <Outlet context={{ perfil, setPerfil, solicitudes, refrescarSolicitudes, abrirChat }} />
+        <Outlet context={{ invitado, perfil, setPerfil, solicitudes, refrescarSolicitudes, abrirChat }} />
       </main>
 
       {perfil && !perfil.birth_date && (
         <PedirFechaNacimiento setToken={setToken} onGuardado={setPerfil} />
       )}
 
-      <ChatDock
+      {!invitado && <ChatDock
         abierto={chat.abierto}
         sinLeer={mensajes}
         clave={chat.con}
@@ -157,7 +180,7 @@ function Layout({ setToken }) {
         onAbrir={() => abrirChat()}
         onCerrar={cerrarChat}
         onElegir={elegirConversacion}
-      />
+      />}
     </>
   )
 }

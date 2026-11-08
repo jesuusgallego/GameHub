@@ -27,6 +27,12 @@ function BotonAnadir({ yaGuardado, onAnadir, bloque = true }) {
       await onAnadir()
       setEstado("anadido")
     } catch (err) {
+      // Sin cuenta, quien lo usa ya ha abierto la ventana de "Necesitas una cuenta": el botón vuelve
+      // a estar como antes, sin mensaje de error
+      if (err.sinCuenta) {
+        setEstado("idle")
+        return
+      }
       // Un 409 significa que ya lo tenía: no es un fallo, lo marco como añadido
       if (err.status === 409) {
         setEstado("anadido")

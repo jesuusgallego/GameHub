@@ -1,0 +1,327 @@
+/* ==========================================================================
+   Usar GameHub sin cuenta (modo invitado)
+   - .acceder: el botón "Entrar" de la barra, con su desplegable (BotonAcceder.jsx). Reutiliza el
+     panel y las opciones del menú de usuario (.menu-usuario__*, en menus.css).
+   - .pide-cuenta: la invitación que sale en las páginas que necesitan cuenta (PideCuenta.jsx)
+   - .ventana-cuenta: la ventana que sale al pulsar algo que necesita cuenta (VentanaCuenta.jsx)
+   ========================================================================== */
+
+/* ---- El botón "Entrar" de la barra ---- */
+.acceder__boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 36px;
+  padding: 0 0.95rem 0 0.75rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  background: var(--degradado);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: filter var(--transicion), box-shadow var(--transicion), scale var(--transicion);
+}
+
+.acceder__boton:hover,
+.acceder__boton[aria-expanded="true"] {
+  filter: brightness(1.15);
+  box-shadow: 0 0 0 3px var(--acento-suave);
+}
+
+.acceder__boton:active {
+  scale: 0.96;
+}
+
+/* La flecha gira al abrir el desplegable */
+.acceder__flecha {
+  transition: transform var(--transicion);
+}
+
+.acceder__boton[aria-expanded="true"] .acceder__flecha {
+  transform: rotate(180deg);
+}
+
+/* El botón es una cápsula: no hace falta el puente diagonal de la foto redonda */
+.acceder .menu-usuario__panel::before {
+  display: none;
+}
+
+.acceder .menu-usuario__lista {
+  min-width: 250px;
+}
+
+/* La frase de arriba del desplegable: qué ganas con una cuenta */
+.acceder__frase {
+  padding: 0.55rem 0.7rem 0.65rem;
+  margin: 0 0 0.3rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--texto-suave);
+  border-bottom: 1px solid var(--borde);
+}
+
+.acceder__frase strong {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.92rem;
+  color: var(--texto-h);
+}
+
+/* Cada opción, con su icono a la izquierda */
+.acceder .menu-usuario__opcion {
+  justify-content: flex-start;
+  gap: 0.65rem;
+}
+
+.acceder .menu-usuario__opcion svg {
+  flex-shrink: 0;
+  color: var(--texto-suave);
+  transition: color var(--transicion), transform var(--transicion);
+}
+
+.acceder .menu-usuario__opcion:hover svg {
+  color: var(--acento);
+  transform: translateX(2px);
+}
+
+/* "Crear cuenta", destacada */
+.acceder__opcion--registro {
+  font-weight: 600;
+  color: var(--acento) !important;
+}
+
+/* ---- La invitación de las páginas con cuenta ---- */
+.pide-cuenta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pide-cuenta__contenido {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-width: 40rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 2.5rem 2rem;
+}
+
+.pide-cuenta__contenido .titulo-pagina {
+  margin: 0;
+  text-shadow: var(--banner-sombra-titulo);
+}
+
+/* El candado, en una pastilla de cristal como las de las cabeceras */
+.pide-cuenta__candado {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--banner-texto);
+  background: var(--banner-cristal);
+  border: 1px solid var(--banner-cristal-borde);
+  border-radius: 14px;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: pide-cuenta-candado 0.6s 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+@keyframes pide-cuenta-candado {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-12deg);
+  }
+}
+
+.pide-cuenta__texto {
+  max-width: 30rem;
+  margin: 0;
+  color: var(--banner-texto-suave);
+}
+
+.pide-cuenta__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.pide-cuenta__acciones .btn {
+  text-decoration: none;
+}
+
+/* "Iniciar sesión" sobre el fondo de la cabecera: de cristal, como los demás botones del banner */
+.pide-cuenta__acciones .btn--secundario {
+  color: var(--banner-texto);
+  background: var(--banner-boton);
+  border-color: var(--banner-boton-borde);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.pide-cuenta__acciones .btn--secundario:hover {
+  background: var(--banner-cristal-hover);
+  border-color: var(--banner-boton-borde-hover);
+}
+
+/* Las tres ventajas, en fila (una debajo de otra si no caben) */
+.pide-cuenta__ventajas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pide-cuenta__ventaja {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.1rem 1.15rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-grande);
+  animation: pide-cuenta-ventaja 0.45s calc(0.15s + var(--orden, 0) * 0.08s) ease both;
+  transition: border-color var(--transicion), transform var(--transicion), box-shadow var(--transicion);
+}
+
+.pide-cuenta__ventaja:hover {
+  border-color: var(--acento);
+  transform: translateY(-2px);
+  box-shadow: var(--sombra);
+}
+
+@keyframes pide-cuenta-ventaja {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.pide-cuenta__icono {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: var(--acento);
+  background: var(--acento-suave);
+  border-radius: 12px;
+}
+
+.pide-cuenta__ventaja h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  color: var(--texto-h);
+}
+
+.pide-cuenta__ventaja p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--texto-suave);
+}
+
+.pide-cuenta__sin-cuenta {
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--texto-suave);
+}
+
+/* ---- La ventana "Necesitas una cuenta" ---- */
+.ventana-cuenta {
+  max-width: 420px;
+  text-align: center;
+}
+
+.ventana-cuenta .pide-cuenta__icono {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 0.75rem;
+  border-radius: 16px;
+}
+
+.ventana-cuenta__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.ventana-cuenta__acciones .btn {
+  justify-content: center;
+  text-decoration: none;
+}
+
+/* "Ahora no": un enlace discreto debajo de los botones */
+.ventana-cuenta__despues {
+  margin-top: 0.25rem;
+  padding: 0.4rem;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--transicion);
+}
+
+.ventana-cuenta__despues:hover {
+  color: var(--texto-h);
+}
+
+/* En el login y el registro: volver a la app sin entrar */
+.auth__invitado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+  transition: color var(--transicion);
+}
+
+.auth__invitado:hover {
+  color: var(--acento);
+  text-decoration: none;
+}
+
+.auth__invitado svg {
+  transition: transform var(--transicion);
+}
+
+.auth__invitado:hover svg {
+  transform: translateX(-3px);
+}
+
+@media (max-width: 640px) {
+  .pide-cuenta__contenido {
+    padding: 1.6rem 1.25rem 1.5rem;
+  }
+
+  .pide-cuenta__contenido .titulo-pagina {
+    font-size: 1.6rem;
+  }
+
+  .pide-cuenta__texto {
+    font-size: 0.92rem;
+  }
+
+  /* En el móvil, el botón "Entrar" solo con el icono si no cabe el texto */
+  .acceder__boton {
+    padding: 0 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pide-cuenta__candado,
+  .pide-cuenta__ventaja {
+    animation: none;
+  }
+}

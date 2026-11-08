@@ -9,7 +9,7 @@ import { borrarToken } from './sesion'
 // "Ver perfil" y "Cerrar sesión". (El idioma y el tema claro/oscuro están en el
 // menú de ajustes, MenuAjustes.)
 //  - perfil: nombre y foto del usuario (null mientras carga)
-//  - setToken: para cerrar sesión (borrar el token hace que RutaProtegida me lleve al login)
+//  - setToken: para cerrar sesión (sin token, la app sigue abierta como invitado)
 //
 // Se abre de tres formas, para que funcione con cualquier dispositivo:
 //  - ratón: al pasar por encima (y se cierra al salir). Un clic en la foto lleva
@@ -46,9 +46,12 @@ function MenuUsuario({ perfil, setToken }) {
     }
   }
 
+  // Al cerrar sesión se sigue en la app, sin cuenta, desde las noticias (la página en la que estabas
+  // seguramente necesitaba la cuenta)
   function cerrarSesion() {
     borrarToken()
     setToken("")
+    navigate('/noticias')
   }
 
   return (

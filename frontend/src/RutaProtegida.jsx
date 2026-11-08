@@ -1,10 +1,11 @@
-import { Navigate } from 'react-router-dom'
+import PideCuenta from './PideCuenta'
 
-function RutaProtegida({ token, children }) {
-  if (!token) {
-    return <Navigate to="/login" />
-  }
-
+// Las páginas que solo tienen sentido con una cuenta (Mi biblioteca, Social, Perfil y los perfiles
+// de otras personas). Sin sesión no se sale de la app al login: en su lugar se queda la barra y se
+// enseña una invitación a entrar o registrarse (PideCuenta), que explica qué hay en esa sección.
+//  - seccion: 'biblioteca' | 'social' | 'perfil' | 'usuarios' (los textos de la invitación)
+function RutaProtegida({ token, seccion, children }) {
+  if (!token) return <PideCuenta seccion={seccion} />
   return children
 }
 

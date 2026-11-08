@@ -7,17 +7,22 @@ import { useIdioma } from './IdiomaContext'
 import Cargando from './Cargando'
 import Mensaje from './Mensaje'
 import { escribirToken } from './sesion'
+import { rutaDeVuelta } from './invitado'
+import SeguirSinCuenta from './SeguirSinCuenta'
 
 function Login({ setToken }) {
   const { t } = useIdioma()
+  // Recuperar llega aquí con state.passwordRestablecida al cambiar la contraseña, y el registro con
+  // state.cuentaCreada y el nombre de usuario (state.usuario). Desde la app, sin cuenta, se llega con
+  // state.desde: la página a la que volver al entrar (ver invitado.js).
+  const { state } = useLocation()
+  const desde = rutaDeVuelta(state?.desde)
   // Email o nombre de usuario: el servidor distingue cuál es
-  const [identificador, setIdentificador] = useState("")
+  const [identificador, setIdentificador] = useState(state?.usuario ?? "")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [enviando, setEnviando] = useState(false)
   const navigate = useNavigate()
-  // Recuperar llega aquí con state.passwordRestablecida al cambiar la contraseña
-  const { state } = useLocation()
 
   function handleLogin(e) {
     e.preventDefault()
@@ -38,7 +43,7 @@ function Login({ setToken }) {
       .then(data => {
         setToken(data.token)
         escribirToken(data.token)
-        navigate('/noticias')
+        navigate(desde, { replace: true })
       })
       .catch(err => setError(err.message))
       .finally(() => setEnviando(false))
@@ -82,6 +87,7 @@ function Login({ setToken }) {
 
           <Mensaje texto={error} />
           <Mensaje tipo="ok" texto={state?.passwordRestablecida && !error ? t('auth.login.passwordRestablecida') : ""} />
+          <Mensaje tipo="ok" texto={state?.cuentaCreada && !error ? t('auth.login.cuentaCreada') : ""} />
 
           <button type="submit" className="btn btn--primario btn--block" disabled={enviando}>
             {enviando ? <><Cargando tamano="pequeno" /> {t('auth.login.entrando')}</> : t('auth.login.titulo')}
@@ -89,7 +95,11 @@ function Login({ setToken }) {
         </form>
 
         <p className="auth__pie">
-          {t('auth.login.sinCuenta')} <Link to="/registro">{t('auth.login.registrate')}</Link>
+          {t('auth.login.sinCuenta')} <Link to="/registro" state={{ desde }}>{t('auth.login.registrate')}</Link>
+        </p>
+
+        <p className="auth__pie">
+          <SeguirSinCuenta desde={desde} />
         </p>
       </div>
     </main>

@@ -46,6 +46,7 @@
 @import './chat.css';
 @import './noticias.css';
 @import './progreso-steam.css';
+@import './invitado.css';
 
 /* Pantallas estrechas: va el último para poder sobrescribir lo anterior */
 @import './movil.css';
