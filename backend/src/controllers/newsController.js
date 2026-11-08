@@ -124,12 +124,13 @@ function preparar(fila) {
 // Los invitados la comparten: una por cada combinación de portales elegidos (clave "invitado:...").
 const clasificaciones = new Map();
 
-// La clave con la que se guarda la clasificación de alguien: su id, o la de los invitados con esos
-// portales
-const claveDe = (yo, portalesInvitado = []) => yo ?? `invitado:${portalesInvitado.join(',')}`;
+// La clave con la que se guarda la clasificación de alguien: su id, o la de los invitados con ese
+// idioma y esos portales (el idioma va en la clave: si no, los invitados en español y en inglés se
+// pisarían la lista compartida y se recalcularía a cada rato)
+const claveDe = (yo, idioma, portalesInvitado = []) => yo ?? `invitado:${idioma}:${portalesInvitado.join(',')}`;
 
 async function clasificacionDe(yo, idioma, { nueva = false, portalesInvitado = [] } = {}) {
-  const clave = claveDe(yo, portalesInvitado);
+  const clave = claveDe(yo, idioma, portalesInvitado);
   const guardada = clasificaciones.get(clave);
   if (!nueva && guardada && guardada.idioma === idioma && guardada.hasta > Date.now()) return guardada;
 
@@ -146,7 +147,10 @@ async function clasificacionDe(yo, idioma, { nueva = false, portalesInvitado = [
   const nuevaClasificacion = {
     hasta: Date.now() + MINUTOS_CLASIFICACION * 60_000, idioma, lista, porId, idf, contexto, ocultas: new Set(),
   };
-  clasificaciones.set(clave, nuevaClasificacion);
+  // Una lista vacía no se guarda: pasa si se calcula justo cuando el servidor acaba de despertar y
+  // aún no ha leído las noticias. Guardada, se quedaría vacía 10 minutos (para los invitados, que
+  // la comparten y no pueden pedir `fresh`, en todas sus visitas).
+  if (lista.length > 0) clasificaciones.set(clave, nuevaClasificacion);
   return nuevaClasificacion;
 }
 
