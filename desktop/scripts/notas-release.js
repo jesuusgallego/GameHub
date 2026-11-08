@@ -47,7 +47,7 @@ function bloqueInstalacion(version) {
 1. Descarga **GameHub-Setup-${version}.exe** (abajo, en *Assets*) y ejecútalo.
 2. Windows mostrará *"Windows protegió su PC"* porque el instalador no está firmado:
    pulsa **Más información → Ejecutar de todos modos**.
-3. Abre GameHub y crea tu cuenta.
+3. Abre GameHub: puedes empezar sin cuenta y crearla cuando quieras con el botón **Entrar**.
 
 **¿Ya tienes GameHub instalado?** No tienes que hacer nada: la próxima vez que abras la app
 descargará esta versión y la instalará al cerrarla.

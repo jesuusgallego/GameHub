@@ -11,6 +11,18 @@
 // Qué hay de nuevo en cada versión. AL PUBLICAR UNA VERSIÓN, añade aquí su entrada
 // (si falta, el aviso sale igualmente, solo sin la lista de novedades).
 const NOVEDADES = {
+  '1.8.11': {
+    es: [
+      'GameHub se puede usar sin cuenta: lee las noticias, busca juegos y mira sus fichas sin registrarte.',
+      'Arriba a la derecha, el botón Entrar te deja iniciar sesión o crear una cuenta cuando quieras.',
+      'Al entrar o registrarte vuelves a la página en la que estabas.',
+    ],
+    en: [
+      'GameHub can be used without an account: read the news, search for games and see their details without signing up.',
+      'At the top right, the Sign in button lets you log in or create an account whenever you want.',
+      'After logging in or signing up you go back to the page you were on.',
+    ],
+  },
   '1.8.10': {
     es: [
       'En Android, la app instalada tiene ahora el mismo aspecto de cristal que en el iPhone.',

@@ -2,6 +2,31 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
+## [1.8.11] - 2026-11-08
+
+GameHub sin cuenta: cualquiera puede probarlo sin registrarse.
+
+### Añadido
+- **Usar GameHub sin cuenta.** Sin iniciar sesión puedes leer las noticias, buscar cualquier
+  juego y ver su ficha completa. En **Para ti** las noticias se ordenan por novedad y variedad, y
+  en **Siguiendo** puedes elegir tus portales: se guardan en tu navegador.
+- **Botón Entrar**, arriba a la derecha, con las opciones de **iniciar sesión** o **crear una
+  cuenta**. Al terminar vuelves a la página en la que estabas, y tras registrarte el inicio de
+  sesión ya tiene tu nombre escrito.
+- Mi biblioteca, Social y Perfil, sin cuenta, explican qué hay en cada apartado y qué ganas al
+  registrarte, con los botones a mano. Al pulsar «Añadir a mi biblioteca» una ventana te cuenta que
+  hace falta una cuenta y te deja crearla.
+- En el inicio de sesión y el registro, **Seguir sin cuenta** te devuelve a la app.
+
+### Cambiado
+- Al cerrar sesión sigues en GameHub, en Noticias, sin cuenta (antes te llevaba al inicio de sesión).
+
+### Interno
+- Middleware `sesionOpcional` en `/games/search`, `/games/details/:igdbId`, `/news/sources`,
+  `/news/following` y `/news/for-you`: sin cabecera, `req.user = null`; un token caducado sigue
+  siendo 401. Sin cuenta, los portales viajan en `?sources=` y `limitadorInvitados` pone un tope de
+  150 peticiones cada 5 minutos por IP.
+
 ## [1.8.10] - 2026-10-26
 
 GameHub en Android, con el mismo aspecto que en el iPhone.
